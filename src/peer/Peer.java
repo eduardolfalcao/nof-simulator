@@ -3,11 +3,12 @@ package peer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.NavigableSet;
 import java.util.TreeMap;
 
 import nof.Interaction;
 
-public class Peer {
+public class Peer implements Comparable{
 	
 	
 	protected double demand;
@@ -146,14 +147,41 @@ public class Peer {
 	 * @return the peer with the nth best reputation
 	 */
 	public Peer getThePeerWithNthBestReputation(int nth){
-		Entry <Peer, Double> last = this.peersReputations.lastEntry();
-		if(nth > 1){
-			for(int i = 1; i < nth; i++)
-				last = this.peersReputations.floorEntry(last.getKey());						
+		NavigableSet<Peer> peersInDescendingOrder = this.peersReputations.descendingKeySet();
+		for(Peer p : peersInDescendingOrder){
+			if(nth==1)
+				return p;
+			nth--;
 		}
-		return last.getKey();
+		return null;
+		
+		
+//		Entry <Peer, Double> last = this.peersReputations.lastEntry();
+//		if(nth > 1 && last != null){			
+//			for(int i = 1; i < nth; i++)				
+//				last = this.peersReputations.floorEntry(last.getKey());						
+//		}
+//		return last!=null?last.getKey():null;
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		final int BEFORE = -1;
+	    final int EQUAL = 0;
+	    final int AFTER = 1;
+		
+		if(!(o instanceof Peer))
+			return EQUAL;
+		
+		Peer otherPeer = (Peer) o;
+		
+		double myReputation = otherPeer.getPeersReputations().get(this)!=null?otherPeer.getPeersReputations().get(this):0;
+		double hisReputation = this.getPeersReputations().get(otherPeer)!=null?this.getPeersReputations().get(otherPeer):0;
+		
+		if (myReputation < hisReputation) 
+	    	return BEFORE;
+		else	// (myReputation >= hisReputation) 
+	    	return AFTER;
 	}		
 	
-	
-
 }
