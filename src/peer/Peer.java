@@ -17,7 +17,7 @@ public class Peer implements Comparable{
 	
 
 	protected boolean consuming; 
-	protected TreeMap<Peer, Double> peersReputations;  
+	protected TreeMap<Integer, Double> peersReputations;  
 	protected List <Interaction> interactions;
 	protected int peerId;
 	
@@ -32,7 +32,7 @@ public class Peer implements Comparable{
 		this.demand = demand;
 		this.peerId = peerId;
 		this.consuming = false;
-		peersReputations = new TreeMap<Peer, Double>();
+		peersReputations = new TreeMap<Integer, Double>();
 		interactions = new ArrayList<Interaction>();
 	}
 	
@@ -47,7 +47,7 @@ public class Peer implements Comparable{
 		this.demand = demand;
 		this.peerId = peerId;
 		this.consuming = consuming;
-		peersReputations = new TreeMap<Peer, Double>();
+		peersReputations = new TreeMap<Integer, Double>();
 		interactions = new ArrayList<Interaction>();
 	}
 	
@@ -126,7 +126,7 @@ public class Peer implements Comparable{
 	 * 
 	 * @return treeMap with peers reputations
 	 */
-	public TreeMap<Peer, Double> getPeersReputations() {
+	public TreeMap<Integer, Double> getPeersReputations() {
 		return peersReputations;
 	}
 
@@ -134,7 +134,7 @@ public class Peer implements Comparable{
 	 * 
 	 * @param peersReputations treeMap with peers reputations
 	 */
-	public void setPeersReputations(TreeMap<Peer, Double> peersReputations) {
+	public void setPeersReputations(TreeMap<Integer, Double> peersReputations) {
 		this.peersReputations = peersReputations;
 	}
 	
@@ -144,25 +144,21 @@ public class Peer implements Comparable{
 	 * the treeMap, and so on.
 	 * 
 	 * @param nth the nth best reputation
-	 * @return the peer with the nth best reputation
+	 * @return the peer id with the nth best reputation
 	 */
-	public Peer getThePeerWithNthBestReputation(int nth){
-		NavigableSet<Peer> peersInDescendingOrder = this.peersReputations.descendingKeySet();
-		for(Peer p : peersInDescendingOrder){
-			if(nth==1)
-				return p;
-			nth--;
+	public int getThePeerIdWithNthBestReputation(int nth){
+		NavigableSet<Integer> peersInDescendingOrder = this.peersReputations.descendingKeySet();
+		if(peersInDescendingOrder != null){
+			for(int p : peersInDescendingOrder){
+				if(nth==1)
+					return p;
+				nth--;
+			}
 		}
-		return null;
-		
-		
-//		Entry <Peer, Double> last = this.peersReputations.lastEntry();
-//		if(nth > 1 && last != null){			
-//			for(int i = 1; i < nth; i++)				
-//				last = this.peersReputations.floorEntry(last.getKey());						
-//		}
-//		return last!=null?last.getKey():null;
+		return -1;
 	}
+
+
 
 	@Override
 	public int compareTo(Object o) {
@@ -185,3 +181,13 @@ public class Peer implements Comparable{
 	}		
 	
 }
+
+
+
+
+//Entry <Peer, Double> last = this.peersReputations.lastEntry();
+//if(nth > 1 && last != null){			
+//	for(int i = 1; i < nth; i++)				
+//		last = this.peersReputations.floorEntry(last.getKey());						
+//}
+//return last!=null?last.getKey():null;
