@@ -1,10 +1,14 @@
 package peer;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableSet;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import nof.Interaction;
 
@@ -17,7 +21,7 @@ public class Peer implements Comparable{
 	
 
 	protected boolean consuming; 
-	protected TreeMap<Integer, Double> peersReputations;  
+	protected TreeMap<Integer, Double> peersReputations; 	
 	protected List <Interaction> interactions;
 	protected int peerId;
 	
@@ -147,15 +151,22 @@ public class Peer implements Comparable{
 	 * @return the peer id with the nth best reputation
 	 */
 	public int getThePeerIdWithNthBestReputation(int nth){
-		NavigableSet<Integer> peersInDescendingOrder = this.peersReputations.descendingKeySet();
-		if(peersInDescendingOrder != null){
-			for(int p : peersInDescendingOrder){
-				if(nth==1)
-					return p;
-				nth--;
-			}
+		Entry <Integer, Double> last = this.peersReputations.lastEntry();
+		if(nth > 1 && last != null){			
+			
+//			for(int i = 1; i < nth; i++)				
+//				last = this.peersReputations.floorEntry(last.getKey());						
 		}
-		return -1;
+		return last!=null?last.getKey():-1;
+//		NavigableSet<Integer> peersInDescendingOrder = this.peersReputations.descendingKeySet();
+//		if(peersInDescendingOrder != null){
+//			for(int p : peersInDescendingOrder){
+//				if(nth==1)
+//					return p;
+//				nth--;
+//			}
+//		}
+//		return -1;
 	}
 
 
@@ -171,8 +182,8 @@ public class Peer implements Comparable{
 		
 		Peer otherPeer = (Peer) o;
 		
-		double myReputation = otherPeer.getPeersReputations().get(this)!=null?otherPeer.getPeersReputations().get(this):0;
-		double hisReputation = this.getPeersReputations().get(otherPeer)!=null?this.getPeersReputations().get(otherPeer):0;
+		double myReputation = otherPeer.getPeersReputations().get(this.peerId)!=null?otherPeer.getPeersReputations().get(this.peerId):0;
+		double hisReputation = this.getPeersReputations().get(otherPeer.getPeerId())!=null?this.getPeersReputations().get(otherPeer.getPeerId()):0;
 		
 		if (myReputation < hisReputation) 
 	    	return BEFORE;

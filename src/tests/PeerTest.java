@@ -45,8 +45,16 @@ public class PeerTest {
 	 * Test method for {@link peer.Peer#equals(java.lang.Object)}.
 	 */
 	@Test
-	public void testEqualsObject() {
-		fail("Not yet implemented");
+	public void testEqualsObject() {		
+		Peer p1 = new Peer(100, 1);
+		Peer p2 = new Peer(100, 2);
+		Peer p3 = new Peer(100, 1);
+		Peer p4 = null;
+		
+		assertFalse(p1.equals(p2));		//when they're different
+		assertTrue(p1.equals(p3));		//when they're equals
+		assertTrue(p3.equals(p1));		//when they're equals
+		assertFalse(p1.equals(p4));		//when one peer is null
 	}
 
 	/**
@@ -60,9 +68,9 @@ public class PeerTest {
 		 */
 		
 		Peer p1 = new Peer(100,1);
-		assertNull(p1.getThePeerWithNthBestReputation(1));
-		assertNull(p1.getThePeerWithNthBestReputation(2));
-		assertNull(p1.getThePeerWithNthBestReputation(10));
+		assertTrue(p1.getThePeerIdWithNthBestReputation(1)==-1?true:false);
+		assertTrue(p1.getThePeerIdWithNthBestReputation(2)==-1?true:false);
+		assertTrue(p1.getThePeerIdWithNthBestReputation(10)==-1?true:false);
 		
 		/****************** END OF THIS CASE ******************/
 		
@@ -75,18 +83,16 @@ public class PeerTest {
 		Peer p2 = new Peer(100, 2);
 		Interaction interactionP1P2 = new Interaction(p1, p2);
 		interactionP1P2.peerADonatesValue(50);
-		p1.getPeersReputations().put(p2, NetworkOfFavors.calculateLocalReputation(interactionP1P2.getConsumedValueByPeerA(), interactionP1P2.getDonatedValueByPeerA(), true));
-		p2.getPeersReputations().put(p1, NetworkOfFavors.calculateLocalReputation(interactionP1P2.getConsumedValueByPeerB(), interactionP1P2.getDonatedValueByPeerB(), true));
+		p1.getPeersReputations().put(p2.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P2.getConsumedValueByPeerA(), interactionP1P2.getDonatedValueByPeerA(), true));
+		p2.getPeersReputations().put(p1.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P2.getConsumedValueByPeerB(), interactionP1P2.getDonatedValueByPeerB(), true));
 		
-		assertNotNull(p1.getThePeerWithNthBestReputation(1));
-		assertNotNull(p2.getThePeerWithNthBestReputation(1));
-		assertNull(p1.getThePeerWithNthBestReputation(2));
-		assertNull(p2.getThePeerWithNthBestReputation(2));
-		assertNull(p1.getThePeerWithNthBestReputation(10));
-		assertNull(p2.getThePeerWithNthBestReputation(10));
+		assertTrue(p1.getThePeerIdWithNthBestReputation(1)==2);	
+		assertTrue(p2.getThePeerIdWithNthBestReputation(1)==1);
 		
-		assertEquals(p1.getThePeerWithNthBestReputation(1).getPeerId(),2);
-		assertEquals(p2.getThePeerWithNthBestReputation(1).getPeerId(),1);
+		assertTrue(p1.getThePeerIdWithNthBestReputation(2)==-1);
+		assertTrue(p2.getThePeerIdWithNthBestReputation(2)==-1);
+		assertTrue(p1.getThePeerIdWithNthBestReputation(10)==-1);
+		assertTrue(p2.getThePeerIdWithNthBestReputation(10)==-1);
 		
 		/****************** END OF THIS CASE ******************/
 		
@@ -99,24 +105,77 @@ public class PeerTest {
 		Peer p3 = new Peer(100, 3);
 		Interaction interactionP1P3 = new Interaction(p1, p3);
 		interactionP1P3.peerBDonatesValue(25);
-		p1.getPeersReputations().put(p3, NetworkOfFavors.calculateLocalReputation(interactionP1P3.getConsumedValueByPeerA(), interactionP1P3.getDonatedValueByPeerA(), true));
-		p3.getPeersReputations().put(p1, NetworkOfFavors.calculateLocalReputation(interactionP1P3.getConsumedValueByPeerB(), interactionP1P3.getDonatedValueByPeerB(), true));
+		p1.getPeersReputations().put(p3.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P3.getConsumedValueByPeerA(), interactionP1P3.getDonatedValueByPeerA(), true));
+		p3.getPeersReputations().put(p1.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P3.getConsumedValueByPeerB(), interactionP1P3.getDonatedValueByPeerB(), true));
 		
-		assertNotNull(p1.getThePeerWithNthBestReputation(1));
-		assertNotNull(p1.getThePeerWithNthBestReputation(2));
-		assertNotNull(p3.getThePeerWithNthBestReputation(1));
+		assertTrue(p1.getThePeerIdWithNthBestReputation(1)==3);
+		assertTrue(p1.getThePeerIdWithNthBestReputation(2)==2);
+		assertTrue(p2.getThePeerIdWithNthBestReputation(1)==1);
+		assertTrue(p3.getThePeerIdWithNthBestReputation(1)==1);
 		
-		assertNull(p1.getThePeerWithNthBestReputation(3));
-		assertNull(p3.getThePeerWithNthBestReputation(2));
-		assertNull(p1.getThePeerWithNthBestReputation(10));
-		assertNull(p3.getThePeerWithNthBestReputation(10));
+		assertTrue(p1.getThePeerIdWithNthBestReputation(3)==-1);
+		assertTrue(p1.getThePeerIdWithNthBestReputation(10)==-1);
+		
+		assertTrue(p2.getThePeerIdWithNthBestReputation(2)==-1);
+		assertTrue(p2.getThePeerIdWithNthBestReputation(10)==-1);
+		
+		assertTrue(p3.getThePeerIdWithNthBestReputation(2)==-1);
+		assertTrue(p3.getThePeerIdWithNthBestReputation(10)==-1);
 		
 		/****************** END OF THIS CASE ******************/
 		
-		//peer1 consumed 25 from peer3 and donated 50 to peer2, then, peer3 has the best reputation
-		assertEquals(p1.getThePeerWithNthBestReputation(1).getPeerId(),3);
-		assertEquals(p1.getThePeerWithNthBestReputation(2).getPeerId(),2);
-		assertEquals(p3.getThePeerWithNthBestReputation(1).getPeerId(),1);
+		
+		
+		/**
+		 * Get peer with highest reputation, when the treeMap reputation has 5 peers.
+		 */
+		
+		Peer p4 = new Peer(100, 4);
+		Interaction interactionP1P4 = new Interaction(p1, p4);
+		interactionP1P4.peerBDonatesValue(10);
+		p1.getPeersReputations().put(p4.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P4.getConsumedValueByPeerA(), interactionP1P4.getDonatedValueByPeerA(), true));
+		p4.getPeersReputations().put(p1.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P4.getConsumedValueByPeerB(), interactionP1P4.getDonatedValueByPeerB(), true));
+		
+		Peer p5 = new Peer(100, 5);
+		Interaction interactionP1P5 = new Interaction(p1, p5);
+		interactionP1P5.peerBDonatesValue(50);
+		p1.getPeersReputations().put(p5.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P5.getConsumedValueByPeerA(), interactionP1P5.getDonatedValueByPeerA(), true));
+		p5.getPeersReputations().put(p1.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P5.getConsumedValueByPeerB(), interactionP1P5.getDonatedValueByPeerB(), true));
+		
+		Peer p6 = new Peer(100, 6);
+		Interaction interactionP1P6 = new Interaction(p1, p6);
+		interactionP1P6.peerADonatesValue(75);
+		p1.getPeersReputations().put(p6.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P6.getConsumedValueByPeerA(), interactionP1P6.getDonatedValueByPeerA(), true));
+		p6.getPeersReputations().put(p1.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P6.getConsumedValueByPeerB(), interactionP1P6.getDonatedValueByPeerB(), true));
+		
+		
+		/*
+		 * Peer1 reputation (descending order): P5(+50), P3(+25), P4(+10), P6(log(75)), P2(log(50))
+		 */
+		
+//		Peer 6. Rep: 0.0
+//		Peer 5. Rep: 53.912023005428146
+//		Peer 4. Rep: 12.302585092994047
+//		Peer 3. Rep: 28.2188758248682
+//		Peer 2. Rep: 0.0
+		
+		System.out.println("Peer "+p1.getThePeerIdWithNthBestReputation(1)+". Rep: "+p1.getPeersReputations().get(p1.getThePeerIdWithNthBestReputation(1)));
+		System.out.println("Peer "+p1.getThePeerIdWithNthBestReputation(2)+". Rep: "+p1.getPeersReputations().get(p1.getThePeerIdWithNthBestReputation(2)));
+		System.out.println("Peer "+p1.getThePeerIdWithNthBestReputation(3)+". Rep: "+p1.getPeersReputations().get(p1.getThePeerIdWithNthBestReputation(3)));
+		System.out.println("Peer "+p1.getThePeerIdWithNthBestReputation(4)+". Rep: "+p1.getPeersReputations().get(p1.getThePeerIdWithNthBestReputation(4)));
+		System.out.println("Peer "+p1.getThePeerIdWithNthBestReputation(5)+". Rep: "+p1.getPeersReputations().get(p1.getThePeerIdWithNthBestReputation(5)));
+		
+		assertTrue(p1.getThePeerIdWithNthBestReputation(1)==5);
+		assertTrue(p1.getThePeerIdWithNthBestReputation(2)==3);
+		assertTrue(p1.getThePeerIdWithNthBestReputation(3)==4);
+		assertTrue(p1.getThePeerIdWithNthBestReputation(4)==6);
+		assertTrue(p1.getThePeerIdWithNthBestReputation(5)==2);
+		
+//		
+//		//peer1 consumed 25 from peer3 and donated 50 to peer2, then, peer3 has the best reputation
+//		assertEquals(p1.getThePeerWithNthBestReputation(1).getPeerId(),3);
+//		assertEquals(p1.getThePeerWithNthBestReputation(2).getPeerId(),2);
+//		assertEquals(p3.getThePeerWithNthBestReputation(1).getPeerId(),1);
 		
 		//1 peer: retrieve it; try to retrieve 2nd and 10th peer with higher reputation
 //		Peer p2 = new Peer(100, 2);
