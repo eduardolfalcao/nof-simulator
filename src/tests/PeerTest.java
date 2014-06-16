@@ -14,6 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import peer.Peer;
+import peerid.PeerReputation;
 
 /**
  * @author eduardolfalcao
@@ -83,7 +84,7 @@ public class PeerTest {
 		Peer p2 = new Peer(100, 2);
 		Interaction interactionP1P2 = new Interaction(p1, p2);
 		interactionP1P2.peerADonatesValue(50);
-		p1.getPeersReputations().put(p2.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P2.getConsumedValueByPeerA(), interactionP1P2.getDonatedValueByPeerA(), true));
+		p1.getPeersReputations().put(new PeerReputation(p2.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P2.getConsumedValueByPeerA(), interactionP1P2.getDonatedValueByPeerA(), true)));
 		p2.getPeersReputations().put(p1.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P2.getConsumedValueByPeerB(), interactionP1P2.getDonatedValueByPeerB(), true));
 		
 		assertTrue(p1.getThePeerIdWithNthBestReputation(1)==2);	

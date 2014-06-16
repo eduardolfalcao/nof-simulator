@@ -1,6 +1,7 @@
 package peer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -10,9 +11,10 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import peerid.PeerReputation;
 import nof.Interaction;
 
-public class Peer implements Comparable{
+public class Peer{
 	
 	
 	protected double demand;
@@ -21,8 +23,9 @@ public class Peer implements Comparable{
 	
 
 	protected boolean consuming; 
-	protected TreeMap<Integer, Double> peersReputations; 	
-	protected List <Interaction> interactions;
+//	protected TreeMap<Integer, Double> peersReputations;  
+	protected ArrayList<PeerReputation> peersReputations;
+	protected ArrayList <Interaction> interactions;
 	protected int peerId;
 	
 	
@@ -36,7 +39,7 @@ public class Peer implements Comparable{
 		this.demand = demand;
 		this.peerId = peerId;
 		this.consuming = false;
-		peersReputations = new TreeMap<Integer, Double>();
+		peersReputations = new ArrayList<PeerReputation>();
 		interactions = new ArrayList<Interaction>();
 	}
 	
@@ -51,7 +54,7 @@ public class Peer implements Comparable{
 		this.demand = demand;
 		this.peerId = peerId;
 		this.consuming = consuming;
-		peersReputations = new TreeMap<Integer, Double>();
+		peersReputations = new ArrayList<PeerReputation>();
 		interactions = new ArrayList<Interaction>();
 	}
 	
@@ -130,7 +133,7 @@ public class Peer implements Comparable{
 	 * 
 	 * @return treeMap with peers reputations
 	 */
-	public TreeMap<Integer, Double> getPeersReputations() {
+	public ArrayList<PeerReputation> getPeersReputations() {
 		return peersReputations;
 	}
 
@@ -138,7 +141,7 @@ public class Peer implements Comparable{
 	 * 
 	 * @param peersReputations treeMap with peers reputations
 	 */
-	public void setPeersReputations(TreeMap<Integer, Double> peersReputations) {
+	public void setPeersReputations(ArrayList<PeerReputation> peersReputations) {
 		this.peersReputations = peersReputations;
 	}
 	
@@ -151,45 +154,43 @@ public class Peer implements Comparable{
 	 * @return the peer id with the nth best reputation
 	 */
 	public int getThePeerIdWithNthBestReputation(int nth){
-		Entry <Integer, Double> last = this.peersReputations.lastEntry();
-		if(nth > 1 && last != null){			
-			
-//			for(int i = 1; i < nth; i++)				
-//				last = this.peersReputations.floorEntry(last.getKey());						
+		if(nth<=0)
+			return -1;
+		
+		Collections.sort(this.peersReputations);		
+		for(PeerReputation p : this.peersReputations){
+			if(nth==1)
+				return p.getId();
+			nth--;
 		}
-		return last!=null?last.getKey():-1;
-//		NavigableSet<Integer> peersInDescendingOrder = this.peersReputations.descendingKeySet();
-//		if(peersInDescendingOrder != null){
-//			for(int p : peersInDescendingOrder){
-//				if(nth==1)
-//					return p;
-//				nth--;
-//			}
-//		}
-//		return -1;
+		
+		return -1;
 	}
+	
+	
 
 
 
-	@Override
-	public int compareTo(Object o) {
-		final int BEFORE = -1;
-	    final int EQUAL = 0;
-	    final int AFTER = 1;
-		
-		if(!(o instanceof Peer))
-			return EQUAL;
-		
-		Peer otherPeer = (Peer) o;
-		
-		double myReputation = otherPeer.getPeersReputations().get(this.peerId)!=null?otherPeer.getPeersReputations().get(this.peerId):0;
-		double hisReputation = this.getPeersReputations().get(otherPeer.getPeerId())!=null?this.getPeersReputations().get(otherPeer.getPeerId()):0;
-		
-		if (myReputation < hisReputation) 
-	    	return BEFORE;
-		else	// (myReputation >= hisReputation) 
-	    	return AFTER;
-	}		
+
+//	@Override
+//	public int compareTo(Object o) {
+//		final int BEFORE = -1;
+//	    final int EQUAL = 0;
+//	    final int AFTER = 1;
+//		
+//		if(!(o instanceof Peer))
+//			return EQUAL;
+//		
+//		Peer otherPeer = (Peer) o;
+//		
+//		double myReputation = otherPeer.getPeersReputations().get(this.peerId)!=null?otherPeer.getPeersReputations().get(this.peerId):0;
+//		double hisReputation = this.getPeersReputations().get(otherPeer.getPeerId())!=null?this.getPeersReputations().get(otherPeer.getPeerId()):0;
+//		
+//		if (myReputation < hisReputation) 
+//	    	return BEFORE;
+//		else	// (myReputation >= hisReputation) 
+//	    	return AFTER;
+//	}		
 	
 }
 
