@@ -157,15 +157,21 @@ public class Peer{
 		if(nth<=0)
 			return -1;
 		
-		Collections.sort(this.peersReputations);		
-		for(PeerReputation p : this.peersReputations){
+		Collections.sort(this.peersReputations);	
+		for(int i = this.peersReputations.size()-1; i>=0 ;i--){
 			if(nth==1)
-				return p.getId();
+				return this.peersReputations.get(i).getId();
 			nth--;
 		}
 		
+//		for(PeerReputation p : this.peersReputations){
+//			
+//		}
+		
 		return -1;
 	}
+	
+	
 	
 	
 

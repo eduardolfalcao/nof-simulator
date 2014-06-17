@@ -7,6 +7,13 @@ public class PeerReputation implements Comparable<Object>{
 	
 	
 	
+	
+	public PeerReputation(int id, double reputation) {
+		super();
+		this.id = id;
+		this.reputation = reputation;
+	}
+
 	public int getId() {
 		return id;
 	}
