@@ -1,9 +1,8 @@
 package nof;
 
 public class NetworkOfFavors {
-	
-	
-	
+
+
 	/**
 	 * 
 	 * @param consumedValue value that peer A consumed from peer B	

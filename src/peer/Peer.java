@@ -11,20 +11,16 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import peerid.PeerReputation;
+import peer.peerid.PeerReputation;
+import utils.SortedList;
 import nof.Interaction;
 
 public class Peer{
 	
 	
 	protected double demand;
-	
-
-	
-
 	protected boolean consuming; 
-//	protected TreeMap<Integer, Double> peersReputations;  
-	protected ArrayList<PeerReputation> peersReputations;
+	protected SortedList<PeerReputation> peersReputations;
 	protected ArrayList <Interaction> interactions;
 	protected int peerId;
 	
@@ -39,7 +35,7 @@ public class Peer{
 		this.demand = demand;
 		this.peerId = peerId;
 		this.consuming = false;
-		peersReputations = new ArrayList<PeerReputation>();
+		peersReputations = new SortedList<PeerReputation>();
 		interactions = new ArrayList<Interaction>();
 	}
 	
@@ -54,9 +50,31 @@ public class Peer{
 		this.demand = demand;
 		this.peerId = peerId;
 		this.consuming = consuming;
-		peersReputations = new ArrayList<PeerReputation>();
+		peersReputations = new SortedList<PeerReputation>();
 		interactions = new ArrayList<Interaction>();
 	}
+	
+	
+	/**
+	 * The peer with highest reputation might already been used. Therefore, we will seek
+	 * the higher value before this. Where attempt = 2, means the second higher value in
+	 * the SortedList, and so on.
+	 * 
+	 * @param nth the nth best reputation
+	 * @return the peer id with the nth best reputation
+	 */
+	public int getThePeerIdWithNthBestReputation(int nth){
+		if(nth<=0)
+			return -1;
+			
+		for(int i = this.peersReputations.size()-1; i>=0 ;i--){
+			if(nth==1)
+				return this.peersReputations.get(i).getId();
+			nth--;
+		}
+		
+		return -1;
+	}	
 	
 	/**
 	 * peerId is unique
@@ -66,7 +84,7 @@ public class Peer{
     }
 	
 	/**
-	 * The objects are equal f they have the same peerId.
+	 * The objects are equal if they have the same peerId.
 	 */
 	public boolean equals(Object obj) {
 	       if (obj == null || !(obj instanceof Peer))
@@ -131,81 +149,20 @@ public class Peer{
 	
 	/**
 	 * 
-	 * @return treeMap with peers reputations
+	 * @return SortedList with peers reputations
 	 */
-	public ArrayList<PeerReputation> getPeersReputations() {
+	public SortedList<PeerReputation> getPeersReputations() {
 		return peersReputations;
 	}
 
 	/**
 	 * 
-	 * @param peersReputations treeMap with peers reputations
+	 * @param peersReputations SortedList with peers reputations
 	 */
-	public void setPeersReputations(ArrayList<PeerReputation> peersReputations) {
+	public void setPeersReputations(SortedList<PeerReputation> peersReputations) {
 		this.peersReputations = peersReputations;
 	}
 	
-	/**
-	 * The peer with highest reputation might already been used. Therefore, we will seek
-	 * the higher value before this. Where attempt = 2, means the second higher value in
-	 * the treeMap, and so on.
-	 * 
-	 * @param nth the nth best reputation
-	 * @return the peer id with the nth best reputation
-	 */
-	public int getThePeerIdWithNthBestReputation(int nth){
-		if(nth<=0)
-			return -1;
-		
-		Collections.sort(this.peersReputations);	
-		for(int i = this.peersReputations.size()-1; i>=0 ;i--){
-			if(nth==1)
-				return this.peersReputations.get(i).getId();
-			nth--;
-		}
-		
-//		for(PeerReputation p : this.peersReputations){
-//			
-//		}
-		
-		return -1;
-	}
 	
-	
-	
-	
-
-
-
-
-//	@Override
-//	public int compareTo(Object o) {
-//		final int BEFORE = -1;
-//	    final int EQUAL = 0;
-//	    final int AFTER = 1;
-//		
-//		if(!(o instanceof Peer))
-//			return EQUAL;
-//		
-//		Peer otherPeer = (Peer) o;
-//		
-//		double myReputation = otherPeer.getPeersReputations().get(this.peerId)!=null?otherPeer.getPeersReputations().get(this.peerId):0;
-//		double hisReputation = this.getPeersReputations().get(otherPeer.getPeerId())!=null?this.getPeersReputations().get(otherPeer.getPeerId()):0;
-//		
-//		if (myReputation < hisReputation) 
-//	    	return BEFORE;
-//		else	// (myReputation >= hisReputation) 
-//	    	return AFTER;
-//	}		
 	
 }
-
-
-
-
-//Entry <Peer, Double> last = this.peersReputations.lastEntry();
-//if(nth > 1 && last != null){			
-//	for(int i = 1; i < nth; i++)				
-//		last = this.peersReputations.floorEntry(last.getKey());						
-//}
-//return last!=null?last.getKey():null;

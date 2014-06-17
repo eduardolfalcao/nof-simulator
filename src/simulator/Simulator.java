@@ -10,6 +10,7 @@ import nof.NetworkOfFavors;
 import peer.Collaborator;
 import peer.FreeRider;
 import peer.Peer;
+import peer.peerid.PeerReputation;
 
 public class Simulator {
 	
@@ -371,9 +372,9 @@ public class Simulator {
 				 * Update the treeMap donator reputation, and update also the consumer reputation
 				 * (if he is not a free rider). 
 				 */
-				donator.getPeersReputations().put(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), true));
+				donator.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), true)));
 				if(!(consumer instanceof FreeRider))
-					consumer.getPeersReputations().put(donator.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), true));
+					consumer.getPeersReputations().add(new PeerReputation(donator.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), true)));
 			}
 			/**
 			 * The donator is PeerB...
@@ -390,9 +391,9 @@ public class Simulator {
 				 * Update the treeMap donator reputation, and update also the consumer reputation
 				 * (if he is not a free rider). 
 				 */
-				donator.getPeersReputations().put(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), true));
+				donator.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), true)));
 				if(!(consumer instanceof FreeRider))
-					consumer.getPeersReputations().put(donator.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), true));
+					consumer.getPeersReputations().add(new PeerReputation(donator.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), true)));
 			}
 			else{
 				System.out.println("####################################################################################");
@@ -419,9 +420,9 @@ public class Simulator {
 			 * Update the treeMap donator reputation, and update also the consumer reputation
 			 * (if he is not a free rider). 
 			 */
-			donator.getPeersReputations().put(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), true));
+			donator.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), true)));
 			if(!(consumer instanceof FreeRider))
-				consumer.getPeersReputations().put(donator.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), true));		
+				consumer.getPeersReputations().add(new PeerReputation(donator.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), true)));		
 		}
 		
 		/**

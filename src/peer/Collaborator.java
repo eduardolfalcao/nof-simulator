@@ -1,9 +1,5 @@
 package peer;
 
-import java.util.List;
-import java.util.TreeMap;
-
-import nof.Interaction;
 
 public class Collaborator extends Peer{
 	

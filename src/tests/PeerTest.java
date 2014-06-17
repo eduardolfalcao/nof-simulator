@@ -14,7 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import peer.Peer;
-import peerid.PeerReputation;
+import peer.peerid.PeerReputation;
 
 /**
  * @author eduardolfalcao
@@ -22,31 +22,12 @@ import peerid.PeerReputation;
  */
 public class PeerTest {
 
-//	private Peer[] peers;
-//	private final int numPeers = 50;
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-//		for(int i = 0; i < numPeers; i++){
-//			peers[i] = new Peer(demand, i+1);
-//		}
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-	}
-
 	/**
 	 * Test method for {@link peer.Peer#equals(java.lang.Object)}.
 	 */
 	@Test
-	public void testEqualsObject() {		
+	public void testEqualsObject() {
+		
 		Peer p1 = new Peer(100, 1);
 		Peer p2 = new Peer(100, 2);
 		Peer p3 = new Peer(100, 1);

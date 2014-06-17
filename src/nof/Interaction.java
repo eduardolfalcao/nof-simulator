@@ -21,14 +21,12 @@ public class Interaction {
 	 */
 	private double donatedValue;
 	
-	
 
 	/**
 	 * The whole value that peer A received from peer B, and, therefore,
 	 * also the whole value that peer B donated from peer A.
 	 */
 	private double consumedValue;
-	
 	
 	
 	/**
