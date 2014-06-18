@@ -61,7 +61,7 @@ public class Simulator {
 	 * @param changingValue value added or subtracted to/from capacitySupplied
 	 */
 	public Simulator(int numPeers, int numSteps, int consumingStateProbability, double percentageCollaborators,
-			int peersDemand, double capacitySupplied, int returnLevelVerificationTime, double changingValue) {
+			double peersDemand, double capacitySupplied, int returnLevelVerificationTime, double changingValue) {
 		super();
 		this.numPeers = numPeers;
 		this.numSteps = numSteps;
@@ -456,6 +456,60 @@ public class Simulator {
     private int anyPeer(List <Integer> peersList){    	
         return randomGenerator.nextInt(peersList.size());
     }
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * Breaking visibility for testing methods
+	 */
+	public Collaborator testChoosesCollaboratorToDonate(){
+		return this.choosesCollaboratorToDonate();
+	}
+	
+	public int testAnyPeer(List <Integer> peersList){    	
+        return this.anyPeer(peersList);
+    }
+	
+	public Peer testChoosesConsumer(Collaborator c){
+		return this.choosesConsumer(c);
+	}
+	
+	public void testPerformDonation(Collaborator donator, Peer consumer){
+		this.performDonation(donator, consumer);
+	}
+	
+	public List<Integer> getConsumersCollabList() {
+		return consumersCollabList;
+	}
+
+	public void setConsumersCollabList(List<Integer> consumersCollabList) {
+		this.consumersCollabList = consumersCollabList;
+	}
+
+	public List<Integer> getDonatorsList() {
+		return donatorsList;
+	}
+
+	public void setDonatorsList(List<Integer> donatorsList) {
+		this.donatorsList = donatorsList;
+	}
+
+	public List<Integer> getFreeRidersList() {
+		return freeRidersList;
+	}
+
+	public void setFreeRidersList(List<Integer> freeRidersList) {
+		this.freeRidersList = freeRidersList;
+	}
 }
 
 
