@@ -156,7 +156,7 @@ public class Simulator {
 			 * Remove the donator from donatorsList, and add to donatedPeersList, in order
 			 * to know who has already donated.
 			 */
-			this.donatorsList.remove(collab.getPeerId());
+			this.donatorsList.remove((Integer)collab.getPeerId());
 			this.donatedPeersList.add(collab.getPeerId());
 		}
 		
@@ -258,21 +258,23 @@ public class Simulator {
 		 */
 		if(!c.getInteractions().isEmpty()){									
 			int nth = 1;								//nth peer with highest reputation
-			Peer p = new Peer(0, -1, true);				//id = -1, so that we won't find it on consumedPeersList in first iteration
-														//consuming must be true, so that we can enter in while loop
+			Peer p = new Peer(0, -1, false);			//id = -1, so that we won't find it on consumedPeersList in first iteration
+														//consuming must be false, so that we can enter in while loop
+			
 			
 			/**
-			 * The peer can't have already consumed (can't be on consumedPeersList) and must be in consuming state.
+			 * While the peer has already consumed or is not in consuming state, keeps searching further.
 			 */
-			while(!(!this.consumedPeersList.contains(p.getPeerId()) && p.isConsuming())){
+			while(this.consumedPeersList.contains(p.getPeerId()) || !p.isConsuming()){
 				try{
-					p = peers[c.getThePeerIdWithNthBestReputation(nth)];	//update the peer being evaluated
+					int index = c.getThePeerIdWithNthBestReputation(nth);
+					if(index==-1)											//we couldn't find a peer that hasn't interacted yet, and wants to consume
+						break;
+					p = peers[index];										//update the peer being evaluated
 				}catch(ArrayIndexOutOfBoundsException ex){
 					ex.printStackTrace();
 					return null;
 				}
-				if(p.getPeerId() == -1)								//we couldn't find a peer that hasn't interacted yet, and wants to consume
-					break;
 				nth++;
 			}
 			
@@ -294,15 +296,11 @@ public class Simulator {
 					return null;
 				}
 			}
-			else{
-				System.out.println("####################################################################################");
-				System.out.println("#################################  ERROR  ##########################################");
-				System.out.println("# For some reason, the consumer peer id retrieved was < 0 (ArrayOutOfBounds...). "
-								 + "# You must check what is happening!");
-				System.out.println("####################################################################################");
-				System.exit(0);
-				return null;
-			}
+			
+			/**
+			 * If we got here, then we had candidates in the tree Reputation but they were not in consuming state, at this turn, 
+			 * or they might already have consumed in this step.
+			 */
 		}
 		
 		/**
@@ -310,25 +308,22 @@ public class Simulator {
 		 * 		1: we didn't find a candidate who wants to consume, in the InteractionsHistory
 		 * 		2: collaborator c has never interacted before
 		 * Solution: choose randomly.
-		 */	
-		else{			
-			List <Integer> allConsumers = new ArrayList<Integer>();
-			allConsumers.addAll(consumersCollabList);
-			allConsumers.addAll(freeRidersList);
-			int index = anyPeer(allConsumers);
-			if(peers[allConsumers.get(index)] instanceof Collaborator)			
-				return (Collaborator) peers[allConsumers.get(index)];
-			else if(peers[allConsumers.get(index)] instanceof FreeRider)	//lets assure
-				return (FreeRider) peers[allConsumers.get(index)];
-			else{
-				System.out.println("####################################################################################");
-				System.out.println("#################################  ERROR  ##########################################");
-				System.out.println("# For some reason, the consumer peer id retrieved was < 0 (ArrayOutOfBounds...). "
-								 + "# You must check what is happening!");
-				System.out.println("####################################################################################");
-				System.exit(0);
-				return null;
-			}		
+		 */			
+		List <Integer> allConsumers = new ArrayList<Integer>();
+		allConsumers.addAll(consumersCollabList);
+		allConsumers.addAll(freeRidersList);
+		int index = anyPeer(allConsumers);
+		if(peers[allConsumers.get(index)] instanceof Collaborator)			
+			return (Collaborator) peers[allConsumers.get(index)];
+		else if(peers[allConsumers.get(index)] instanceof FreeRider)	//lets assure
+			return (FreeRider) peers[allConsumers.get(index)];
+		else{
+			System.out.println("####################################################################################");
+			System.out.println("#################################  ERROR  ##########################################");
+			System.out.println("# For some reason, the consumer peer id retrieved was < 0 (ArrayOutOfBounds...). "
+							 + "# You must check what is happening!");
+			System.out.println("####################################################################################");
+			return null;
 		}
 	}
 
@@ -432,9 +427,9 @@ public class Simulator {
 		 */
 		if(consumer.getDemand()==0){
 			if(consumer instanceof FreeRider)
-				this.freeRidersList.remove(consumer.getPeerId());
+				this.freeRidersList.remove((Integer)consumer.getPeerId());
 			else
-				this.consumersCollabList.remove(consumer.getPeerId());
+				this.consumersCollabList.remove((Integer)consumer.getPeerId());
 			this.consumedPeersList.add(consumer.getPeerId());
 		}
 		else if(consumer.getDemand()<0){
@@ -457,20 +452,116 @@ public class Simulator {
         return randomGenerator.nextInt(peersList.size());
     }
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+    
+    
+    
 	
 	/**
 	 * Breaking visibility for testing methods
 	 */
+    
+    //no nextStep();
+    public void testPerformCurrentStepDonations(){
+    	this.currentStep++;
+		
+		Collaborator collab = null;
+		
+		/**
+		 * While there is any collaborator willing to donate, try to choose one.
+		 */
+		while(!this.donatorsList.isEmpty()){
+			
+			/**
+			 * If all peers who wanted to consume already consumed the quantity of resources
+			 * he wanted, then there is not another possible match.
+			 */
+			if(!this.consumersCollabList.isEmpty())
+				collab = this.choosesCollaboratorToDonate();	//randomly chooses who will donate
+			else
+				break;											//there is not any more consumer
+			
+			/**
+			 * Keeps choosing consumer and donating until supply all his capacity.
+			 */
+			while(collab.getCapacitySupplied() > 0){
+				System.out.println("(ANTES) Collab id: "+collab.getPeerId()+". Capacity: "+collab.getCapacitySupplied());
+				Peer p = choosesConsumer(collab);
+				performDonation(collab, p);
+				System.out.println("(DEPOIS) Collab id: "+collab.getPeerId()+". Capacity: "+collab.getCapacitySupplied());
+			}
+			
+			/**
+			 * Remove the donator from donatorsList, and add to donatedPeersList, in order
+			 * to know who has already donated.
+			 */
+			this.donatorsList.remove((Integer)collab.getPeerId());
+			this.donatedPeersList.add(collab.getPeerId());
+		}
+		
+		//nextStep();
+    }
+    
+    //no performCurrentStepDonations()
+    public void testNextStep(){
+		if(this.currentStep>=this.numSteps){
+			//acabou... salva os dados em algum lugar
+		}
+		else{			
+			
+			/**
+			 * Join all collaborators, consumers, and free riders in their lists.
+			 */
+			donatorsList.addAll(donatedPeersList);
+			donatedPeersList.clear();
+			
+			for(int peerId : consumedPeersList){
+				if(peers[peerId] instanceof FreeRider)
+					freeRidersList.add(peerId);					
+				else
+					consumersCollabList.add(peerId);					
+			}
+			consumedPeersList.clear();
+
+			
+			//just to check if everything is OK until now
+			if((donatorsList.size() + consumersCollabList.size())==numCollaborators)
+				System.out.println("#Donators("+donatorsList.size()+") + #Consumers("+consumersCollabList.size()+") == #Collaborators("+numCollaborators+") :-)");
+			
+			
+			/**
+			 * Join all collaborators in a list, and clear donatorsList and consumersList,
+			 * to fulfill them again.
+			 */
+			List <Integer> allCollaborators = new ArrayList<Integer>();
+			allCollaborators.addAll(donatorsList);
+			allCollaborators.addAll(consumersCollabList);			
+			donatorsList.clear();
+			consumersCollabList.clear();
+			
+			for(int collabId : allCollaborators){
+				//based in consumingStateProbability, we decide if the collaborator will consume or not in the next step
+				peers[collabId].setConsuming((this.randomGenerator.nextInt(100)+1 <= this.consumingStateProbability)?true:false);
+				if(peers[collabId].isConsuming()){
+					peers[collabId].setDemand(this.peersDemand);
+					((Collaborator)peers[collabId]).setCapacitySupplied(0);
+					consumersCollabList.add(collabId);
+				}
+				else{
+					peers[collabId].setDemand(0);
+					((Collaborator)peers[collabId]).setCapacitySupplied(this.capacitySupplied);
+					donatorsList.add(collabId);	
+				}
+			}
+			
+			for(Integer fId : freeRidersList){
+				peers[fId].setConsuming(true);				//just to assure
+				peers[fId].setDemand(this.peersDemand);
+			}
+				
+			//performCurrentStepDonations();
+		}			
+	}
+    
 	public Collaborator testChoosesCollaboratorToDonate(){
 		return this.choosesCollaboratorToDonate();
 	}
@@ -509,6 +600,31 @@ public class Simulator {
 
 	public void setFreeRidersList(List<Integer> freeRidersList) {
 		this.freeRidersList = freeRidersList;
+	}	
+
+
+	public int getCurrentStep() {
+		return currentStep;
+	}
+
+	public void setCurrentStep(int currentStep) {
+		this.currentStep = currentStep;
+	}
+
+	public List<Integer> getDonatedPeersList() {
+		return donatedPeersList;
+	}
+
+	public void setDonatedPeersList(List<Integer> donatedPeersList) {
+		this.donatedPeersList = donatedPeersList;
+	}
+
+	public List<Integer> getConsumedPeersList() {
+		return consumedPeersList;
+	}
+
+	public void setConsumedPeersList(List<Integer> consumedPeersList) {
+		this.consumedPeersList = consumedPeersList;
 	}
 }
 

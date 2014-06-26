@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import peer.peerid.PeerReputation;
+import peer.peerid.PeerReputationComparator;
 import utils.SortedList;
 import nof.Interaction;
 
@@ -35,7 +36,7 @@ public class Peer{
 		this.demand = demand;
 		this.peerId = peerId;
 		this.consuming = false;
-		peersReputations = new SortedList<PeerReputation>();
+		peersReputations = new SortedList<PeerReputation>(new PeerReputationComparator());
 		interactions = new ArrayList<Interaction>();
 	}
 	
@@ -50,7 +51,7 @@ public class Peer{
 		this.demand = demand;
 		this.peerId = peerId;
 		this.consuming = consuming;
-		peersReputations = new SortedList<PeerReputation>();
+		peersReputations = new SortedList<PeerReputation>(new PeerReputationComparator());
 		interactions = new ArrayList<Interaction>();
 	}
 	
