@@ -161,7 +161,7 @@ public class SimulatorTest {
 		
 		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s1.setupSimulation();
-		s1.testPerformCurrentStepDonations();		
+		s1.testPerformCurrentStepDonationsNoNextStep();		
 		assertTrue(s1.getCurrentStep()==1);
 		assertTrue(s1.getDonatorsList().isEmpty() || s1.getConsumersCollabList().isEmpty());				
 		assertTrue((s1.getDonatedPeersList().size()+s1.getConsumedPeersList().size()+s1.getDonatorsList().size()+s1.getFreeRidersList().size()+s1.getConsumersCollabList().size())==numPeers);
@@ -180,7 +180,7 @@ public class SimulatorTest {
 		percentageCollaborators = 0.75;	//75%
 		Simulator s2 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s2.setupSimulation();
-		s2.testPerformCurrentStepDonations();		
+		s2.testPerformCurrentStepDonationsNoNextStep();		
 		assertTrue(s2.getCurrentStep()==1);
 		assertTrue(s2.getDonatorsList().isEmpty() || s2.getConsumersCollabList().isEmpty());	
 		assertTrue((s2.getDonatedPeersList().size()+s2.getConsumedPeersList().size()+s2.getDonatorsList().size()+s2.getFreeRidersList().size()+s2.getConsumersCollabList().size())==numPeers);		
@@ -193,7 +193,7 @@ public class SimulatorTest {
 		consumingStateProbability = 50;
 		Simulator s3 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s3.setupSimulation();
-		s3.testPerformCurrentStepDonations();		
+		s3.testPerformCurrentStepDonationsNoNextStep();		
 		assertTrue(s3.getCurrentStep()==1);
 		assertTrue(s3.getDonatorsList().isEmpty() || s3.getConsumersCollabList().isEmpty());	
 		assertTrue((s3.getDonatedPeersList().size()+s3.getConsumedPeersList().size()+s3.getDonatorsList().size()+s3.getFreeRidersList().size()+s3.getConsumersCollabList().size())==numPeers);
@@ -208,7 +208,7 @@ public class SimulatorTest {
 		percentageCollaborators = 0.25;	//25%
 		Simulator s4 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s4.setupSimulation();
-		s4.testPerformCurrentStepDonations();		
+		s4.testPerformCurrentStepDonationsNoNextStep();		
 		assertTrue(s4.getCurrentStep()==1);
 		assertTrue(s4.getDonatorsList().isEmpty() || s4.getConsumersCollabList().isEmpty());	
 		assertTrue((s4.getDonatedPeersList().size()+s4.getConsumedPeersList().size()+s4.getDonatorsList().size()+s4.getFreeRidersList().size()+s4.getConsumersCollabList().size())==numPeers);
@@ -216,10 +216,10 @@ public class SimulatorTest {
 		
 	
 	/**
-	 * Test method for {@link simulator.Simulator#testNextStep()}.
+	 * Test method for {@link simulator.Simulator#testPerformCurrentStepDonationsNoNextStep()}.
 	 */
 	@Test
-	public void testNextStep() {
+	public void testPerformCurrentStepDonationsNoNextStep() {
 		
 		int numPeers = 1000;
 		int numSteps = 5000;
@@ -237,8 +237,8 @@ public class SimulatorTest {
 		
 		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s1.setupSimulation();
-		s1.testPerformCurrentStepDonations();		
-		s1.testNextStep();
+		s1.testPerformCurrentStepDonationsNoNextStep();		
+		s1.testNextStepNoPerformCurrentStepDonations();
 		assertTrue((s1.getDonatedPeersList().size()+s1.getConsumedPeersList().size()+s1.getDonatorsList().size()+s1.getFreeRidersList().size()+s1.getConsumersCollabList().size())==numPeers);
 		assertTrue(s1.getDonatedPeersList().isEmpty() && s1.getConsumedPeersList().isEmpty());
 		for(Integer i : s1.getFreeRidersList()){
@@ -258,8 +258,33 @@ public class SimulatorTest {
 			assertTrue(Simulator.peers[i].getDemand()==0);
 			assertTrue(((Collaborator)Simulator.peers[i]).getCapacitySupplied()>0);
 		}
-		s1.testPerformCurrentStepDonations();		
+		s1.testPerformCurrentStepDonationsNoNextStep();		
 		assertTrue(s1.getCurrentStep()==2);
+		assertTrue(s1.getDonatorsList().isEmpty() || s1.getConsumersCollabList().isEmpty());				
+		assertTrue((s1.getDonatedPeersList().size()+s1.getConsumedPeersList().size()+s1.getDonatorsList().size()+s1.getFreeRidersList().size()+s1.getConsumersCollabList().size())==numPeers);
+		
+		s1.testNextStepNoPerformCurrentStepDonations();
+		assertTrue((s1.getDonatedPeersList().size()+s1.getConsumedPeersList().size()+s1.getDonatorsList().size()+s1.getFreeRidersList().size()+s1.getConsumersCollabList().size())==numPeers);
+		assertTrue(s1.getDonatedPeersList().isEmpty() && s1.getConsumedPeersList().isEmpty());
+		for(Integer i : s1.getFreeRidersList()){
+			assertTrue(Simulator.peers[i] instanceof FreeRider);
+			assertTrue(Simulator.peers[i].isConsuming());
+			assertTrue(Simulator.peers[i].getDemand()>0);
+		}
+		for(Integer i : s1.getConsumersCollabList()){
+			assertTrue(Simulator.peers[i] instanceof Collaborator);
+			assertTrue(Simulator.peers[i].isConsuming());
+			assertTrue(Simulator.peers[i].getDemand()>0);
+			assertTrue(((Collaborator)Simulator.peers[i]).getCapacitySupplied()==0);
+		}
+		for(Integer i : s1.getDonatorsList()){
+			assertTrue(Simulator.peers[i] instanceof Collaborator);
+			assertFalse(Simulator.peers[i].isConsuming());
+			assertTrue(Simulator.peers[i].getDemand()==0);
+			assertTrue(((Collaborator)Simulator.peers[i]).getCapacitySupplied()>0);
+		}
+		s1.testPerformCurrentStepDonationsNoNextStep();		
+		assertTrue(s1.getCurrentStep()==3);
 		assertTrue(s1.getDonatorsList().isEmpty() || s1.getConsumersCollabList().isEmpty());				
 		assertTrue((s1.getDonatedPeersList().size()+s1.getConsumedPeersList().size()+s1.getDonatorsList().size()+s1.getFreeRidersList().size()+s1.getConsumersCollabList().size())==numPeers);
 	

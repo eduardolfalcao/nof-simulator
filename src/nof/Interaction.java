@@ -13,7 +13,7 @@ import peer.Peer;
 public class Interaction {
 	
 	private Peer peerA, peerB;	
-	private List <Double> donatedHistory, consumedHistory;
+//	private List <Double> donatedHistory, consumedHistory;
 	
 	/**
 	 * The whole value that peer A donated to peer B, and, therefore,
@@ -38,8 +38,8 @@ public class Interaction {
 		super();
 		this.peerA = peerA;
 		this.peerB = peerB;
-		this.donatedHistory = new ArrayList<Double>();
-		this.consumedHistory = new ArrayList<Double>();
+//		this.donatedHistory = new ArrayList<Double>();
+//		this.consumedHistory = new ArrayList<Double>();
 		this.donatedValue = 0;
 		this.consumedValue = 0;
 	}	
@@ -65,7 +65,7 @@ public class Interaction {
 	 * @param value that peer A donated to peer B
 	 */
 	public void peerADonatesValue(double value){
-		this.donatedHistory.add(value);
+//		this.donatedHistory.add(value);
 		this.donatedValue += value;
 	}
 	
@@ -74,7 +74,7 @@ public class Interaction {
 	 * @param value that peer B donated to peer A
 	 */
 	public void peerBDonatesValue(double value){
-		this.consumedHistory.add(value);
+//		this.consumedHistory.add(value);
 		this.consumedValue += value;
 	}
 	
@@ -110,6 +110,14 @@ public class Interaction {
 		return this.donatedValue;
 	}
 	
+//	public List<Double> getDonatedHistory() {
+//		return donatedHistory;
+//	}
+//
+//	public List<Double> getConsumedHistory() {
+//		return consumedHistory;
+//	}
+
 	/**
 	 * 
 	 * @return peerA

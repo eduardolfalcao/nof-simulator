@@ -28,9 +28,9 @@ public class PeerTest {
 	@Test
 	public void testEqualsObject() {
 		
-		Peer p1 = new Peer(100, 1);
-		Peer p2 = new Peer(100, 2);
-		Peer p3 = new Peer(100, 1);
+		Peer p1 = new Peer(100, 1, 0);
+		Peer p2 = new Peer(100, 2, 0);
+		Peer p3 = new Peer(100, 1, 0);
 		Peer p4 = null;
 		
 		assertFalse(p1.equals(p2));		//when they're different
@@ -49,7 +49,7 @@ public class PeerTest {
 		 * Get peer with highest reputation, when the treeMap reputation is empty.
 		 */
 		
-		Peer p1 = new Peer(100,1);
+		Peer p1 = new Peer(100,1, 0);
 		assertTrue(p1.getThePeerIdWithNthBestReputation(1)==-1?true:false);
 		assertTrue(p1.getThePeerIdWithNthBestReputation(2)==-1?true:false);
 		assertTrue(p1.getThePeerIdWithNthBestReputation(10)==-1?true:false);
@@ -62,7 +62,7 @@ public class PeerTest {
 		 * Get peer with highest reputation, when the treeMap reputation has 1 peer.
 		 */
 		
-		Peer p2 = new Peer(100, 2);
+		Peer p2 = new Peer(100, 2, 0);
 		Interaction interactionP1P2 = new Interaction(p1, p2);
 		interactionP1P2.peerADonatesValue(50);
 		p1.getPeersReputations().add(new PeerReputation(p2.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P2.getConsumedValueByPeerA(), interactionP1P2.getDonatedValueByPeerA(), true)));
@@ -84,7 +84,7 @@ public class PeerTest {
 		 * Get peer with highest reputation, when the treeMap reputation has 2 peers.
 		 */
 		
-		Peer p3 = new Peer(100, 3);
+		Peer p3 = new Peer(100, 3, 0);
 		Interaction interactionP1P3 = new Interaction(p1, p3);
 		interactionP1P3.peerBDonatesValue(25);
 		p1.getPeersReputations().add(new PeerReputation(p3.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P3.getConsumedValueByPeerA(), interactionP1P3.getDonatedValueByPeerA(), true)));
@@ -112,19 +112,19 @@ public class PeerTest {
 		 * Get peer with highest reputation, when the treeMap reputation has 5 peers.
 		 */
 		
-		Peer p4 = new Peer(100, 4);
+		Peer p4 = new Peer(100, 4, 0);
 		Interaction interactionP1P4 = new Interaction(p1, p4);
 		interactionP1P4.peerBDonatesValue(10);
 		p1.getPeersReputations().add(new PeerReputation(p4.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P4.getConsumedValueByPeerA(), interactionP1P4.getDonatedValueByPeerA(), true)));
 		p4.getPeersReputations().add(new PeerReputation(p1.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P4.getConsumedValueByPeerB(), interactionP1P4.getDonatedValueByPeerB(), true)));
 		
-		Peer p5 = new Peer(100, 5);
+		Peer p5 = new Peer(100, 5, 0);
 		Interaction interactionP1P5 = new Interaction(p1, p5);
 		interactionP1P5.peerBDonatesValue(50);
 		p1.getPeersReputations().add(new PeerReputation(p5.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P5.getConsumedValueByPeerA(), interactionP1P5.getDonatedValueByPeerA(), true)));
 		p5.getPeersReputations().add(new PeerReputation(p1.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P5.getConsumedValueByPeerB(), interactionP1P5.getDonatedValueByPeerB(), true)));
 		
-		Peer p6 = new Peer(100, 6);
+		Peer p6 = new Peer(100, 6, 0);
 		Interaction interactionP1P6 = new Interaction(p1, p6);
 		interactionP1P6.peerADonatesValue(75);
 		p1.getPeersReputations().add(new PeerReputation(p6.getPeerId(), NetworkOfFavors.calculateLocalReputation(interactionP1P6.getConsumedValueByPeerA(), interactionP1P6.getDonatedValueByPeerA(), true)));

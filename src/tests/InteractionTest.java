@@ -22,9 +22,9 @@ public class InteractionTest {
 		 * Compares to Object and null.
 		 */
 		
-		Interaction interactionAB = new Interaction(new Peer(0, 1), new Peer(0, 2));
-		Interaction interactionBA = new Interaction(new Peer(0, 2), new Peer(0, 1));
-		Interaction interactionAC = new Interaction(new Peer(0, 1), new Peer(0, 3));
+		Interaction interactionAB = new Interaction(new Peer(0, 1, 0), new Peer(0, 2, 0));
+		Interaction interactionBA = new Interaction(new Peer(0, 2, 0), new Peer(0, 1, 0));
+		Interaction interactionAC = new Interaction(new Peer(0, 1, 0), new Peer(0, 3, 0));
 		
 		assertTrue(interactionAB.equals(interactionBA));
 		assertTrue(interactionBA.equals(interactionAB));
@@ -44,8 +44,8 @@ public class InteractionTest {
 		 * Compares the donation of Peer A and B (point of view).
 		 */
 		
-		Collaborator donator = new Collaborator(100, 1, false, 0, 0, 0);
-		Collaborator consumer = new Collaborator(100, 2, true, 100, 0, 0);		
+		Collaborator donator = new Collaborator(100, 1, false, 0, 0);
+		Collaborator consumer = new Collaborator(100, 2, true, 100, 0);		
 		Interaction interactionAB = new Interaction(donator, consumer);
 		
 		interactionAB.peerADonatesValue(25);

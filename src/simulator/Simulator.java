@@ -96,11 +96,11 @@ public class Simulator {
 			boolean beginsConsuming = (this.randomGenerator.nextInt(100)+1 <= this.consumingStateProbability)?true:false;
 			Peer p = null;
 			if(beginsConsuming){
-				p = new Collaborator(this.peersDemand, i, beginsConsuming, 0, this.returnLevelVerificationTime, this.changingValue);
+				p = new Collaborator(this.peersDemand, i, beginsConsuming, this.capacitySupplied, this.numSteps);
 				consumersCollabList.add(i);
 			}				
 			else{
-				p = new Collaborator(0, i, beginsConsuming, this.capacitySupplied, this.returnLevelVerificationTime, this.changingValue);
+				p = new Collaborator(0, i, beginsConsuming, this.capacitySupplied, this.numSteps);
 				donatorsList.add(i);
 			}
 			Simulator.peers[i] = p;
@@ -109,7 +109,7 @@ public class Simulator {
 		int numFreeRiders = numPeers - numCollaborators;
 		for(int i = 0; i < numFreeRiders; i++){
 			//freeRiders never donates, they are always in consuming state. At least, they are always trying to consume.
-			Peer p = new FreeRider(this.peersDemand, i+numCollaborators);
+			Peer p = new FreeRider(this.peersDemand, i+numCollaborators, this.numSteps);
 			freeRidersList.add(i+numCollaborators);
 			Simulator.peers[i+numCollaborators] = p;
 		}		
@@ -169,6 +169,8 @@ public class Simulator {
 	 */
 	private void nextStep(){
 		if(this.currentStep>=this.numSteps){
+			
+			
 			//acabou... salva os dados em algum lugar
 		}
 		else{			
@@ -222,11 +224,48 @@ public class Simulator {
 				peers[fId].setConsuming(true);				//just to assure
 				peers[fId].setDemand(this.peersDemand);
 			}
-				
+			
+			if(this.currentStep%this.returnLevelVerificationTime==0)
+				this.updateCapacitySupplied();
+			
 			performCurrentStepDonations();
 		}			
 	}
 
+	private void updateCapacitySupplied(){
+		
+//		for(int donatorId : donatorsList){
+//			double currentConsumed, currentDonated;
+//			double lastConsumed, lastDonated;
+//			for(Interaction interaction : peers[donatorId].getInteractions()){
+//				currentConsumed = interaction.getConsumedValueByPeerA();
+//				currentDonated = interaction.getDonatedValueByPeerA();
+//				
+//				if(interaction.getConsumedHistory().size())
+//				
+//			}
+//					
+//			if(peers[donatorId])
+//		}
+//		
+//		for(int collabId : allCollaborators){
+//			//based in consumingStateProbability, we decide if the collaborator will consume or not in the next step
+//			peers[collabId].setConsuming((this.randomGenerator.nextInt(100)+1 <= this.consumingStateProbability)?true:false);
+//			if(peers[collabId].isConsuming()){
+//				peers[collabId].setDemand(this.peersDemand);
+//				((Collaborator)peers[collabId]).setCapacitySupplied(0);
+//				consumersCollabList.add(collabId);
+//			}
+//			else{
+//				peers[collabId].setDemand(0);
+//				((Collaborator)peers[collabId]).setCapacitySupplied(this.capacitySupplied);
+//				donatorsList.add(collabId);	
+//			}
+//		}
+//		
+//		double newChangingValue;					//value added or subtracted to/from capacitySupplied	[assumed 0.05]
+//		
+	}
 	
 	
 	
@@ -257,7 +296,7 @@ public class Simulator {
 		 */
 		if(!c.getInteractions().isEmpty()){									
 			int nth = 1;								//nth peer with highest reputation
-			Peer p = new Peer(0, -1, false);			//id = -1, so that we won't find it on consumedPeersList in first iteration
+			Peer p = new Peer(0, -1, false, 0);		//id = -1, so that we won't find it on consumedPeersList in first iteration
 														//consuming must be false, so that we can enter in while loop
 			
 			int index = -1;								//index used to retrieve the peer. It stores the peerId
@@ -335,8 +374,7 @@ public class Simulator {
 		
 		Interaction artificialInteraction = new Interaction(donator, consumer);		//just to retrieve the real interaction by comparison
 		
-		double maxValueToBeConsumed = consumer.getDemand();				
-		double maxValueToBeDonated = donator.getCapacitySupplied();
+		double valueToBeDonated = Math.min(consumer.getDemand(), donator.getCapacitySupplied());	//value to be donated is the minimun between consumers demand and donators capacity
 		
 		/**
 		 * The peers have already interacted.
@@ -356,11 +394,8 @@ public class Simulator {
 			 * Performs the donation, and updates the peers reputation.
 			 */
 			if(donator.getPeerId() == interaction.getPeerA().getPeerId()){
-				interaction.peerADonatesValue(Math.min(maxValueToBeConsumed, maxValueToBeDonated));								//update the interaction of peerA
-				consumer.getInteractions().set(consumer.getInteractions().indexOf(artificialInteraction), interaction);			//update the interaction of peerB
-				
-				donator.setCapacitySupplied(donator.getCapacitySupplied()-Math.min(maxValueToBeConsumed, maxValueToBeDonated));	//update the capacity supplied by donator
-				consumer.setDemand(consumer.getDemand()-Math.min(maxValueToBeConsumed, maxValueToBeDonated));					//update the demand of the consumer in the current step
+				interaction.peerADonatesValue(valueToBeDonated);															//update the interaction of peerA
+				consumer.getInteractions().set(consumer.getInteractions().indexOf(artificialInteraction), interaction);		//update the interaction of peerB
 				
 				/**
 				 * Add/Update the treeMap donator reputation, and Add/Update also the consumer reputation
@@ -383,11 +418,8 @@ public class Simulator {
 			 * Performs the donation, and updates the peers reputation.
 			 */
 			else if(donator.getPeerId() == interaction.getPeerB().getPeerId()){
-				interaction.peerBDonatesValue(Math.min(maxValueToBeConsumed, maxValueToBeDonated));								//update the interaction of peerB
-				consumer.getInteractions().set(consumer.getInteractions().indexOf(artificialInteraction), interaction);			//update the interaction of peerA
-				
-				donator.setCapacitySupplied(donator.getCapacitySupplied()-Math.min(maxValueToBeConsumed, maxValueToBeDonated));	//update the capacity supplied by donator
-				consumer.setDemand(consumer.getDemand()-Math.min(maxValueToBeConsumed, maxValueToBeDonated));					//update the demand of the consumer in the current step
+				interaction.peerBDonatesValue(valueToBeDonated);															//update the interaction of peerB
+				consumer.getInteractions().set(consumer.getInteractions().indexOf(artificialInteraction), interaction);		//update the interaction of peerA
 				
 				/**
 				 * Add/Update the treeMap donator reputation, and Add/Update also the consumer reputation
@@ -414,17 +446,18 @@ public class Simulator {
 				System.exit(0);
 				return;
 			}
+			
+			
+			
 		}
 		/**
 		 * The peers never interacted.
 		 */
 		else{
 			Interaction interaction = new Interaction(donator, consumer);
-			interaction.peerADonatesValue(Math.min(maxValueToBeConsumed, maxValueToBeDonated));		
+			interaction.peerADonatesValue(valueToBeDonated);		
 			donator.getInteractions().add(interaction);																		//adds the new interaction to the donator peer	
 			consumer.getInteractions().add(interaction);																	//adds the new interaction to the consumer peer
-			donator.setCapacitySupplied(donator.getCapacitySupplied()-Math.min(maxValueToBeConsumed, maxValueToBeDonated));	//update the capacity supplied by donator
-			consumer.setDemand(consumer.getDemand()-Math.min(maxValueToBeConsumed, maxValueToBeDonated));					//update the demand of the consumer in the current step
 			
 			/**
 			 * Add the new PeerReputation to the treeMap of the donator and consumer reputation (if he is not a free rider). 
@@ -433,6 +466,11 @@ public class Simulator {
 			if(!(consumer instanceof FreeRider))
 				consumer.getPeersReputations().add(new PeerReputation(donator.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), true)));		
 		}
+		
+		donator.setCapacitySupplied(donator.getCapacitySupplied()-valueToBeDonated);//update the capacity supplied by donator
+		donator.getDonatedHistory()[this.currentStep-1] = valueToBeDonated;			//update the donated amount (from donator) in this step
+		consumer.setDemand(consumer.getDemand()-valueToBeDonated);					//update the demand of the consumer in the current step
+		consumer.getConsumedHistory()[this.currentStep-1] = valueToBeDonated;		//update the consumed amount (from consumer) in this step
 		
 		/**
 		 * If the consumer already consumed everything he wanted, then we remove 
@@ -469,13 +507,19 @@ public class Simulator {
     
     
     
+    
+    
+    
+    
+    
+    
 	
-	/**
-	 * Breaking visibility for testing methods
-	 */
+	/*******************************************
+	 * Breaking visibility for testing methods *
+	 *******************************************/
     
     //no nextStep();
-    public void testPerformCurrentStepDonations(){
+    public void testPerformCurrentStepDonationsNoNextStep(){
     	this.currentStep++;
 		
 		Collaborator collab = null;
@@ -516,7 +560,7 @@ public class Simulator {
     }
     
     //no performCurrentStepDonations()
-    public void testNextStep(){
+    public void testNextStepNoPerformCurrentStepDonations(){
 		if(this.currentStep>=this.numSteps){
 			//acabou... salva os dados em algum lugar
 		}

@@ -25,19 +25,23 @@ public class Peer{
 	protected ArrayList <Interaction> interactions;
 	protected int peerId;
 	
+	protected double donatedHistory[];
+	protected double consumedHistory[];	
 	
 	/**
 	 * 
 	 * @param capacity of resources of the peer
 	 * @param demand for resources from another peer
 	 */
-	public Peer(double demand, int peerId) {
+	public Peer(double demand, int peerId, int numSteps) {
 		super();
 		this.demand = demand;
 		this.peerId = peerId;
 		this.consuming = false;
-		peersReputations = new SortedList<PeerReputation>(new PeerReputationComparator());
-		interactions = new ArrayList<Interaction>();
+		this.peersReputations = new SortedList<PeerReputation>(new PeerReputationComparator());
+		this.interactions = new ArrayList<Interaction>();
+		this.donatedHistory = new double[numSteps];
+		this.consumedHistory = new double[numSteps];
 	}
 	
 	/**
@@ -46,13 +50,15 @@ public class Peer{
 	 * @param demand for resources from another peer
 	 * @param consuming the state of the peer
 	 */
-	public Peer(double demand, int peerId, boolean consuming) {
+	public Peer(double demand, int peerId, boolean consuming, int numSteps) {
 		super();
 		this.demand = demand;
 		this.peerId = peerId;
 		this.consuming = consuming;
-		peersReputations = new SortedList<PeerReputation>(new PeerReputationComparator());
-		interactions = new ArrayList<Interaction>();
+		this.peersReputations = new SortedList<PeerReputation>(new PeerReputationComparator());
+		this.interactions = new ArrayList<Interaction>();
+		this.donatedHistory = new double[numSteps];
+		this.consumedHistory = new double[numSteps];
 	}
 	
 	
@@ -162,6 +168,22 @@ public class Peer{
 	 */
 	public void setPeersReputations(SortedList<PeerReputation> peersReputations) {
 		this.peersReputations = peersReputations;
+	}
+
+	public double[] getDonatedHistory() {
+		return donatedHistory;
+	}
+
+	public void setDonatedHistory(double[] donatedHistory) {
+		this.donatedHistory = donatedHistory;
+	}
+
+	public double[] getConsumedHistory() {
+		return consumedHistory;
+	}
+
+	public void setConsumedHistory(double[] consumedHistory) {
+		this.consumedHistory = consumedHistory;
 	}
 	
 	

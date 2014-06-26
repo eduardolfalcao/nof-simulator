@@ -4,17 +4,11 @@ package peer;
 public class Collaborator extends Peer{
 	
 	private double capacitySupplied;			//capacity supplied in the current step	
-	private double returnLevel;				//received/donated
-	private int returnLevelVerificationTime;	//times in steps to measure the necessity of supplying more or less resources
-	private double changingValue;				//value added or subtracted to/from capacitySupplied
 	
 	
-	public Collaborator(double demand, int peerId, boolean consuming, double capacitySupplied, int returnLevelVerificationTime, 
-			double changingValue) {
-		super(demand, peerId, consuming);
+	public Collaborator(double demand, int peerId, boolean consuming, double capacitySupplied,  int numSteps) {
+		super(demand, peerId, consuming, numSteps);
 		this.capacitySupplied = capacitySupplied;
-		this.returnLevelVerificationTime = returnLevelVerificationTime;		
-		this.changingValue = changingValue;
 	}
 	
 	
