@@ -248,7 +248,6 @@ public class Simulator {
 	 * Chooses a peer to consume the resources of next donation. Based on interactions history or randomly. 
 	 * @param c the collaborator who will donate his resources
 	 * @return the peer choosed to consume, a consuming collaborator or a free rider
-	 * @throws UnknownObjectException 
 	 */
 	private Peer choosesConsumer(Collaborator c){
 		
@@ -261,13 +260,13 @@ public class Simulator {
 			Peer p = new Peer(0, -1, false);			//id = -1, so that we won't find it on consumedPeersList in first iteration
 														//consuming must be false, so that we can enter in while loop
 			
-			
+			int index = -1;								//index used to retrieve the peer. It stores the peerId
 			/**
-			 * While the peer has already consumed or is not in consuming state, keeps searching further.
+			 * Stop searching if the peers has not consumed and is in consuming state. 
 			 */
-			while(this.consumedPeersList.contains(p.getPeerId()) || !p.isConsuming()){
+			while(!(!this.consumedPeersList.contains((Integer)p.getPeerId()) && p.isConsuming())){
 				try{
-					int index = c.getThePeerIdWithNthBestReputation(nth);
+					index = c.getThePeerIdWithNthBestReputation(nth);
 					if(index==-1)											//we couldn't find a peer that hasn't interacted yet, and wants to consume
 						break;
 					p = peers[index];										//update the peer being evaluated
@@ -275,13 +274,13 @@ public class Simulator {
 					ex.printStackTrace();
 					return null;
 				}
-				nth++;
+				nth++;								
 			}
 			
 			/**
 			 * The case that we find a candidate!
 			 */
-			if(p.getPeerId()>-1){			
+			if(index>-1){
 				if(p instanceof Collaborator)
 					return (Collaborator) p;
 				else if(p instanceof FreeRider)
@@ -305,7 +304,7 @@ public class Simulator {
 		
 		/**
 		 * There are 2 options we might got here:
-		 * 		1: we didn't find a candidate who wants to consume, in the InteractionsHistory
+		 * 		1: we didn't find a candidate in consuming state, in the InteractionsHistory
 		 * 		2: collaborator c has never interacted before
 		 * Solution: choose randomly.
 		 */			
@@ -364,12 +363,20 @@ public class Simulator {
 				consumer.setDemand(consumer.getDemand()-Math.min(maxValueToBeConsumed, maxValueToBeDonated));					//update the demand of the consumer in the current step
 				
 				/**
-				 * Update the treeMap donator reputation, and update also the consumer reputation
+				 * Add/Update the treeMap donator reputation, and Add/Update also the consumer reputation
 				 * (if he is not a free rider). 
-				 */
-				donator.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), true)));
-				if(!(consumer instanceof FreeRider))
-					consumer.getPeersReputations().add(new PeerReputation(donator.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), true)));
+				 */				
+				PeerReputation peerRep = donator.getPeersReputations().getPeer(consumer.getPeerId());
+				if(peerRep==null){	//Add
+					donator.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), true)));
+					if(!(consumer instanceof FreeRider))
+						consumer.getPeersReputations().add(new PeerReputation(donator.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), true)));
+				}
+				else{				//Update
+					peerRep.setReputation(NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), true));
+					if(!(consumer instanceof FreeRider))
+						consumer.getPeersReputations().getPeer(donator.getPeerId()).setReputation(NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), true));
+				}
 			}
 			/**
 			 * The donator is PeerB...
@@ -383,12 +390,20 @@ public class Simulator {
 				consumer.setDemand(consumer.getDemand()-Math.min(maxValueToBeConsumed, maxValueToBeDonated));					//update the demand of the consumer in the current step
 				
 				/**
-				 * Update the treeMap donator reputation, and update also the consumer reputation
+				 * Add/Update the treeMap donator reputation, and Add/Update also the consumer reputation
 				 * (if he is not a free rider). 
-				 */
-				donator.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), true)));
-				if(!(consumer instanceof FreeRider))
-					consumer.getPeersReputations().add(new PeerReputation(donator.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), true)));
+				 */				
+				PeerReputation peerRep = donator.getPeersReputations().getPeer(consumer.getPeerId());
+				if(peerRep==null){		//Add
+					donator.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), true)));
+					if(!(consumer instanceof FreeRider))
+						consumer.getPeersReputations().add(new PeerReputation(donator.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), true)));
+				}
+				else{					//Update
+					peerRep.setReputation(NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), true));
+					if(!(consumer instanceof FreeRider))
+						consumer.getPeersReputations().getPeer(donator.getPeerId()).setReputation(NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), true));
+				}
 			}
 			else{
 				System.out.println("####################################################################################");
@@ -412,8 +427,7 @@ public class Simulator {
 			consumer.setDemand(consumer.getDemand()-Math.min(maxValueToBeConsumed, maxValueToBeDonated));					//update the demand of the consumer in the current step
 			
 			/**
-			 * Update the treeMap donator reputation, and update also the consumer reputation
-			 * (if he is not a free rider). 
+			 * Add the new PeerReputation to the treeMap of the donator and consumer reputation (if he is not a free rider). 
 			 */
 			donator.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), true)));
 			if(!(consumer instanceof FreeRider))

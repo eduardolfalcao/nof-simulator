@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
+
+import peer.Peer;
+import peer.peerid.PeerReputation;
 /**
  * This class is a List implementation which sorts the elements using the
  * comparator specified when constructing a new instance.
@@ -75,5 +78,42 @@ public class SortedList<T> extends LinkedList<T> {
      */
     public boolean containsElement(T paramT) {
         return (Collections.binarySearch(this, paramT, comparator) > -1);
+    }
+    
+
+//    /**
+//     * Check, if this list contains the Element with the given id.
+//     * 
+//     * @param peerId
+//     * @return <code>true</code>, if the peer with this id is contained in this list;
+//     * <code>false</code>, otherwise.
+//     */
+//    public boolean containsThisPeer(int peerId) {
+//    	for(T peerRep : this){
+//    		if(peerRep instanceof PeerReputation){
+//    			if(((PeerReputation) peerRep).getId() == peerId)
+//    				return true;
+//    		}
+//    	}
+//    	
+//        return false;
+//    }
+    
+    /**
+     * Returns peerReputation object, if this list contains the Element with the given id.
+     * 
+     * @param peerId
+     * @return <code>PeerReputation</code>, if the peer with this id is contained in this list;
+     * <code>null</code>, otherwise.
+     */
+    public PeerReputation getPeer(int peerId) {
+    	for(T peerRep : this){
+    		if(peerRep instanceof PeerReputation){
+    			if(((PeerReputation) peerRep).getId() == peerId)
+    				return ((PeerReputation) peerRep);
+    		}
+    	}
+    	
+        return null;
     }
 }
