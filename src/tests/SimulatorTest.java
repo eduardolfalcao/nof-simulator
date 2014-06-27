@@ -27,13 +27,14 @@ public class SimulatorTest {
 		double capacitySupplied = 1;
 		int returnLevelVerificationTime = 10;
 		double changingValue = 0.05;
+		boolean dynamic = false;
 		
 		/**
 		 * Case 1:
 		 * consumingStateProbability = 20, percentageCollaborators = 0.25
 		 */
 		
-		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
+		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s1.setupSimulation();		
 		assertTrue((s1.getConsumersCollabList().size()+s1.getDonatorsList().size()+s1.getFreeRidersList().size())==numPeers);
 		for(int peerId : s1.getConsumersCollabList()){
@@ -61,7 +62,7 @@ public class SimulatorTest {
 		 */
 		
 		percentageCollaborators = 0.75;	//75%
-		Simulator s2 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
+		Simulator s2 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s2.setupSimulation();
 		assertTrue((s2.getConsumersCollabList().size()+s2.getDonatorsList().size()+s2.getFreeRidersList().size())==numPeers);
 		for(int peerId : s2.getConsumersCollabList()){
@@ -88,7 +89,7 @@ public class SimulatorTest {
 		 */
 		
 		consumingStateProbability = 50;
-		Simulator s3 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
+		Simulator s3 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s3.setupSimulation();
 		assertTrue((s3.getConsumersCollabList().size()+s3.getDonatorsList().size()+s3.getFreeRidersList().size())==numPeers);
 		for(int peerId : s3.getConsumersCollabList()){
@@ -116,7 +117,7 @@ public class SimulatorTest {
 		 */
 		
 		percentageCollaborators = 0.25;	//25%
-		Simulator s4 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
+		Simulator s4 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s4.setupSimulation();
 		assertTrue((s4.getConsumersCollabList().size()+s4.getDonatorsList().size()+s4.getFreeRidersList().size())==numPeers);
 		for(int peerId : s4.getConsumersCollabList()){
@@ -153,13 +154,14 @@ public class SimulatorTest {
 		double capacitySupplied = 1;
 		int returnLevelVerificationTime = 10;
 		double changingValue = 0.05;
+		boolean dynamic = false;
 		
 		/**
 		 * Case 1:
 		 * consumingStateProbability = 20, percentageCollaborators = 0.25
 		 */
 		
-		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
+		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s1.setupSimulation();
 		s1.testPerformCurrentStepDonationsNoNextStep();		
 		assertTrue(s1.getCurrentStep()==1);
@@ -178,7 +180,7 @@ public class SimulatorTest {
 		 */
 		
 		percentageCollaborators = 0.75;	//75%
-		Simulator s2 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
+		Simulator s2 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s2.setupSimulation();
 		s2.testPerformCurrentStepDonationsNoNextStep();		
 		assertTrue(s2.getCurrentStep()==1);
@@ -191,7 +193,7 @@ public class SimulatorTest {
 		 */
 		
 		consumingStateProbability = 50;
-		Simulator s3 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
+		Simulator s3 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s3.setupSimulation();
 		s3.testPerformCurrentStepDonationsNoNextStep();		
 		assertTrue(s3.getCurrentStep()==1);
@@ -206,7 +208,7 @@ public class SimulatorTest {
 		 */
 		
 		percentageCollaborators = 0.25;	//25%
-		Simulator s4 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
+		Simulator s4 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s4.setupSimulation();
 		s4.testPerformCurrentStepDonationsNoNextStep();		
 		assertTrue(s4.getCurrentStep()==1);
@@ -229,13 +231,14 @@ public class SimulatorTest {
 		double capacitySupplied = 1;
 		int returnLevelVerificationTime = 10;
 		double changingValue = 0.05;
+		boolean dynamic = false;
 		
 		/**
 		 * Case 1:
 		 * consumingStateProbability = 20, percentageCollaborators = 0.25
 		 */
 		
-		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
+		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s1.setupSimulation();
 		s1.testPerformCurrentStepDonationsNoNextStep();		
 		s1.testNextStepNoPerformCurrentStepDonations();
@@ -304,8 +307,9 @@ public class SimulatorTest {
 		double capacitySupplied = 1;
 		int returnLevelVerificationTime = 10;
 		double changingValue = 0.05;
+		boolean dynamic = false;
 		
-		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
+		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s1.setupSimulation();
 		
 		for(int i = 0; i < 10000; i++)
@@ -328,13 +332,14 @@ public class SimulatorTest {
 		double capacitySupplied = 1;
 		int returnLevelVerificationTime = 10;
 		double changingValue = 0.05;
+		boolean dynamic = false;
 		
 		/**
 		 * Case 1:
 		 * consumingStateProbability = 20, percentageCollaborators = 0.25
 		 */
 		
-		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
+		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s1.setupSimulation();
 		
 		for(int i = 0; i < 10000; i++){
@@ -359,8 +364,9 @@ public class SimulatorTest {
 		double capacitySupplied = 1;
 		int returnLevelVerificationTime = 10;
 		double changingValue = 0.05;
+		boolean dynamic = false;
 				
-		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
+		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s1.setupSimulation();
 		
 		Collaborator collab = s1.testChoosesCollaboratorToDonate();
@@ -386,8 +392,9 @@ public class SimulatorTest {
 		double capacitySupplied = 1;
 		int returnLevelVerificationTime = 10;
 		double changingValue = 0.05;
+		boolean dynamic = false;
 				
-		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
+		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue);
 		s1.setupSimulation();
 		
 		Collaborator collab = s1.testChoosesCollaboratorToDonate();
