@@ -5,15 +5,15 @@ public class Main {
 	
 	public static void main(String [] args){
 		
-		int numPeers = 1000;
-		int numSteps = 1000;
-		int consumingStateProbability = 20;
-		double percentageCollaborators = 0.75;	//25%
+		int numPeers = 10;
+		int numSteps = 50;
+		double consumingStateProbability = 0.5;
+		double percentageCollaborators = 0.25;	//25%
 		double peersDemand = 2;					//2C
 		double capacitySupplied = 1;
-		int returnLevelVerificationTime = 5;
+		int returnLevelVerificationTime = 10;
 		double changingValue = 0.05;
-		boolean dynamic = true;
+		boolean dynamic = false;
 		
 		/**
 		 * Case 1:

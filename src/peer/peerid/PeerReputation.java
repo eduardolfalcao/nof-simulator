@@ -14,7 +14,7 @@ public class PeerReputation{
 		this.id = id;
 		this.reputation = reputation;
 	}
-	
+//	
 //	/**
 //	 * The list is sorted based on peers reputations.
 //	 */

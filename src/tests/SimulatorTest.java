@@ -21,7 +21,7 @@ public class SimulatorTest {
 		
 		int numPeers = 1000;
 		int numSteps = 5000;
-		int consumingStateProbability = 20;
+		double consumingStateProbability = 0.2;
 		double percentageCollaborators = 0.25;	//25%
 		double peersDemand = 2;					//2C
 		double capacitySupplied = 1;
@@ -148,7 +148,7 @@ public class SimulatorTest {
 		
 		int numPeers = 1000;
 		int numSteps = 5000;
-		int consumingStateProbability = 20;
+		double consumingStateProbability = 0.2;
 		double percentageCollaborators = 0.25;	//25%
 		double peersDemand = 2;					//2C
 		double capacitySupplied = 1;
@@ -225,7 +225,7 @@ public class SimulatorTest {
 		
 		int numPeers = 1000;
 		int numSteps = 5000;
-		int consumingStateProbability = 20;
+		double consumingStateProbability = 0.2;
 		double percentageCollaborators = 0.25;	//25%
 		double peersDemand = 2;					//2C
 		double capacitySupplied = 1;
@@ -301,7 +301,7 @@ public class SimulatorTest {
 		
 		int numPeers = 1000;
 		int numSteps = 5000;
-		int consumingStateProbability = 20;
+		double consumingStateProbability = 0.2;
 		double percentageCollaborators = 0.25;	//25%
 		double peersDemand = 2;					//2C
 		double capacitySupplied = 1;
@@ -326,7 +326,7 @@ public class SimulatorTest {
 		
 		int numPeers = 1000;
 		int numSteps = 5000;
-		int consumingStateProbability = 20;
+		double consumingStateProbability = 0.2;
 		double percentageCollaborators = 0.25;	//25%
 		double peersDemand = 2;					//2C
 		double capacitySupplied = 1;
@@ -358,7 +358,7 @@ public class SimulatorTest {
 		
 		int numPeers = 1000;
 		int numSteps = 5000;
-		int consumingStateProbability = 20;
+		double consumingStateProbability = 0.2;
 		double percentageCollaborators = 0.25;	//25%
 		double peersDemand = 2;					//2C
 		double capacitySupplied = 1;
@@ -386,7 +386,7 @@ public class SimulatorTest {
 		
 		int numPeers = 1000;
 		int numSteps = 5000;
-		int consumingStateProbability = 20;
+		double consumingStateProbability = 0.2;
 		double percentageCollaborators = 0.25;	//25%
 		double peersDemand = 2;					//2C
 		double capacitySupplied = 1;
