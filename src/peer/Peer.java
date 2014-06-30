@@ -169,6 +169,14 @@ public class Peer{
 	public void setPeersReputations(SortedList<PeerReputation> peersReputations) {
 		this.peersReputations = peersReputations;
 	}
+	
+	public double getCurrentDonated(int step) {
+		int currrentDonated = 0;
+		for(int i = 0; i <= step; i++){
+			currrentDonated += this.donatedHistory[i];
+		}
+		return currrentDonated;
+	}
 
 	public double[] getDonatedHistory() {
 		return donatedHistory;
@@ -176,6 +184,14 @@ public class Peer{
 
 	public void setDonatedHistory(double[] donatedHistory) {
 		this.donatedHistory = donatedHistory;
+	}
+	
+	public double getCurrentConsumed(int step) {
+		int currrentConsumed = 0;
+		for(int i = 0; i <= step; i++){
+			currrentConsumed += this.consumedHistory[i];
+		}
+		return currrentConsumed;
 	}
 
 	public double[] getConsumedHistory() {
