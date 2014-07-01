@@ -22,9 +22,9 @@ public class InteractionTest {
 		 * Compares to Object and null.
 		 */
 		
-		Interaction interactionAB = new Interaction(new Peer(0, 1, 0), new Peer(0, 2, 0));
-		Interaction interactionBA = new Interaction(new Peer(0, 2, 0), new Peer(0, 1, 0));
-		Interaction interactionAC = new Interaction(new Peer(0, 1, 0), new Peer(0, 3, 0));
+		Interaction interactionAB = new Interaction(new Peer(0, 1, false, 0), new Peer(0, 2, false, 0));
+		Interaction interactionBA = new Interaction(new Peer(0, 2, false, 0), new Peer(0, 1, false, 0));
+		Interaction interactionAC = new Interaction(new Peer(0, 1, false, 0), new Peer(0, 3, false, 0));
 		
 		assertTrue(interactionAB.equals(interactionBA));
 		assertTrue(interactionBA.equals(interactionAB));

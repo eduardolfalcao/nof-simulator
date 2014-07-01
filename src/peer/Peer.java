@@ -30,25 +30,12 @@ public class Peer{
 	
 	/**
 	 * 
-	 * @param capacity of resources of the peer
-	 * @param demand for resources from another peer
-	 */
-	public Peer(double demand, int peerId, int numSteps) {
-		super();
-		this.demand = demand;
-		this.peerId = peerId;
-		this.consuming = false;
-		this.peersReputations = new SortedList<PeerReputation>(new PeerReputationComparator());
-		this.interactions = new ArrayList<Interaction>();
-		this.donatedHistory = new double[numSteps];
-		this.consumedHistory = new double[numSteps];
-	}
-	
-	/**
+	 * Constructor for Collaborators.
 	 * 
-	 * @param capacity of resources of the peer
-	 * @param demand for resources from another peer
-	 * @param consuming the state of the peer
+	 * @param demand
+	 * @param peerId
+	 * @param consuming
+	 * @param numSteps
 	 */
 	public Peer(double demand, int peerId, boolean consuming, int numSteps) {
 		super();
@@ -58,6 +45,23 @@ public class Peer{
 		this.peersReputations = new SortedList<PeerReputation>(new PeerReputationComparator());
 		this.interactions = new ArrayList<Interaction>();
 		this.donatedHistory = new double[numSteps];
+		this.consumedHistory = new double[numSteps];
+	}
+	
+	/**
+	 * Constructor for Free Riders.
+	 * 
+	 * @param demand
+	 * @param peerId 
+	 * @param consuming
+	 * @param numSteps
+	 * @param isFreeRider (force Free Riders to use this constructor)
+	 */
+	public Peer(double demand, int peerId, boolean consuming, int numSteps, boolean isFreeRider) {
+		super();
+		this.demand = demand;
+		this.peerId = peerId;
+		this.consuming = consuming;		
 		this.consumedHistory = new double[numSteps];
 	}
 	
@@ -82,6 +86,32 @@ public class Peer{
 		
 		return -1;
 	}	
+	
+	/**
+	 * 
+	 * @param step
+	 * @return currrentDonated (the amount donated until this step)
+	 */
+	public double getCurrentDonated(int step) {
+		int currrentDonated = 0;
+		for(int i = 0; i <= step; i++){
+			currrentDonated += this.donatedHistory[i];
+		}
+		return currrentDonated;
+	}
+	
+	/**
+	 * 
+	 * @param step
+	 * @return currrentConsumed (the amount consumed until this step)
+	 */
+	public double getCurrentConsumed(int step) {
+		int currrentConsumed = 0;
+		for(int i = 0; i <= step; i++){
+			currrentConsumed += this.consumedHistory[i];
+		}
+		return currrentConsumed;
+	}
 	
 	/**
 	 * peerId is unique
@@ -156,7 +186,7 @@ public class Peer{
 	
 	/**
 	 * 
-	 * @return SortedList with peers reputations
+	 * @return SortedList (with peers reputations)
 	 */
 	public SortedList<PeerReputation> getPeersReputations() {
 		return peersReputations;
@@ -164,40 +194,40 @@ public class Peer{
 
 	/**
 	 * 
-	 * @param peersReputations SortedList with peers reputations
+	 * @param peersReputations (SortedList with peers reputations)
 	 */
 	public void setPeersReputations(SortedList<PeerReputation> peersReputations) {
 		this.peersReputations = peersReputations;
 	}
 	
-	public double getCurrentDonated(int step) {
-		int currrentDonated = 0;
-		for(int i = 0; i <= step; i++){
-			currrentDonated += this.donatedHistory[i];
-		}
-		return currrentDonated;
-	}
-
+	/**
+	 * 
+	 * @return donated history array 
+	 */
 	public double[] getDonatedHistory() {
 		return donatedHistory;
 	}
 
+	/**
+	 * 
+	 * @param donatedHistory
+	 */
 	public void setDonatedHistory(double[] donatedHistory) {
 		this.donatedHistory = donatedHistory;
 	}
 	
-	public double getCurrentConsumed(int step) {
-		int currrentConsumed = 0;
-		for(int i = 0; i <= step; i++){
-			currrentConsumed += this.consumedHistory[i];
-		}
-		return currrentConsumed;
-	}
-
+	/**
+	 * 
+	 * @return consumed history array
+	 */
 	public double[] getConsumedHistory() {
 		return consumedHistory;
 	}
 
+	/**
+	 * 
+	 * @param consumedHistory
+	 */
 	public void setConsumedHistory(double[] consumedHistory) {
 		this.consumedHistory = consumedHistory;
 	}
