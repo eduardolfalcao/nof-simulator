@@ -22,7 +22,7 @@ import peer.Peer;
 public class WriteExcel {
 
 	private String outputFile;
-	private WritableSheet satisfactionSheet, consumedSheet, donatedSheet;
+	private WritableSheet satisfactionSheet, satisfactionPerStepSheet, consumedSheet, donatedSheet;
 	private int numSteps;
 	
 	private WritableWorkbook workbook;
@@ -60,8 +60,9 @@ public class WriteExcel {
 		try {
 			workbook = Workbook.createWorkbook(file, wbSettings);
 			workbook.createSheet("Satisfaction", 0);
-			workbook.createSheet("Consumed", 1);
-			workbook.createSheet("Donated", 2);
+			workbook.createSheet("Satisfaction per steps", 1);
+			workbook.createSheet("Consumed", 2);
+			workbook.createSheet("Donated", 3);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -69,9 +70,11 @@ public class WriteExcel {
 		try {
 			satisfactionSheet = workbook.getSheet(0);
 			createLabel(satisfactionSheet);
-			consumedSheet = workbook.getSheet(1);
+			satisfactionPerStepSheet = workbook.getSheet(1);
+			createLabel(satisfactionPerStepSheet);
+			consumedSheet = workbook.getSheet(2);
 			createLabel(consumedSheet);
-			donatedSheet = workbook.getSheet(2);
+			donatedSheet = workbook.getSheet(3);
 			createLabel(donatedSheet);
 		} catch (WriteException e) {
 			// TODO Auto-generated catch block
@@ -97,8 +100,10 @@ public class WriteExcel {
 			addCaption(sheet, 0, 0, "Peers");
 			addCaption(sheet, 1, 0, "ID");
 			addCaption(sheet, 2, 0, "Satisfaction");
-		} else if (sheet.getName().equals("Consumed")
-				|| sheet.getName().equals("Donated")) {
+		} 
+		else if (sheet.getName().equals("Consumed")
+				|| sheet.getName().equals("Donated")
+				|| sheet.getName().equals("Satisfaction per steps")) {
 			addCaption(sheet, 0, 0, "Peers");
 			addCaption(sheet, 1, 0, "ID");
 			for (int i = 0; i < this.numSteps; i++)
@@ -107,13 +112,13 @@ public class WriteExcel {
 	}
 
 	/**
-	 * Fulfills the excel file.
+	 * Write satisfaction summary data.
 	 * 
 	 * @param peers
 	 * @throws WriteException
 	 * @throws RowsExceededException
 	 */
-	public void fulfillFile(Peer [] peers) throws WriteException, RowsExceededException {
+	public void fulfillSatisfactions(Peer [] peers) throws WriteException, RowsExceededException {
 		
 		//fulfilling satisfaction peers cells
 		for (int i = 0; i < peers.length; i++) {
@@ -121,8 +126,7 @@ public class WriteExcel {
 			this.addLabel(this.satisfactionSheet, 0, i+1, peer);
 			this.addNumber(this.satisfactionSheet, 1, i+1, peers[i].getPeerId());
 			double currentDonated = 0, currentConsumed = 0, currentSatisfaction = 0;
-			if(peers[i] instanceof Collaborator){
-				Collaborator collaborator = (Collaborator) peers[i];	
+			if(peers[i] instanceof Collaborator){	
 				currentDonated = peers[i].getCurrentDonated(this.numSteps-1)!=0?peers[i].getCurrentDonated(this.numSteps-1):1;						
 				currentConsumed = peers[i].getCurrentConsumed(this.numSteps-1);
 			}
@@ -133,6 +137,50 @@ public class WriteExcel {
 			currentSatisfaction = currentConsumed/currentDonated;
 			this.addNumber(this.satisfactionSheet, 2, i+1, currentSatisfaction);
 		}
+	}
+	
+	/**
+	 * Write satisfactions data per step.
+	 * 
+	 * @param peers
+	 * @throws WriteException
+	 * @throws RowsExceededException
+	 */
+	public void fulfillSatisfactionsPerSteps(Peer [] peers) throws WriteException, RowsExceededException {
+		
+		//fulfilling satisfaction peers cells
+		for (int i = 0; i < peers.length; i++) {
+			String peer = (peers[i] instanceof Collaborator)?"Collaborator":"Free Rider"; 
+			this.addLabel(this.satisfactionPerStepSheet, 0, i+1, peer);
+			this.addNumber(this.satisfactionPerStepSheet, 1, i+1, peers[i].getPeerId());
+			double currentDonated = 0, currentConsumed = 0, currentSatisfaction = 0;
+			
+			for(int j = 0; j < this.numSteps; j++){
+				if(peers[i] instanceof Collaborator){
+					currentDonated += peers[i].getCurrentDonated(j);						
+					currentConsumed += peers[i].getCurrentConsumed(j);
+				}
+				else{
+					currentDonated = 1;
+					currentConsumed += peers[i].getCurrentConsumed(j);
+				}
+				currentDonated = currentDonated==0?1:currentDonated;
+				currentSatisfaction = currentConsumed/currentDonated;
+				this.addNumber(this.satisfactionPerStepSheet, j+2, i + 1, currentSatisfaction);
+			}
+		}
+	}
+	
+	
+	
+	/**
+	 * Write consumption data.
+	 * 
+	 * @param peers
+	 * @throws WriteException
+	 * @throws RowsExceededException
+	 */
+	public void fulfillConsumptionData(Peer [] peers) throws WriteException, RowsExceededException {
 		
 		//fulfilling consumed peers cells
 		for (int i = 0; i < peers.length; i++) {
@@ -143,7 +191,16 @@ public class WriteExcel {
 			for(int j = 0; j < this.numSteps; j++)
 				this.addNumber(this.consumedSheet, j+2, i + 1, peers[i].getConsumedHistory()[j]);
 		}
-		
+	}
+	
+	/**
+	 * Write donation data.
+	 * 
+	 * @param peers
+	 * @throws WriteException
+	 * @throws RowsExceededException
+	 */
+	public void fulfillDonationData(Peer [] peers) throws WriteException, RowsExceededException {
 		// fulfilling donated peers cells
 		for (int i = 0; i < peers.length; i++) {
 			String peer = (peers[i] instanceof Collaborator) ? "Collaborator": "Free Rider";
@@ -158,8 +215,15 @@ public class WriteExcel {
 				for (int j = 0; j < this.numSteps; j++)
 					this.addNumber(this.donatedSheet, j + 2, i + 1, 0.0);
 			}
-		}
-		
+		}	
+	}
+	
+	/**
+	 * Write buffer to file.
+	 * 
+	 * @throws WriteException
+	 */
+	public void writeFile() throws WriteException{
 		try {
 			this.workbook.write();
 			this.workbook.close();
