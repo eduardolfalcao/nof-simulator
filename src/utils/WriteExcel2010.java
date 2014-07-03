@@ -1,140 +1,109 @@
 package utils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Locale;
 
-import jxl.CellView;
-import jxl.Workbook;
-import jxl.WorkbookSettings;
-import jxl.format.UnderlineStyle;
-import jxl.write.Label;
-import jxl.write.Number;
-import jxl.write.WritableCellFormat;
-import jxl.write.WritableFont;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
+
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import peer.Collaborator;
 import peer.FreeRider;
 import peer.Peer;
 import simulator.Simulator;
 
-public class WriteExcel {
-
+public class WriteExcel2010 {
+	
 	private String outputFile;
-	private WritableSheet satisfactionSheet, satisfactionPerStepSheet, consumedSheet, donatedSheet, capacitySuppliedPerStepSheet, freeRiderSuccessSheet;
+	private XSSFSheet satisfactionSheet, satisfactionPerStepSheet, consumedSheet, donatedSheet, capacitySuppliedPerStepSheet, freeRiderSuccessSheet;
 	private int numSteps;
 	
-	private WritableWorkbook workbook;
-	private WritableFont times10pt, times10ptBoldUnderline;
-	private WritableCellFormat times, timesBoldUnderline;
+	private XSSFWorkbook workbook;
+	private XSSFCellStyle timesBoldUnderline, times;
+	private XSSFFont times10ptBoldUnderline, times10pt;
+	
 	
 	/**
 	 * @param outputFile the url address where the file will be stored
 	 * @param numSteps the number of steps of the simulation
 	 */
-	public WriteExcel(String outputFile, int numSteps) {
+	public WriteExcel2010(String outputFile, int numSteps) {
 		super();
 		this.outputFile = outputFile;
 		this.numSteps = numSteps;
 		
-		times10pt = new WritableFont(WritableFont.TIMES, 10);	//Lets create a times font		
-		times = new WritableCellFormat(times10pt);				//Define the cell format	
-		times10ptBoldUnderline = new WritableFont(WritableFont.TIMES, 10, WritableFont.BOLD, false, UnderlineStyle.SINGLE);
-		timesBoldUnderline = new WritableCellFormat(times10ptBoldUnderline);
+		this.workbook = new XSSFWorkbook();
 		
-		try {													// Lets automatically wrap the cells
-			times.setWrap(true);
-			timesBoldUnderline.setWrap(true);
-		} catch (WriteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		this.timesBoldUnderline = this.workbook.createCellStyle();
+		this.times10ptBoldUnderline = this.workbook.createFont();
+		this.times10ptBoldUnderline.setFontName(HSSFFont.FONT_ARIAL);
+		this.times10ptBoldUnderline.setFontHeightInPoints((short) 16);
+		this.times10ptBoldUnderline.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		this.timesBoldUnderline.setFont(times10ptBoldUnderline);
+		
+		this.times = this.workbook.createCellStyle();
+		this.times10pt = this.workbook.createFont();
+		this.times10pt.setFontName(HSSFFont.FONT_ARIAL);
+		this.times10pt.setFontHeightInPoints((short) 10);
+		this.times.setFont(times10pt);
 	}
-
+	
 	/**
-	 * Setup the xsl file for output.
+	 * Setup the xslx file for output.
 	 */
-	public void setupFile() {
-		File file = new File(this.outputFile);
+	public void setupFile() {		 
+		
+		satisfactionSheet = workbook.createSheet("Satisfaction");
+		satisfactionPerStepSheet = workbook.createSheet("Satisfaction per steps");
+		consumedSheet = workbook.createSheet("Consumed");
+		donatedSheet = workbook.createSheet("Donated");
+		capacitySuppliedPerStepSheet = workbook.createSheet("Capacity supplied per steps");
+		freeRiderSuccessSheet = workbook.createSheet("Free riders success per steps");
 
-		WorkbookSettings wbSettings = new WorkbookSettings();
-		wbSettings.setLocale(new Locale("en", "EN"));
-
-		// creates the tabs
-		workbook = null;
-		try {
-			workbook = Workbook.createWorkbook(file, wbSettings);
-			workbook.createSheet("Satisfaction", 0);
-			workbook.createSheet("Satisfaction per steps", 1);
-			workbook.createSheet("Consumed", 2);
-			workbook.createSheet("Donated", 3);
-			workbook.createSheet("Capacity supplied per steps", 4);
-			workbook.createSheet("Free riders success per steps", 5);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		try {
-			satisfactionSheet = workbook.getSheet(0);
-			createLabel(satisfactionSheet);
-			satisfactionPerStepSheet = workbook.getSheet(1);
-			createLabel(satisfactionPerStepSheet);
-			consumedSheet = workbook.getSheet(2);
-			createLabel(consumedSheet);
-			donatedSheet = workbook.getSheet(3);
-			createLabel(donatedSheet);
-			capacitySuppliedPerStepSheet = workbook.getSheet(4);
-			createLabel(capacitySuppliedPerStepSheet); 
-			freeRiderSuccessSheet = workbook.getSheet(5);
-			createLabel(freeRiderSuccessSheet);
-		} catch (WriteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+		createLabel(satisfactionSheet);
+		createLabel(satisfactionPerStepSheet);
+		createLabel(consumedSheet);
+		createLabel(donatedSheet);
+		createLabel(capacitySuppliedPerStepSheet); 
+		createLabel(freeRiderSuccessSheet);
 	}
 	
 	/**
 	 * Creates the label of the tabs.
 	 * 
 	 * @param sheet the tab to be created the titles
-	 * @throws WriteException
 	 */
-	private void createLabel(WritableSheet sheet) throws WriteException {
-
-//		CellView cv = new CellView();
-//		cv.setFormat(times);
-//		cv.setFormat(timesBoldUnderline);
-//		cv.setAutosize(true);
-
-		if (sheet.getName().equals("Satisfaction")) {
-			addLabel(sheet, 0, 0, "Peers");
-			addLabel(sheet, 1, 0, "ID");
+	private void createLabel(XSSFSheet sheet){
+		
+		addLabel(sheet, 0, 0, "Peers");
+		addLabel(sheet, 1, 0, "ID");
+		
+		if (sheet.getSheetName().equals("Satisfaction")) 
 			addLabel(sheet, 2, 0, "Satisfaction");
-		} 
-		else if (sheet.getName().equals("Consumed")
-				|| sheet.getName().equals("Donated")
-				|| sheet.getName().equals("Satisfaction per steps")
-				|| sheet.getName().equals("Capacity supplied per steps")
-				|| sheet.getName().equals("Free riders success per steps")) {
-			addLabel(sheet, 0, 0, "Peers");
-			addLabel(sheet, 1, 0, "ID");
+		else if (sheet.getSheetName().equals("Consumed")
+				|| sheet.getSheetName().equals("Donated")
+				|| sheet.getSheetName().equals("Satisfaction per steps")
+				|| sheet.getSheetName().equals("Capacity supplied per steps")
+				|| sheet.getSheetName().equals("Free riders success per steps")) {
 			for (int i = 0; i < this.numSteps; i++)
 				addLabel(sheet, i + 2, 0, "Step " + (i + 1));
 		}
 	}
-
+	
 	/**
 	 * Write satisfaction summary data.
 	 * 
 	 * @param peers the peers of simulation
-	 * @throws WriteException
-	 * @throws RowsExceededException
 	 */
-	public void fulfillSatisfactions(Peer [] peers) throws WriteException, RowsExceededException {
+	public void fulfillSatisfactions(Peer [] peers){
 		
 		//fulfilling satisfaction peers cells
 		for (int i = 0; i < peers.length; i++) {
@@ -158,10 +127,8 @@ public class WriteExcel {
 	 * Write satisfactions data per step.
 	 * 
 	 * @param peers the peers of simulation
-	 * @throws WriteException
-	 * @throws RowsExceededException
 	 */
-	public void fulfillSatisfactionsPerSteps(Peer [] peers) throws WriteException, RowsExceededException {
+	public void fulfillSatisfactionsPerSteps(Peer [] peers){
 		
 		//fulfilling satisfaction peers cells
 		for (int i = 0; i < peers.length; i++) {
@@ -190,10 +157,8 @@ public class WriteExcel {
 	 * Write consumption data.
 	 * 
 	 * @param peers the peers of simulation
-	 * @throws WriteException
-	 * @throws RowsExceededException
 	 */
-	public void fulfillConsumptionData(Peer [] peers) throws WriteException, RowsExceededException {
+	public void fulfillConsumptionData(Peer [] peers){
 		
 		//fulfilling consumed peers cells
 		for (int i = 0; i < peers.length; i++) {
@@ -210,10 +175,8 @@ public class WriteExcel {
 	 * Write donation data.
 	 * 
 	 * @param peers the peers of simulation
-	 * @throws WriteException
-	 * @throws RowsExceededException
 	 */
-	public void fulfillDonationData(Peer [] peers) throws WriteException, RowsExceededException {
+	public void fulfillDonationData(Peer [] peers){
 		// fulfilling donated peers cells
 		for (int i = 0; i < peers.length; i++) {
 			String peer = (peers[i] instanceof Collaborator) ? "Collaborator": "Free Rider";
@@ -235,10 +198,8 @@ public class WriteExcel {
 	 * Write capacity supplied data of peers per step.
 	 * 
 	 * @param peers the peers of simulation
-	 * @throws WriteException
-	 * @throws RowsExceededException
 	 */
-	public void fulfillCapacitySuppliedData(Peer [] peers) throws WriteException, RowsExceededException {
+	public void fulfillCapacitySuppliedData(Peer [] peers){
 		// fulfilling donated peers cells
 		for (int i = 0; i < peers.length; i++) {
 			String peer = (peers[i] instanceof Collaborator) ? "Collaborator": "Free Rider";
@@ -261,10 +222,8 @@ public class WriteExcel {
 	 * Write free riders success per step data.
 	 * 
 	 * @param peers the peers of simulation
-	 * @throws WriteException
-	 * @throws RowsExceededException
 	 */
-	public void fulfillfreeRiderSuccessData(Peer [] peers) throws WriteException, RowsExceededException {
+	public void fulfillfreeRiderSuccessData(Peer [] peers){
 		// fulfilling donated peers cells
 		for (int i = 0; i < peers.length; i++) {
 			if(peers[i] instanceof FreeRider){
@@ -278,34 +237,40 @@ public class WriteExcel {
 	
 	/**
 	 * Write buffer to file.
-	 * 
-	 * @throws WriteException
 	 */
-	public void writeFile() throws WriteException{
+	public void writeFile(){
+		
+		FileOutputStream fileOutputStream = null;		
 		try {
-			this.workbook.write();
-			this.workbook.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
+            fileOutputStream = new FileOutputStream(new File(this.outputFile));
+            workbook.write(fileOutputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fileOutputStream != null) {
+                try {
+                    fileOutputStream.flush();
+                    fileOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }	
 	}
-
+	
 	/**
 	 * @param sheet the tab on which will be written
 	 * @param column the column on which will be written
 	 * @param row the row on which will be written
 	 * @param text the text to be written
-	 * @throws RowsExceededException
-	 * @throws WriteException
 	 */
-	private void addLabel(WritableSheet sheet, int column, int row, String text)
-			throws RowsExceededException, WriteException {
-		Label label;
-		label = new Label(column, row, text, timesBoldUnderline);
-		sheet.addCell(label);
+	private void addLabel(XSSFSheet sheet, int column, int row, String text){		
+		XSSFRow newRow = sheet.createRow(row);
+	    XSSFCell cell = newRow.createCell(column);
+	    cell.setCellValue(text);
+		cell.setCellStyle(this.timesBoldUnderline);
 	}
-
+	
 	/**
 	 * 
 	 * @param sheet the tab on which will be written
@@ -315,11 +280,11 @@ public class WriteExcel {
 	 * @throws WriteException
 	 * @throws RowsExceededException
 	 */
-	private void addNumber(WritableSheet sheet, int column, int row,
-			double currentSatisfaction) throws WriteException, RowsExceededException {
-		Number number;
-		number = new Number(column, row, currentSatisfaction, times);
-		sheet.addCell(number);
+	private void addNumber(XSSFSheet sheet, int column, int row, double currentSatisfaction){		
+		XSSFRow newRow = sheet.createRow(row);
+	    XSSFCell cell = newRow.createCell(column);
+	    cell.setCellValue(currentSatisfaction);
+	    cell.setCellStyle(this.times);
 	}
 	
 	/**
@@ -327,14 +292,12 @@ public class WriteExcel {
 	 * @param column the column on which will be written
 	 * @param row the row on which will be written
 	 * @param text the text to be written
-	 * @throws WriteException
-	 * @throws RowsExceededException
 	 */
-	private void addText(WritableSheet sheet, int column, int row, String text)
-			throws WriteException, RowsExceededException {
-		Label label;
-		label = new Label(column, row, text, times);
-		sheet.addCell(label);
+	private void addText(XSSFSheet sheet, int column, int row, String text){		
+		XSSFRow newRow = sheet.createRow(row);
+	    XSSFCell cell = newRow.createCell(column);
+	    cell.setCellValue(text);
+	    cell.setCellStyle(this.times);
 	}
-
+	
 }
