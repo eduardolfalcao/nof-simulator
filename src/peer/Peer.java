@@ -39,15 +39,15 @@ public class Peer{
 	 */
 	public Peer(double demand, int peerId, boolean consuming, int numSteps) {
 		super();
-		this.demand = demand;
-		this.peerId = peerId;
-		this.consuming = consuming;
-		this.peersReputations = new SortedList<PeerReputation>(new PeerReputationComparator());
-		this.interactions = new ArrayList<Interaction>();
-		this.donatedHistory = new double[numSteps];
-		this.consumedHistory = new double[numSteps];
+		this.setDemand(demand);
+		this.setPeerId(peerId);
+		this.setConsuming(consuming);	
+		this.setPeersReputations(new SortedList<PeerReputation>(new PeerReputationComparator()));
+		this.setInteractions(new ArrayList<Interaction>());
+		this.setDonatedHistory(new double[numSteps]);
+		this.setConsumedHistory(new double[numSteps]);
 	}
-	
+
 	/**
 	 * Constructor for Free Riders.
 	 * 
@@ -59,10 +59,10 @@ public class Peer{
 	 */
 	public Peer(double demand, int peerId, boolean consuming, int numSteps, boolean isFreeRider) {
 		super();
-		this.demand = demand;
-		this.peerId = peerId;
-		this.consuming = consuming;		
-		this.consumedHistory = new double[numSteps];
+		this.setDemand(demand);
+		this.setPeerId(peerId);
+		this.setConsuming(consuming);		
+		this.setConsumedHistory(new double[numSteps]);
 	}
 	
 	
@@ -88,9 +88,8 @@ public class Peer{
 	}	
 	
 	/**
-	 * 
-	 * @param step
-	 * @return currrentDonated (the amount donated until this step)
+	 * @param step current step
+	 * @return currrentDonated the amount donated until this step
 	 */
 	public double getCurrentDonated(int step) {
 		int currrentDonated = 0;
@@ -101,9 +100,8 @@ public class Peer{
 	}
 	
 	/**
-	 * 
-	 * @param step
-	 * @return currrentConsumed (the amount consumed until this step)
+	 * @param step current step
+	 * @return currrentConsumed the amount consumed until this step
 	 */
 	public double getCurrentConsumed(int step) {
 		int currrentConsumed = 0;
@@ -121,7 +119,7 @@ public class Peer{
     }
 	
 	/**
-	 * The objects are equal if they have the same peerId.
+	 * @return true if they have the same peerId, false otherwise
 	 */
 	public boolean equals(Object obj) {
 	       if (obj == null || !(obj instanceof Peer))
@@ -134,18 +132,15 @@ public class Peer{
 	    		   return false;
 	       }
 	}
-
 	
 	/**
-	 * 
-	 * @return true if the peer is consuming another peer's resources, false, otherwise
+	 * @return true if the peer is consuming another peer's resources, false otherwise
 	 */
 	public boolean isConsuming() {
 		return consuming;
 	}
 
 	/**
-	 * 
 	 * @param consuming the state of the peer
 	 */
 	public void setConsuming(boolean consuming) {
@@ -153,80 +148,84 @@ public class Peer{
 	}
 
 	/**
-	 * 
 	 * @return the list of all interactions
 	 */
 	public List<Interaction> getInteractions() {
 		return interactions;
 	}
-	
+
 	/**
-	 * 
-	 * @return peerId
+	 * @param interactions
+	 */
+	private void setInteractions(ArrayList<Interaction> interactions) {
+		this.interactions = interactions;
+	}
+
+	/**
+	 * @return the peerId
 	 */
 	public int getPeerId(){
 		return this.peerId;
 	}
 	
 	/**
-	 * 
-	 * @return demand of this peer
+	 * @param the peerId
+	 */
+	public void setPeerId(int peerId){
+		this.peerId = peerId;
+	}
+	
+	/**
+	 * @return the demand of the peer
 	 */
 	public double getDemand() {
 		return demand;
 	}
 	
 	/**
-	 * Set the new demand of the peer.
-	 * @param demand
+	 * @param demand the new demand of the peer
 	 */
 	public void setDemand(double demand) {
 		this.demand = demand;
 	}
 	
 	/**
-	 * 
-	 * @return SortedList (with peers reputations)
+	 * @return the peersReputations
 	 */
 	public SortedList<PeerReputation> getPeersReputations() {
 		return peersReputations;
 	}
 
 	/**
-	 * 
-	 * @param peersReputations (SortedList with peers reputations)
+	 * @param peersReputations the SortedList with peers reputations
 	 */
 	public void setPeersReputations(SortedList<PeerReputation> peersReputations) {
 		this.peersReputations = peersReputations;
 	}
 	
 	/**
-	 * 
-	 * @return donated history array 
+	 * @return the donatedHistory
 	 */
 	public double[] getDonatedHistory() {
 		return donatedHistory;
 	}
 
 	/**
-	 * 
-	 * @param donatedHistory
+	 * @param donatedHistory the donatedHistory to set
 	 */
 	public void setDonatedHistory(double[] donatedHistory) {
 		this.donatedHistory = donatedHistory;
 	}
 	
 	/**
-	 * 
-	 * @return consumed history array
+	 * @return the consumedHistory
 	 */
 	public double[] getConsumedHistory() {
 		return consumedHistory;
 	}
 
 	/**
-	 * 
-	 * @param consumedHistory
+	 * @param consumedHistory the consumedHistory to set
 	 */
 	public void setConsumedHistory(double[] consumedHistory) {
 		this.consumedHistory = consumedHistory;

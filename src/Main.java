@@ -8,12 +8,8 @@ public class Main {
 	
 	public static void main(String [] args){
 		
-//		System.out.println(NetworkOfFavors.calculateLocalReputation(0, 4, true));
-//		System.out.println(NetworkOfFavors.calculateLocalReputation(4, 0, true));
-//		System.exit(0);
-		
-		int numPeers = 50;
-		int numSteps = 200;
+		int numPeers = 10;
+		int numSteps = 1000;
 		double consumingStateProbability = 0.5;
 		double percentageCollaborators = 0.5;	//25%
 		double peersDemand = 2;					//2C

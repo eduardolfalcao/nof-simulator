@@ -117,16 +117,18 @@ public class Simulator {
 		for(int i = 0; i < numCollaborators; i++){			
 			//based in consumingStateProbability, we decide if the peer will begin consuming or not
 			boolean beginsConsuming = (this.randomGenerator.nextInt(100)+1 <= (this.consumingStateProbability*100));
-			Peer p = null;
+			Collaborator collab = null;
 			if(beginsConsuming){
-				p = new Collaborator(this.peersDemand, i, beginsConsuming, this.capacitySupplied, this.numSteps);
+				collab = new Collaborator(this.peersDemand, i, beginsConsuming, this.capacitySupplied, this.numSteps);
+				collab.getCapacitySuppliedHistory()[0]=0;
 				consumersCollabList.add(i);
 			}				
 			else{
-				p = new Collaborator(0, i, beginsConsuming, this.capacitySupplied, this.numSteps);
+				collab = new Collaborator(0, i, beginsConsuming, this.capacitySupplied, this.numSteps);
+				collab.getCapacitySuppliedHistory()[0]=1;
 				donatorsList.add(i);
 			}
-			Simulator.peers[i] = p;
+			Simulator.peers[i] = collab;
 		}
 		
 		int numFreeRiders = numPeers - numCollaborators;
@@ -192,14 +194,14 @@ public class Simulator {
 	private void nextStep(){
 		
 		Simulator.logger.fine("Step "+this.currentStep);
-			
+		
 		/** Join all collaborators, consumers, and free riders in their lists. **/
 		donatorsList.addAll(donatedPeersList);
 		donatedPeersList.clear();
 		
 		for(int peerId : consumedPeersList){
 			if(peers[peerId] instanceof FreeRider)
-				freeRidersList.add(peerId);					
+				freeRidersList.add(peerId);				
 			else
 				consumersCollabList.add(peerId);					
 		}
@@ -208,6 +210,7 @@ public class Simulator {
 		
 		//just to check if everything is OK until now
 		Simulator.logger.finest("#Donators("+donatorsList.size()+") + #Consumers("+consumersCollabList.size()+") == #Collaborators("+numCollaborators+") :-)");
+		Simulator.logger.finest("#Collaborators("+(donatorsList.size()+consumersCollabList.size())+") + #FreeRiders("+freeRidersList.size()+") = #Peers("+this.numPeers+") :-)");
 		
 			
 		/** Join all collaborators in a list, and clear donatorsList and consumersList, to fulfill them again. **/
@@ -222,19 +225,26 @@ public class Simulator {
 			/** Based in consumingStateProbability, we decide if the collaborator will consume or not in the next step. **/
 			peers[collabId].setConsuming((this.randomGenerator.nextInt(100)+1 <= (this.consumingStateProbability*100))?true:false);				
 			if(peers[collabId].isConsuming()){				
-				peers[collabId].setDemand(this.peersDemand);					
+				peers[collabId].setDemand(this.peersDemand);
+				if((this.currentStep+1)<this.numSteps)
+					((Collaborator)peers[collabId]).getCapacitySuppliedHistory()[currentStep+1] = 0;
 				consumersCollabList.add(collabId);
 			}
 			else{											//capacitySupplied is updated based on capacitySuppliedReferenceValue
 				peers[collabId].setDemand(0);
 				((Collaborator)peers[collabId]).setCapacitySupplied(((Collaborator)peers[collabId]).getCapacitySuppliedReferenceValue());
+				if((this.currentStep+1)<this.numSteps)
+					((Collaborator)peers[collabId]).getCapacitySuppliedHistory()[currentStep+1] = ((Collaborator)peers[collabId]).getCapacitySuppliedReferenceValue();
 				donatorsList.add(collabId);	
 			}
 		}
 			
 		/** Refreshing Free Riders' demand. **/
-		for(Integer fId : freeRidersList)
+		for(Integer fId : freeRidersList){
+			/** To calculate the probability of success of free riders in all steps **/
+			((FreeRider)peers[fId]).getSuccessHistory()[this.currentStep] = (((FreeRider)peers[fId]).getDemand())==this.peersDemand?false:true;
 			peers[fId].setDemand(this.peersDemand);
+		}
 			
 		/** If in dynamic context, update capacity supplied by collaborators (on the right time). **/
 		if(this.dynamic && ((this.currentStep+1)%this.returnLevelVerificationTime)==0)
@@ -488,16 +498,13 @@ public class Simulator {
 				
 				Collaborator collaborator = (Collaborator) Simulator.peers[i];
 				
-				double currentDonated = collaborator.getCurrentDonated(this.currentStep);
-				currentDonated = currentDonated!=0?currentDonated:1;
+				double currentDonated = collaborator.getCurrentDonated(this.currentStep);				
 				double currentConsumed = collaborator.getCurrentConsumed(this.currentStep);
+				double currentSatisfaction = Simulator.getSatisfaction(currentDonated, currentConsumed);
 
 				double lastDonated = collaborator.getCurrentDonated((this.currentStep-this.returnLevelVerificationTime)<0?0:this.currentStep-this.returnLevelVerificationTime);
-				lastDonated = lastDonated!=0?lastDonated:1;
 				double lastConsumed = collaborator.getCurrentConsumed((this.currentStep-this.returnLevelVerificationTime)<0?0:this.currentStep-this.returnLevelVerificationTime);
-				
-				double currentSatisfaction = currentConsumed/currentDonated;
-				double lastSatisfaction = lastConsumed/lastDonated;
+				double lastSatisfaction = Simulator.getSatisfaction(lastDonated, lastConsumed);
 				
 				if(currentSatisfaction==lastSatisfaction)						//keep the current capacitySuppliedReferenceValue
 					continue;
@@ -510,8 +517,28 @@ public class Simulator {
 						collaborator.setCapacitySuppliedReferenceValue(Math.max(0, collaborator.getCapacitySuppliedReferenceValue()-this.changingValue));					
 				}
 				collaborator.setCapacitySupplied(collaborator.getCapacitySuppliedReferenceValue());
+				if((this.currentStep+1)<this.numSteps)
+					collaborator.getCapacitySuppliedHistory()[this.currentStep+1] = collaborator.getCapacitySuppliedReferenceValue();
 			}
 		}	
+	}
+	
+	/**
+	 * Given the amount donated and consumed, returns the satisfaction of the peer.
+	 * 
+	 * @param donated
+	 * @param consumed
+	 * @return
+	 */
+	public static double getSatisfaction(double donated, double consumed){		
+		if(consumed == 0 && donated == 0)
+			return 1;
+		else if(consumed == 0)
+			consumed = Double.MIN_VALUE;
+		else if(donated == 0)
+			donated = Double.MIN_VALUE;
+			
+		return consumed/donated;
 	}
 			
 	/**
@@ -522,17 +549,19 @@ public class Simulator {
 		System.out.println("\n\n\n####################Peers Satisfactions#####################");
 		for(Peer peer : Simulator.peers){				
 			if(peer instanceof Collaborator){
-				Collaborator collaborator = (Collaborator) peer;	
-				double currentDonated = collaborator.getCurrentDonated(this.currentStep)!=0?collaborator.getCurrentDonated(this.currentStep):1;						
+				Collaborator collaborator = (Collaborator) peer;
+				
+				double currentDonated = collaborator.getCurrentDonated(this.currentStep);
 				double currentConsumed = collaborator.getCurrentConsumed(this.currentStep);
-				double currentSatisfaction = currentConsumed/currentDonated;
+				double currentSatisfaction = Simulator.getSatisfaction(currentDonated, currentConsumed);
+				
 				System.out.println("Collaborator ID=["+collaborator.getPeerId()+"] ==> Satisfatcion: "+currentSatisfaction+"; Donated: "+currentDonated+"; Consumed: "+currentConsumed);
 			}
 			else{
 				FreeRider freeRider = (FreeRider) peer;
-				double currentDonated = 1;
+				double currentDonated = 0;
 				double currentConsumed = freeRider.getCurrentConsumed(this.currentStep);
-				double currentSatisfaction = currentConsumed/currentDonated;
+				double currentSatisfaction = Simulator.getSatisfaction(currentDonated, currentConsumed);
 				System.out.println("FreeRider ID=["+freeRider.getPeerId()+"] ==> Satisfatcion: "+currentSatisfaction+"; Donated: 0.0; Consumed: "+currentConsumed);
 			}
 		}
@@ -543,10 +572,12 @@ public class Simulator {
 		WriteExcel we = new WriteExcel("/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation/"+fileName+".xls", this.numSteps);
 		we.setupFile();
 		try {
-			we.fulfillSatisfactions(this.peers);
-			we.fulfillSatisfactionsPerSteps(this.peers);
-			we.fulfillConsumptionData(this.peers);
-			we.fulfillDonationData(this.peers);
+			we.fulfillSatisfactions(peers);
+			we.fulfillSatisfactionsPerSteps(peers);
+			we.fulfillConsumptionData(peers);
+			we.fulfillDonationData(peers);
+			we.fulfillCapacitySuppliedData(peers);
+			we.fulfillfreeRiderSuccessData(peers);
 		} catch (RowsExceededException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
