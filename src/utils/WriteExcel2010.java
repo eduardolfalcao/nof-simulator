@@ -45,7 +45,7 @@ public class WriteExcel2010 {
 		this.timesBoldUnderline = this.workbook.createCellStyle();
 		this.times10ptBoldUnderline = this.workbook.createFont();
 		this.times10ptBoldUnderline.setFontName(HSSFFont.FONT_ARIAL);
-		this.times10ptBoldUnderline.setFontHeightInPoints((short) 16);
+		this.times10ptBoldUnderline.setFontHeightInPoints((short) 12);
 		this.times10ptBoldUnderline.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
 		this.timesBoldUnderline.setFont(times10ptBoldUnderline);
 		
@@ -119,7 +119,11 @@ public class WriteExcel2010 {
 				currentDonated = 0;
 				currentConsumed = peers[i].getCurrentConsumed(this.numSteps-1);
 			}
-			this.addNumber(this.satisfactionSheet, 2, i+1, Simulator.getSatisfaction(currentDonated, currentConsumed));
+			double satisfaction = Simulator.getSatisfaction(currentDonated, currentConsumed);
+			if(satisfaction==Double.POSITIVE_INFINITY)
+				this.addText(this.satisfactionSheet, 2, i+1, "Infinity");
+			else
+				this.addNumber(this.satisfactionSheet, 2, i+1, satisfaction);
 		}
 	}
 	
@@ -146,7 +150,11 @@ public class WriteExcel2010 {
 					currentDonated = 0;									//always ZERO
 					currentConsumed = peers[i].getCurrentConsumed(j);
 				}
-				this.addNumber(this.satisfactionPerStepSheet, j+2, i + 1, Simulator.getSatisfaction(currentDonated, currentConsumed));
+				double satisfaction = Simulator.getSatisfaction(currentDonated, currentConsumed);
+				if(satisfaction==Double.POSITIVE_INFINITY)
+					this.addText(this.satisfactionPerStepSheet, j+2, i+1, "Infinity");
+				else
+					this.addNumber(this.satisfactionPerStepSheet, j+2, i+1, satisfaction);
 			}
 		}
 	}
@@ -265,8 +273,12 @@ public class WriteExcel2010 {
 	 * @param text the text to be written
 	 */
 	private void addLabel(XSSFSheet sheet, int column, int row, String text){		
-		XSSFRow newRow = sheet.createRow(row);
-	    XSSFCell cell = newRow.createCell(column);
+		XSSFRow newRow = sheet.getRow(row);
+		if(newRow==null)
+			newRow = sheet.createRow(row);
+	    XSSFCell cell = newRow.getCell(column);
+	    if(cell==null)
+	    	cell = newRow.createCell(column);
 	    cell.setCellValue(text);
 		cell.setCellStyle(this.timesBoldUnderline);
 	}
@@ -281,8 +293,12 @@ public class WriteExcel2010 {
 	 * @throws RowsExceededException
 	 */
 	private void addNumber(XSSFSheet sheet, int column, int row, double currentSatisfaction){		
-		XSSFRow newRow = sheet.createRow(row);
-	    XSSFCell cell = newRow.createCell(column);
+		XSSFRow newRow = sheet.getRow(row);
+		if(newRow==null)
+			newRow = sheet.createRow(row);
+	    XSSFCell cell = newRow.getCell(column);
+	    if(cell==null)
+	    	cell = newRow.createCell(column);
 	    cell.setCellValue(currentSatisfaction);
 	    cell.setCellStyle(this.times);
 	}
@@ -294,8 +310,12 @@ public class WriteExcel2010 {
 	 * @param text the text to be written
 	 */
 	private void addText(XSSFSheet sheet, int column, int row, String text){		
-		XSSFRow newRow = sheet.createRow(row);
-	    XSSFCell cell = newRow.createCell(column);
+		XSSFRow newRow = sheet.getRow(row);
+		if(newRow==null)
+			newRow = sheet.createRow(row);
+	    XSSFCell cell = newRow.getCell(column);
+	    if(cell==null)
+	    	cell = newRow.createCell(column);
 	    cell.setCellValue(text);
 	    cell.setCellStyle(this.times);
 	}

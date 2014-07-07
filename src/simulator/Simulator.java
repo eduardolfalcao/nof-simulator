@@ -568,32 +568,10 @@ public class Simulator {
 		}
 	}
 
-	private void exportData(){
-//		String fileName = "simulationExample";
-//		WriteExcel we = new WriteExcel("/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation/"+fileName+".xls", this.numSteps);
-//		we.setupFile();
-//		try {
-//			we.fulfillSatisfactions(peers);
-//			we.fulfillSatisfactionsPerSteps(peers);
-//			we.fulfillConsumptionData(peers);
-//			we.fulfillDonationData(peers);
-//			we.fulfillCapacitySuppliedData(peers);
-//			we.fulfillfreeRiderSuccessData(peers);
-//		} catch (RowsExceededException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (WriteException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}		
-//		
-//		try {
-//			we.writeFile();
-//		} catch (WriteException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
+	/**
+	 * Export the main data of simmulation to an excel (xlsx) file.
+	 */
+	private void exportData(){		
 		String fileName = "simulationExample";
 		WriteExcel2010 we = new WriteExcel2010("/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation/"+fileName+".xlsx", this.numSteps);
 		we.setupFile();		
