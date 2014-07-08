@@ -8,25 +8,52 @@ public class Main {
 	
 	public static void main(String [] args){
 		
-		int numPeers = 10;
-		int numSteps = 1000;
-		double consumingStateProbability = 0.5;
-		double percentageCollaborators = 0.5;	//25%
-		double peersDemand = 2;					//2C
+//		boolean dynamic = false;
+//		int numPeers = 10;
+//		int numSteps = 100;
+//		double consumingStateProbability = 0.2;
+//		double percentageCollaborators = 0.25;	//25%
+//		double peersDemand = 2;					//2C
+		
 		double capacitySupplied = 1;
 		int returnLevelVerificationTime = 5;
-		double changingValue = 0.05;
-		boolean dynamic = true;
+		double changingValue = 0.1;		
 		boolean nofWithLog = false;			//with sqrt
 		
-		/**
-		 * Case 1:
-		 * consumingStateProbability = 20, percentageCollaborators = 0.25
-		 */
+		String path = "/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation/";
+		String file = "";
 		
-		Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, nofWithLog, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue, Level.INFO);
-		s1.setupSimulation();
-		s1.startSimulation();
+		
+		int [] numPeersSimulations = {100};
+		int [] numStepsSimulations = {100};
+		boolean [] dynamicSimulations = {true,false};
+		double [] percentageCollaboratorsSimulations = {0.25, 0.75};
+		double [] consumingStateProbabilitySimulations = {0.2, 0.5};
+		double [] peersDemandSimulations = {2, 5};
+		
+		
+		
+		for(boolean dynamic : dynamicSimulations){
+			for(int numPeers : numPeersSimulations){
+				for(int numSteps : numStepsSimulations){
+					for(double consumingStateProbability : consumingStateProbabilitySimulations){
+						for(double percentageCollaborators : percentageCollaboratorsSimulations){
+							for(double peersDemand : peersDemandSimulations){
+								file = "Dynamic  "+dynamic+" -  "+numPeers+" peers - "+numSteps+" steps - "+((1-percentageCollaborators)*100)+"% freeriders - "+(consumingStateProbability*100)+"% consuming probability - "
+										+ ""+peersDemand+" peers demand - "+returnLevelVerificationTime+" in "+returnLevelVerificationTime+" steps - "+(changingValue*100)+"% change value - NoF by "+(nofWithLog==false?"SquareRoot":"Log")
+										+ ".xlsx";
+								Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, nofWithLog, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue, Level.SEVERE, path+file);
+								s1.setupSimulation();
+								s1.startSimulation();
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		
+	
 		
 	}
 

@@ -92,7 +92,7 @@ public class Peer{
 	 * @return currrentDonated the amount donated until this step
 	 */
 	public double getCurrentDonated(int step) {
-		int currrentDonated = 0;
+		double currrentDonated = 0;
 		for(int i = 0; i <= step; i++){
 			currrentDonated += this.donatedHistory[i];
 		}
@@ -104,7 +104,7 @@ public class Peer{
 	 * @return currrentConsumed the amount consumed until this step
 	 */
 	public double getCurrentConsumed(int step) {
-		int currrentConsumed = 0;
+		double currrentConsumed = 0;
 		for(int i = 0; i <= step; i++){
 			currrentConsumed += this.consumedHistory[i];
 		}

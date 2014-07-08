@@ -150,7 +150,7 @@ public class WriteExcel {
 				currentDonated = 0;
 				currentConsumed = peers[i].getCurrentConsumed(this.numSteps-1);
 			}
-			this.addNumber(this.satisfactionSheet, 2, i+1, Simulator.getSatisfaction(currentDonated, currentConsumed));
+			this.addNumber(this.satisfactionSheet, 2, i+1, Simulator.getSatisfaction(currentDonated, currentConsumed, this.numSteps));
 		}
 	}
 	
@@ -179,7 +179,7 @@ public class WriteExcel {
 					currentDonated = 0;									//always ZERO
 					currentConsumed = peers[i].getCurrentConsumed(j);
 				}
-				this.addNumber(this.satisfactionPerStepSheet, j+2, i + 1, Simulator.getSatisfaction(currentDonated, currentConsumed));
+				this.addNumber(this.satisfactionPerStepSheet, j+2, i + 1, Simulator.getSatisfaction(currentDonated, currentConsumed, this.numSteps));
 			}
 		}
 	}

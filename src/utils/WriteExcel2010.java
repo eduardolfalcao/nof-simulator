@@ -25,6 +25,8 @@ public class WriteExcel2010 {
 	private String outputFile;
 	private XSSFSheet satisfactionSheet, satisfactionPerStepSheet, consumedSheet, donatedSheet, capacitySuppliedPerStepSheet, freeRiderSuccessSheet;
 	private int numSteps;
+	private double peersDemand;
+	private double capacitySupplied;
 	
 	private XSSFWorkbook workbook;
 	private XSSFCellStyle timesBoldUnderline, times;
@@ -35,10 +37,12 @@ public class WriteExcel2010 {
 	 * @param outputFile the url address where the file will be stored
 	 * @param numSteps the number of steps of the simulation
 	 */
-	public WriteExcel2010(String outputFile, int numSteps) {
+	public WriteExcel2010(String outputFile, int numSteps, double capacitySupplied, double peersDemand) {
 		super();
 		this.outputFile = outputFile;
 		this.numSteps = numSteps;
+		this.capacitySupplied = capacitySupplied;
+		this.peersDemand = peersDemand;
 		
 		this.workbook = new XSSFWorkbook();
 		
@@ -110,7 +114,7 @@ public class WriteExcel2010 {
 			String peer = (peers[i] instanceof Collaborator)?"Collaborator":"Free Rider"; 
 			this.addText(this.satisfactionSheet, 0, i+1, peer);
 			this.addNumber(this.satisfactionSheet, 1, i+1, peers[i].getPeerId());
-			double currentDonated = 0, currentConsumed = 0;
+			double currentDonated = 0, currentConsumed = 0, satisfaction = 0;
 			if(peers[i] instanceof Collaborator){	
 				currentDonated = peers[i].getCurrentDonated(this.numSteps-1);						
 				currentConsumed = peers[i].getCurrentConsumed(this.numSteps-1);
@@ -119,11 +123,14 @@ public class WriteExcel2010 {
 				currentDonated = 0;
 				currentConsumed = peers[i].getCurrentConsumed(this.numSteps-1);
 			}
-			double satisfaction = Simulator.getSatisfaction(currentDonated, currentConsumed);
-			if(satisfaction==Double.POSITIVE_INFINITY)
-				this.addText(this.satisfactionSheet, 2, i+1, "Infinity");
-			else
-				this.addNumber(this.satisfactionSheet, 2, i+1, satisfaction);
+			
+			if(peers[i] instanceof FreeRider && currentConsumed == 0){
+				satisfaction = 0;
+			}else{
+				satisfaction = Simulator.getSatisfaction(currentDonated, currentConsumed, this.numSteps, this.capacitySupplied, this.peersDemand);
+			}
+			
+			this.addNumber(this.satisfactionSheet, 2, i+1, satisfaction);
 		}
 	}
 	
@@ -142,6 +149,7 @@ public class WriteExcel2010 {
 			double currentDonated = 0, currentConsumed = 0;
 			
 			for(int j = 0; j < this.numSteps; j++){
+				double satisfaction = 0;
 				if(peers[i] instanceof Collaborator){
 					currentDonated = peers[i].getCurrentDonated(j);						
 					currentConsumed = peers[i].getCurrentConsumed(j);
@@ -150,11 +158,19 @@ public class WriteExcel2010 {
 					currentDonated = 0;									//always ZERO
 					currentConsumed = peers[i].getCurrentConsumed(j);
 				}
-				double satisfaction = Simulator.getSatisfaction(currentDonated, currentConsumed);
-				if(satisfaction==Double.POSITIVE_INFINITY)
-					this.addText(this.satisfactionPerStepSheet, j+2, i+1, "Infinity");
-				else
-					this.addNumber(this.satisfactionPerStepSheet, j+2, i+1, satisfaction);
+				
+				if(peers[i] instanceof FreeRider && currentConsumed == 0){
+					satisfaction = 0;
+				}else{
+					satisfaction = Simulator.getSatisfaction(currentDonated, currentConsumed, this.numSteps, this.capacitySupplied, this.peersDemand);
+				}
+				
+				this.addNumber(this.satisfactionPerStepSheet, j+2, i+1, satisfaction);
+				
+//				if(satisfaction==Double.POSITIVE_INFINITY)
+//					this.addText(this.satisfactionPerStepSheet, j+2, i+1, "Infinity");
+//				else
+//					this.addNumber(this.satisfactionPerStepSheet, j+2, i+1, satisfaction);
 			}
 		}
 	}
