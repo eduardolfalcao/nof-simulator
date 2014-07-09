@@ -26,7 +26,8 @@ public class Peer{
 	protected int peerId;
 	
 	protected double donatedHistory[];
-	protected double consumedHistory[];	
+	protected double consumedHistory[];
+	protected double requestedHistory[];
 	
 	/**
 	 * 
@@ -46,6 +47,7 @@ public class Peer{
 		this.setInteractions(new ArrayList<Interaction>());
 		this.setDonatedHistory(new double[numSteps]);
 		this.setConsumedHistory(new double[numSteps]);
+		this.setRequestedHistory(new double[numSteps]);
 	}
 
 	/**
@@ -63,6 +65,7 @@ public class Peer{
 		this.setPeerId(peerId);
 		this.setConsuming(consuming);		
 		this.setConsumedHistory(new double[numSteps]);
+		this.setRequestedHistory(new double[numSteps]);
 	}
 	
 	
@@ -91,11 +94,21 @@ public class Peer{
 	 * @param step current step
 	 * @return currrentDonated the amount donated until this step
 	 */
+	public double getCurrentRequested(int step) {
+		double currrentRequested = 0;
+		for(int i = 0; i <= step; i++)
+			currrentRequested += this.requestedHistory[i];
+		return currrentRequested;
+	}
+	
+	/**
+	 * @param step current step
+	 * @return currrentDonated the amount donated until this step
+	 */
 	public double getCurrentDonated(int step) {
 		double currrentDonated = 0;
-		for(int i = 0; i <= step; i++){
+		for(int i = 0; i <= step; i++)
 			currrentDonated += this.donatedHistory[i];
-		}
 		return currrentDonated;
 	}
 	
@@ -105,9 +118,8 @@ public class Peer{
 	 */
 	public double getCurrentConsumed(int step) {
 		double currrentConsumed = 0;
-		for(int i = 0; i <= step; i++){
+		for(int i = 0; i <= step; i++)
 			currrentConsumed += this.consumedHistory[i];
-		}
 		return currrentConsumed;
 	}
 	
@@ -229,6 +241,20 @@ public class Peer{
 	 */
 	public void setConsumedHistory(double[] consumedHistory) {
 		this.consumedHistory = consumedHistory;
+	}
+
+	/**
+	 * @return the requested
+	 */
+	public double [] getRequestedHistory() {
+		return requestedHistory;
+	}
+
+	/**
+	 * @param requested the requested to set
+	 */
+	public void setRequestedHistory(double [] requestedHistory) {
+		this.requestedHistory = requestedHistory;
 	}
 	
 	

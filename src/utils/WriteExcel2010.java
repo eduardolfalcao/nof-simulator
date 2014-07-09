@@ -114,21 +114,12 @@ public class WriteExcel2010 {
 			String peer = (peers[i] instanceof Collaborator)?"Collaborator":"Free Rider"; 
 			this.addText(this.satisfactionSheet, 0, i+1, peer);
 			this.addNumber(this.satisfactionSheet, 1, i+1, peers[i].getPeerId());
-			double currentDonated = 0, currentConsumed = 0, satisfaction = 0;
-			if(peers[i] instanceof Collaborator){	
-				currentDonated = peers[i].getCurrentDonated(this.numSteps-1);						
-				currentConsumed = peers[i].getCurrentConsumed(this.numSteps-1);
-			}
-			else{
-				currentDonated = 0;
-				currentConsumed = peers[i].getCurrentConsumed(this.numSteps-1);
-			}
 			
-			if(peers[i] instanceof FreeRider && currentConsumed == 0){
-				satisfaction = 0;
-			}else{
-				satisfaction = Simulator.getSatisfaction(currentDonated, currentConsumed, this.numSteps, this.capacitySupplied, this.peersDemand);
-			}
+			double currentGranted, currentRequested, satisfaction;
+			
+			currentGranted = peers[i].getCurrentConsumed(this.numSteps-1);						
+			currentRequested = peers[i].getCurrentRequested(this.numSteps-1);
+			satisfaction = Simulator.getSatisfaction(currentGranted, currentRequested);
 			
 			this.addNumber(this.satisfactionSheet, 2, i+1, satisfaction);
 		}
@@ -146,31 +137,15 @@ public class WriteExcel2010 {
 			String peer = (peers[i] instanceof Collaborator)?"Collaborator":"Free Rider"; 
 			this.addText(this.satisfactionPerStepSheet, 0, i+1, peer);
 			this.addNumber(this.satisfactionPerStepSheet, 1, i+1, peers[i].getPeerId());
-			double currentDonated = 0, currentConsumed = 0;
 			
-			for(int j = 0; j < this.numSteps; j++){
-				double satisfaction = 0;
-				if(peers[i] instanceof Collaborator){
-					currentDonated = peers[i].getCurrentDonated(j);						
-					currentConsumed = peers[i].getCurrentConsumed(j);
-				}
-				else{
-					currentDonated = 0;									//always ZERO
-					currentConsumed = peers[i].getCurrentConsumed(j);
-				}
-				
-				if(peers[i] instanceof FreeRider && currentConsumed == 0){
-					satisfaction = 0;
-				}else{
-					satisfaction = Simulator.getSatisfaction(currentDonated, currentConsumed, this.numSteps, this.capacitySupplied, this.peersDemand);
-				}
+			double currentGranted, currentRequested, satisfaction;
+			
+			for(int j = 0; j < this.numSteps; j++){				
+				currentGranted = peers[i].getCurrentConsumed(j);						
+				currentRequested = peers[i].getCurrentRequested(j);
+				satisfaction = Simulator.getSatisfaction(currentGranted, currentRequested);
 				
 				this.addNumber(this.satisfactionPerStepSheet, j+2, i+1, satisfaction);
-				
-//				if(satisfaction==Double.POSITIVE_INFINITY)
-//					this.addText(this.satisfactionPerStepSheet, j+2, i+1, "Infinity");
-//				else
-//					this.addNumber(this.satisfactionPerStepSheet, j+2, i+1, satisfaction);
 			}
 		}
 	}

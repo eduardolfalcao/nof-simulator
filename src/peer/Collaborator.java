@@ -13,6 +13,8 @@ public class Collaborator extends Peer{
 	private double capacitySupplied;						//capacity supplied in the current step		
 	private double capacitySuppliedHistory[];
 	
+	private boolean increasingCapacitySupplied;
+	
 	/**
 	 * @param demand the amount of demand for resources from another peer
 	 * @param peerId the id of the peer
@@ -25,6 +27,7 @@ public class Collaborator extends Peer{
 		this.setCapacitySupplied(capacitySupplied);
 		this.setCapacitySuppliedReferenceValue(capacitySupplied);
 		this.setCapacitySuppliedHistory(new double[numSteps]);
+		this.setIncreasingCapacitySupplied(false);
 	}
 
 	/**
@@ -68,6 +71,20 @@ public class Collaborator extends Peer{
 	 */
 	public void setCapacitySuppliedHistory(double capacitySuppliedHistory[]) {
 		this.capacitySuppliedHistory = capacitySuppliedHistory;
+	}
+
+	/**
+	 * @return the increasingCapacitySupplied
+	 */
+	public boolean isIncreasingCapacitySupplied() {
+		return increasingCapacitySupplied;
+	}
+
+	/**
+	 * @param increasingCapacitySupplied the increasingCapacitySupplied to set
+	 */
+	public void setIncreasingCapacitySupplied(boolean increasingCapacitySupplied) {
+		this.increasingCapacitySupplied = increasingCapacitySupplied;
 	}
 	
 	

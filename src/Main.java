@@ -20,7 +20,7 @@ public class Main {
 		double changingValue = 0.1;		
 		boolean nofWithLog = false;			//with sqrt
 		
-		String path = "/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation/";
+		String path = "/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation/granted over requested/";
 		String file = "";
 		
 		
@@ -30,8 +30,6 @@ public class Main {
 		double [] percentageCollaboratorsSimulations = {0.25, 0.75};
 		double [] consumingStateProbabilitySimulations = {0.2, 0.5};
 		double [] peersDemandSimulations = {2, 5};
-		
-		
 		
 		for(boolean dynamic : dynamicSimulations){
 			for(int numPeers : numPeersSimulations){
@@ -51,9 +49,6 @@ public class Main {
 				}
 			}
 		}
-		
-		
-	
 		
 	}
 
