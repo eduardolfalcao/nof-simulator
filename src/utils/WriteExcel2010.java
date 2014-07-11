@@ -4,9 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
-
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
@@ -23,10 +20,8 @@ import simulator.Simulator;
 public class WriteExcel2010 {
 	
 	private String outputFile;
-	private XSSFSheet satisfactionSheet, satisfactionPerStepSheet, consumedSheet, donatedSheet, capacitySuppliedPerStepSheet, freeRiderSuccessSheet;
+	private XSSFSheet satisfactionSheet, satisfactionPerStepSheet, consumedSheet, requestedSheet, donatedSheet, capacitySuppliedPerStepSheet, freeRiderSuccessSheet;
 	private int numSteps;
-	private double peersDemand;
-	private double capacitySupplied;
 	
 	private XSSFWorkbook workbook;
 	private XSSFCellStyle timesBoldUnderline, times;
@@ -37,12 +32,10 @@ public class WriteExcel2010 {
 	 * @param outputFile the url address where the file will be stored
 	 * @param numSteps the number of steps of the simulation
 	 */
-	public WriteExcel2010(String outputFile, int numSteps, double capacitySupplied, double peersDemand) {
+	public WriteExcel2010(String outputFile, int numSteps) {
 		super();
 		this.outputFile = outputFile;
 		this.numSteps = numSteps;
-		this.capacitySupplied = capacitySupplied;
-		this.peersDemand = peersDemand;
 		
 		this.workbook = new XSSFWorkbook();
 		
@@ -68,6 +61,7 @@ public class WriteExcel2010 {
 		satisfactionSheet = workbook.createSheet("Satisfaction");
 		satisfactionPerStepSheet = workbook.createSheet("Satisfaction per steps");
 		consumedSheet = workbook.createSheet("Consumed");
+		requestedSheet = workbook.createSheet("Requested");
 		donatedSheet = workbook.createSheet("Donated");
 		capacitySuppliedPerStepSheet = workbook.createSheet("Capacity supplied per steps");
 		freeRiderSuccessSheet = workbook.createSheet("Free riders success per steps");
@@ -75,6 +69,7 @@ public class WriteExcel2010 {
 		createLabel(satisfactionSheet);
 		createLabel(satisfactionPerStepSheet);
 		createLabel(consumedSheet);
+		createLabel(requestedSheet);
 		createLabel(donatedSheet);
 		createLabel(capacitySuppliedPerStepSheet); 
 		createLabel(freeRiderSuccessSheet);
@@ -93,6 +88,7 @@ public class WriteExcel2010 {
 		if (sheet.getSheetName().equals("Satisfaction")) 
 			addLabel(sheet, 2, 0, "Satisfaction");
 		else if (sheet.getSheetName().equals("Consumed")
+				|| sheet.getSheetName().equals("Requested")
 				|| sheet.getSheetName().equals("Donated")
 				|| sheet.getSheetName().equals("Satisfaction per steps")
 				|| sheet.getSheetName().equals("Capacity supplied per steps")
@@ -107,22 +103,40 @@ public class WriteExcel2010 {
 	 * 
 	 * @param peers the peers of simulation
 	 */
-	public void fulfillSatisfactions(Peer [] peers){
+	public void fulfillSatisfactions(Peer [] peers, boolean fairnessBased){
+		
+		int numCollaborators = 0, numFreeRiders = 0;
 		
 		//fulfilling satisfaction peers cells
 		for (int i = 0; i < peers.length; i++) {
-			String peer = (peers[i] instanceof Collaborator)?"Collaborator":"Free Rider"; 
+			String peer = "";
+			if(peers[i] instanceof Collaborator){
+				peer = "Collaborator";
+				numCollaborators++;
+			}
+			else{
+				peer = "Free Rider";
+				numFreeRiders++;
+			}
 			this.addText(this.satisfactionSheet, 0, i+1, peer);
 			this.addNumber(this.satisfactionSheet, 1, i+1, peers[i].getPeerId());
 			
-			double currentGranted, currentRequested, satisfaction;
+			double currentGranted, currentDonatedOrRequested, satisfaction;
 			
-			currentGranted = peers[i].getCurrentConsumed(this.numSteps-1);						
-			currentRequested = peers[i].getCurrentRequested(this.numSteps-1);
-			satisfaction = Simulator.getSatisfaction(currentGranted, currentRequested);
+			currentGranted = peers[i].getCurrentConsumed(this.numSteps-1);	
+			currentDonatedOrRequested = (fairnessBased==true?peers[i].getCurrentDonated(this.numSteps-1):peers[i].getCurrentRequested(this.numSteps-1));
+			satisfaction = Simulator.getSatisfaction(currentGranted, currentDonatedOrRequested);
 			
 			this.addNumber(this.satisfactionSheet, 2, i+1, satisfaction);
 		}
+		
+		this.addText(this.satisfactionSheet, 4, 0, "SUM - Collab Satisf");
+		this.addText(this.satisfactionSheet, 6, 0, "SUM - FreeRiders Satisf");
+		
+		String strFormulaCollab = "SUM(C2:C"+(numCollaborators+1)+")";
+		String strFormulaFreeRiders = "SUM(C"+(numCollaborators+2)+":C"+(numCollaborators+numFreeRiders+1)+")";
+		this.addFormula(this.satisfactionSheet, 4, 1, strFormulaCollab);
+		this.addFormula(this.satisfactionSheet, 6, 1, strFormulaFreeRiders);
 	}
 	
 	/**
@@ -130,7 +144,7 @@ public class WriteExcel2010 {
 	 * 
 	 * @param peers the peers of simulation
 	 */
-	public void fulfillSatisfactionsPerSteps(Peer [] peers){
+	public void fulfillSatisfactionsPerSteps(Peer [] peers, boolean fairnessBased){
 		
 		//fulfilling satisfaction peers cells
 		for (int i = 0; i < peers.length; i++) {
@@ -138,12 +152,12 @@ public class WriteExcel2010 {
 			this.addText(this.satisfactionPerStepSheet, 0, i+1, peer);
 			this.addNumber(this.satisfactionPerStepSheet, 1, i+1, peers[i].getPeerId());
 			
-			double currentGranted, currentRequested, satisfaction;
+			double currentGranted, currentDonatedOrRequested, satisfaction;
 			
 			for(int j = 0; j < this.numSteps; j++){				
 				currentGranted = peers[i].getCurrentConsumed(j);						
-				currentRequested = peers[i].getCurrentRequested(j);
-				satisfaction = Simulator.getSatisfaction(currentGranted, currentRequested);
+				currentDonatedOrRequested = (fairnessBased==true?peers[i].getCurrentDonated(this.numSteps-1):peers[i].getCurrentRequested(this.numSteps-1));
+				satisfaction = Simulator.getSatisfaction(currentGranted, currentDonatedOrRequested);
 				
 				this.addNumber(this.satisfactionPerStepSheet, j+2, i+1, satisfaction);
 			}
@@ -167,6 +181,24 @@ public class WriteExcel2010 {
 			
 			for(int j = 0; j < this.numSteps; j++)
 				this.addNumber(this.consumedSheet, j+2, i + 1, peers[i].getConsumedHistory()[j]);
+		}
+	}
+	
+	/**
+	 * Write requested data.
+	 * 
+	 * @param peers the peers of simulation
+	 */
+	public void fulfillRequestedData(Peer [] peers){
+		
+		//fulfilling requested peers cells
+		for (int i = 0; i < peers.length; i++) {
+			String peer = (peers[i] instanceof Collaborator) ? "Collaborator": "Free Rider";
+			this.addText(this.requestedSheet, 0, i + 1, peer);
+			this.addNumber(this.requestedSheet, 1, i + 1, peers[i].getPeerId());
+			
+			for(int j = 0; j < this.numSteps; j++)
+				this.addNumber(this.requestedSheet, j+2, i + 1, peers[i].getRequestedHistory()[j]);
 		}
 	}
 	
@@ -308,6 +340,24 @@ public class WriteExcel2010 {
 	    if(cell==null)
 	    	cell = newRow.createCell(column);
 	    cell.setCellValue(text);
+	    cell.setCellStyle(this.times);
+	}
+	
+	/**
+	 * @param sheet the tab on which will be written
+	 * @param column the column on which will be written
+	 * @param row the row on which will be written
+	 * @param formula the formula to be calculated
+	 */
+	private void addFormula(XSSFSheet sheet, int column, int row, String formula){		
+		XSSFRow newRow = sheet.getRow(row);
+		if(newRow==null)
+			newRow = sheet.createRow(row);
+	    XSSFCell cell = newRow.getCell(column);
+	    if(cell==null)
+	    	cell = newRow.createCell(column);
+		cell.setCellType(XSSFCell.CELL_TYPE_FORMULA);
+		cell.setCellFormula(formula);
 	    cell.setCellStyle(this.times);
 	}
 	
