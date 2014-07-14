@@ -12,14 +12,11 @@ public class Main {
 		
 		int replication = 1;
 		double capacitySupplied = 1;
-		int returnLevelVerificationTime = 5;
 		double changingValue = 0.05;		
 		boolean nofWithLog = false;			//with sqrt
 		
 		
 		String file = "";
-		
-		boolean [] fairnessBased = {true,false};
 		int [] numPeersSimulations = {100};
 		int [] numStepsSimulations = {1000};
 		boolean [] dynamicSimulations = {true,false};
@@ -32,22 +29,24 @@ public class Main {
 	
 		
 		while(replication <= Main.replications){
-			for(boolean fairness : fairnessBased){
-				for(boolean dynamic : dynamicSimulations){
-					for(int numPeers : numPeersSimulations){
-						for(int numSteps : numStepsSimulations){
-							for(double consumingStateProbability : consumingStateProbabilitySimulations){
-								for(double percentageCollaborators : percentageCollaboratorsSimulations){
-									for(double peersDemand : peersDemandSimulations){
-										String path = "/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation/"+(fairness==true?"consumed over donated":"granted over requested")+"/";
-										file = "Dynamic  "+dynamic+" - Control "+(fairness==true?"consumedOverDonated":"grantedOverRequested")+" - "							
-												+numPeers+" peers - "+numSteps+" steps - "+((1-percentageCollaborators)*100)+"% freeriders - "+(consumingStateProbability*100)+"% consuming probability - "
-												+ ""+peersDemand+" peers demand - "+returnLevelVerificationTime+" in "+returnLevelVerificationTime+" steps - "+(changingValue*100)+"% change value - NoF by "+(nofWithLog==false?"SquareRoot":"Log")
+			for(boolean dynamic : dynamicSimulations){
+				for(int numPeers : numPeersSimulations){
+					for(int numSteps : numStepsSimulations){
+						for(double consumingStateProbability : consumingStateProbabilitySimulations){
+							for(double percentageCollaborators : percentageCollaboratorsSimulations){
+								for(double peersDemand : peersDemandSimulations){
+										String path = "/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation/";
+										file = "Dynamic  "+dynamic+" - Control  - "
+												+numPeers+" peers - "
+												+numSteps+" steps - "
+												+((1-percentageCollaborators)*100)+"% freeriders - "+(consumingStateProbability*100)+"% consuming probability - "
+												+peersDemand+" peers demand - "
+												+(changingValue*100)+"% change value - "
+												+ "NoF by "+(nofWithLog==false?"SquareRoot":"Log")
 												+ ".xlsx";
-										Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, nofWithLog, peersDemand, capacitySupplied, returnLevelVerificationTime, changingValue, fairness, Level.SEVERE, path+replication+"/"+file);
+										Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, nofWithLog, peersDemand, capacitySupplied, changingValue, Level.SEVERE, path+replication+"/"+file);
 										s1.setupSimulation();
 										s1.startSimulation();
-									}
 								}
 							}
 						}
@@ -56,7 +55,6 @@ public class Main {
 			}
 			replication++;
 		}
-		
 	}
 
 }

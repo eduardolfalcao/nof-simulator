@@ -42,7 +42,6 @@ public class Simulator {
 	 * Collaborators characteristics.
 	 */
 	private double capacitySupplied;				//capacity of resources that peers can donate 			[begins with 1]
-	private int returnLevelVerificationTime;		//times in steps to measure the necessity of supplying more or less resources. [assumed 10]
 	private double changingValue;					//value added or subtracted to/from capacitySupplied	[assumed 0.05]
 	
 	/**
@@ -60,7 +59,6 @@ public class Simulator {
 	private int numCollaborators;					//number of collaborators
 	
 	private String outputFile;						//file to export Data
-	private boolean fairnessBased;					//satisfaction calculated by fairness or attendanceProbability
 	
 	public final static Logger logger = Logger.getLogger(Simulator.class.getName());
 
@@ -77,7 +75,7 @@ public class Simulator {
 	 * @param changingValue value added or subtracted to/from capacitySupplied
 	 */
 	public Simulator(int numPeers, int numSteps, double consumingStateProbability, double percentageCollaborators, boolean dynamic, boolean nofWithLog,
-			double peersDemand, double capacitySupplied, int returnLevelVerificationTime, double changingValue, boolean fairnessBased, Level level, String outputFile) {
+			double peersDemand, double capacitySupplied, double changingValue, Level level, String outputFile) {
 		super();
 		this.numPeers = numPeers;
 		this.numSteps = numSteps;
@@ -87,9 +85,7 @@ public class Simulator {
 		this.nofWithLog = nofWithLog;
 		this.peersDemand = peersDemand;
 		this.capacitySupplied = capacitySupplied;
-		this.returnLevelVerificationTime = returnLevelVerificationTime;
 		this.changingValue = changingValue;
-		this.fairnessBased = fairnessBased;
 		this.currentStep = 0;
 		Simulator.peers = new Peer[numPeers];
 		this.consumedPeersList = new ArrayList<Integer> ();
@@ -262,8 +258,6 @@ public class Simulator {
 			
 		/** Refreshing Free Riders' demand. **/
 		for(Integer fId : freeRidersList){
-			/** To calculate the probability of success of free riders in all steps **/
-			((FreeRider)peers[fId]).getSuccessHistory()[this.currentStep] = (((FreeRider)peers[fId]).getDemand())==this.peersDemand?false:true;
 			if((this.currentStep+1)<this.numSteps){
 				peers[fId].setDemand(this.peersDemand);			
 				peers[fId].getRequestedHistory()[this.currentStep+1] = this.peersDemand-this.peersCapacity;
@@ -272,9 +266,9 @@ public class Simulator {
 			}
 		}
 			
-		/** If in dynamic context, update capacity supplied by collaborators (on the right time). **/
-		if(this.dynamic && ((this.currentStep+1)%this.returnLevelVerificationTime)==0)
-			this.updateCapacitySupplied(this.fairnessBased);
+		/** If in dynamic context update capacity supplied by collaborators. **/
+		if(this.dynamic)
+			this.updateCapacitySupplied();
 
 		/** Set next step.**/
 		this.currentStep++;
@@ -464,14 +458,17 @@ public class Simulator {
 			
 			Simulator.logger.finest("Reputação do consumidor em relação ao doador: "+NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog));
 			Simulator.logger.finest("Reputação do doador em relação ao consumidor: "+NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), this.nofWithLog));
-			
-			System.out.println();
 		}
 		
 		donator.setCapacitySupplied(donator.getCapacitySupplied()-valueToBeDonated);//update the capacity supplied by donator
 		donator.getDonatedHistory()[this.currentStep] += valueToBeDonated;			//update the donated amount (from donator) in this step
 		consumer.setDemand(consumer.getDemand()-valueToBeDonated);					//update the demand of the consumer in the current step
 		consumer.getConsumedHistory()[this.currentStep] += valueToBeDonated;		//update the consumed amount (from consumer) in this step
+		
+		/** To calculate the probability of success of free riders in all steps **/
+		if(consumer instanceof FreeRider)
+			((FreeRider)consumer).getSuccessHistory()[this.currentStep] = true;
+		
 		
 	}
 	
@@ -512,7 +509,7 @@ public class Simulator {
 	/**
 	 * Update the capacity supplied of all peers (collaborators) based on their current and last satisfaction.	
 	 */
-	private void updateCapacitySupplied(boolean fairnessBased){
+	private void updateCapacitySupplied(){
 		
 		List <Integer> allCollaborators = new ArrayList<Integer>();
 		allCollaborators.addAll(donatorsList);
@@ -525,31 +522,19 @@ public class Simulator {
 				Collaborator collaborator = (Collaborator) Simulator.peers[i];
 				
 				double currentConsumed = collaborator.getCurrentConsumed(this.currentStep);
-				double currentDonatedOrRequested = (fairnessBased==true?collaborator.getCurrentDonated(this.currentStep):collaborator.getCurrentRequested(this.currentStep));
+				double currentDonatedOrRequested = collaborator.getCurrentDonated(this.currentStep);
 				double currentSatisfaction = Simulator.getSatisfaction(currentConsumed, currentDonatedOrRequested);
 				
-				double lastConsumed = collaborator.getCurrentConsumed((this.currentStep-this.returnLevelVerificationTime)<0?0:this.currentStep-this.returnLevelVerificationTime);
-				double lastDonatedOrRequested = (fairnessBased==true?
-						collaborator.getCurrentDonated((this.currentStep-this.returnLevelVerificationTime)<0?0:this.currentStep-this.returnLevelVerificationTime):
-						collaborator.getCurrentRequested((this.currentStep-this.returnLevelVerificationTime)<0?0:this.currentStep-this.returnLevelVerificationTime));
-				double lastSatisfaction = Simulator.getSatisfaction(lastConsumed, lastDonatedOrRequested);
-				
-				if(currentSatisfaction==lastSatisfaction)						//keep the current capacitySuppliedReferenceValue
-					continue;
-				else if(currentSatisfaction>lastSatisfaction){					//the satisfaction increased
-					if(collaborator.isIncreasingCapacitySupplied())				//if it was increasing the capacitySupplied, keep increasing (if possible)
-						collaborator.setCapacitySuppliedReferenceValue(Math.min(1, collaborator.getCapacitySuppliedReferenceValue()+this.changingValue));	//try to increase the current capacitySuppliedReferenceValue					
-					else														//if it was decreasing the capacitySupplied, keep decreasing (if possible)
-						collaborator.setCapacitySuppliedReferenceValue(Math.max(0, collaborator.getCapacitySuppliedReferenceValue()-this.changingValue));	//try to decrease the current capacitySuppliedReferenceValue
+				/** Try to decrease satisfaction to 1, by increasing the amount donated.**/
+				if(currentSatisfaction > 1)													
+					collaborator.setCapacitySuppliedReferenceValue(Math.min(1, collaborator.getCapacitySuppliedReferenceValue()+this.changingValue));	//try to increase the current capacitySuppliedReferenceValue
+				/** Try to increase satisfaction to 1, by decreasing the amount donated.**/
+				else if(currentSatisfaction < 1)
+					collaborator.setCapacitySuppliedReferenceValue(Math.max(0.5, collaborator.getCapacitySuppliedReferenceValue()-this.changingValue));	//try to decrease the current capacitySuppliedReferenceValue
+				else{		//==
+					
 				}
-				else {															//the satisfaction decreased
-					if(collaborator.isIncreasingCapacitySupplied())				//if it was increasing the capacitySupplied, try decreasing now (if possible)
-						collaborator.setCapacitySuppliedReferenceValue(Math.max(0, collaborator.getCapacitySuppliedReferenceValue()-this.changingValue));	//try to decrease the current capacitySuppliedReferenceValue
-					else														//if it was decreasing the capacitySupplied, keep increasing (if possible)
-						collaborator.setCapacitySuppliedReferenceValue(Math.min(1, collaborator.getCapacitySuppliedReferenceValue()+this.changingValue));	//try to increase the current capacitySuppliedReferenceValue
-						
-					collaborator.setIncreasingCapacitySupplied(!collaborator.isIncreasingCapacitySupplied());
-				}
+
 				collaborator.setCapacitySupplied(collaborator.getCapacitySuppliedReferenceValue());
 				if((this.currentStep+1)<this.numSteps)
 					collaborator.getCapacitySuppliedHistory()[this.currentStep+1] = collaborator.getCapacitySuppliedReferenceValue();
@@ -558,17 +543,17 @@ public class Simulator {
 	}
 	
 	/**
-	 * Given the amount consumed and donatedOrRequested, returns the satisfaction (fairness or attendanceProbability).
+	 * Given the amount consumed and donated, returns the satisfaction (fairness).
 	 * 
 	 * @param consumed
-	 * @param donatedOrRequested
+	 * @param donated
 	 * @return
 	 */
-	public static double getSatisfaction(double consumed, double donatedOrRequested){
-		if(donatedOrRequested == 0)
+	public static double getSatisfaction(double consumed, double donated){
+		if(donated == 0)
 			return -1;
 		else
-			return consumed/donatedOrRequested;
+			return consumed/donated;
 	}
 			
 	/**
@@ -600,8 +585,8 @@ public class Simulator {
 	private void exportData(){		
 		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
 		we.setupFile();		
-		we.fulfillSatisfactions(peers, this.fairnessBased);
-		we.fulfillSatisfactionsPerSteps(peers, this.fairnessBased);
+		we.fulfillSatisfactions(peers);
+		we.fulfillSatisfactionsPerSteps(peers);
 		we.fulfillConsumptionData(peers);
 		we.fulfillRequestedData(peers);
 		we.fulfillDonationData(peers);
@@ -620,185 +605,6 @@ public class Simulator {
     }
 
     
-    
-    
-    
-    
-    
-    
-    
-    
-	
-	/*******************************************
-	 * Breaking visibility for testing methods *
-	 *******************************************/
-    
-    //no nextStep();
-    public void testPerformCurrentStepDonationsNoNextStep(){
-    	this.currentStep++;
-		
-		Collaborator collab = null;
-		
-		/**
-		 * While there is any collaborator willing to donate, try to choose one.
-		 */
-		while(!this.donatorsList.isEmpty()){
-			
-			/**
-			 * If all peers who wanted to consume already consumed the quantity of resources
-			 * he wanted, then there is not another possible match.
-			 */
-			if(!this.consumersCollabList.isEmpty())
-				collab = this.choosesCollaboratorToDonate();	//randomly chooses who will donate
-			else
-				break;											//there is not any more consumer
-			
-			/**
-			 * Keeps choosing consumer and donating until supply all his capacity.
-			 */
-			while(collab.getCapacitySupplied() > 0){
-				System.out.println("(ANTES) Collab id: "+collab.getPeerId()+". Capacity: "+collab.getCapacitySupplied());
-				Peer p = choosesConsumer(collab);
-				performDonation(collab, p);
-				System.out.println("(DEPOIS) Collab id: "+collab.getPeerId()+". Capacity: "+collab.getCapacitySupplied());
-			}
-			
-			/**
-			 * Remove the donator from donatorsList, and add to donatedPeersList, in order
-			 * to know who has already donated.
-			 */
-			this.donatorsList.remove((Integer)collab.getPeerId());
-			this.donatedPeersList.add(collab.getPeerId());
-		}
-		
-		//nextStep();
-    }
-    
-    //no performCurrentStepDonations()
-    public void testNextStepNoPerformCurrentStepDonations(){
-		if(this.currentStep>=this.numSteps){
-			//acabou... salva os dados em algum lugar
-		}
-		else{			
-			
-			/**
-			 * Join all collaborators, consumers, and free riders in their lists.
-			 */
-			donatorsList.addAll(donatedPeersList);
-			donatedPeersList.clear();
-			
-			for(int peerId : consumedPeersList){
-				if(peers[peerId] instanceof FreeRider)
-					freeRidersList.add(peerId);					
-				else
-					consumersCollabList.add(peerId);					
-			}
-			consumedPeersList.clear();
-
-			
-			//just to check if everything is OK until now
-			if((donatorsList.size() + consumersCollabList.size())==numCollaborators)
-				System.out.println("#Donators("+donatorsList.size()+") + #Consumers("+consumersCollabList.size()+") == #Collaborators("+numCollaborators+") :-)");
-			
-			
-			/**
-			 * Join all collaborators in a list, and clear donatorsList and consumersList,
-			 * to fulfill them again.
-			 */
-			List <Integer> allCollaborators = new ArrayList<Integer>();
-			allCollaborators.addAll(donatorsList);
-			allCollaborators.addAll(consumersCollabList);			
-			donatorsList.clear();
-			consumersCollabList.clear();
-			
-			for(int collabId : allCollaborators){
-				//based in consumingStateProbability, we decide if the collaborator will consume or not in the next step
-				peers[collabId].setConsuming((this.randomGenerator.nextInt(100)+1 <= (this.consumingStateProbability*100))?true:false);
-				if(peers[collabId].isConsuming()){
-					peers[collabId].setDemand(this.peersDemand);
-					((Collaborator)peers[collabId]).setCapacitySupplied(0);
-					consumersCollabList.add(collabId);
-				}
-				else{
-					peers[collabId].setDemand(0);
-					((Collaborator)peers[collabId]).setCapacitySupplied(this.capacitySupplied);
-					donatorsList.add(collabId);	
-				}
-			}
-			
-			for(Integer fId : freeRidersList){
-				peers[fId].setConsuming(true);				//just to assure
-				peers[fId].setDemand(this.peersDemand);
-			}
-				
-			//performCurrentStepDonations();
-		}			
-	}
-    
-	public Collaborator testChoosesCollaboratorToDonate(){
-		return this.choosesCollaboratorToDonate();
-	}
-	
-	public int testAnyPeer(List <Integer> peersList){    	
-        return this.anyPeer(peersList);
-    }
-	
-	public Peer testChoosesConsumer(Collaborator c){
-		return this.choosesConsumer(c);
-	}
-	
-	public void testPerformDonation(Collaborator donator, Peer consumer){
-		this.performDonation(donator, consumer);
-	}
-	
-	public List<Integer> getConsumersCollabList() {
-		return consumersCollabList;
-	}
-
-	public void setConsumersCollabList(List<Integer> consumersCollabList) {
-		this.consumersCollabList = consumersCollabList;
-	}
-
-	public List<Integer> getDonatorsList() {
-		return donatorsList;
-	}
-
-	public void setDonatorsList(List<Integer> donatorsList) {
-		this.donatorsList = donatorsList;
-	}
-
-	public List<Integer> getFreeRidersList() {
-		return freeRidersList;
-	}
-
-	public void setFreeRidersList(List<Integer> freeRidersList) {
-		this.freeRidersList = freeRidersList;
-	}	
-
-
-	public int getCurrentStep() {
-		return currentStep;
-	}
-
-	public void setCurrentStep(int currentStep) {
-		this.currentStep = currentStep;
-	}
-
-	public List<Integer> getDonatedPeersList() {
-		return donatedPeersList;
-	}
-
-	public void setDonatedPeersList(List<Integer> donatedPeersList) {
-		this.donatedPeersList = donatedPeersList;
-	}
-
-	public List<Integer> getConsumedPeersList() {
-		return consumedPeersList;
-	}
-
-	public void setConsumedPeersList(List<Integer> consumedPeersList) {
-		this.consumedPeersList = consumedPeersList;
-	}
 }
 
 

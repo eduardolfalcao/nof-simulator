@@ -103,7 +103,7 @@ public class WriteExcel2010 {
 	 * 
 	 * @param peers the peers of simulation
 	 */
-	public void fulfillSatisfactions(Peer [] peers, boolean fairnessBased){
+	public void fulfillSatisfactions(Peer [] peers){
 		
 		int numCollaborators = 0, numFreeRiders = 0;
 		
@@ -124,7 +124,7 @@ public class WriteExcel2010 {
 			double currentGranted, currentDonatedOrRequested, satisfaction;
 			
 			currentGranted = peers[i].getCurrentConsumed(this.numSteps-1);	
-			currentDonatedOrRequested = (fairnessBased==true?peers[i].getCurrentDonated(this.numSteps-1):peers[i].getCurrentRequested(this.numSteps-1));
+			currentDonatedOrRequested = peers[i].getCurrentDonated(this.numSteps-1);
 			satisfaction = Simulator.getSatisfaction(currentGranted, currentDonatedOrRequested);
 			
 			this.addNumber(this.satisfactionSheet, 2, i+1, satisfaction);
@@ -144,7 +144,7 @@ public class WriteExcel2010 {
 	 * 
 	 * @param peers the peers of simulation
 	 */
-	public void fulfillSatisfactionsPerSteps(Peer [] peers, boolean fairnessBased){
+	public void fulfillSatisfactionsPerSteps(Peer [] peers){
 		
 		//fulfilling satisfaction peers cells
 		for (int i = 0; i < peers.length; i++) {
@@ -156,7 +156,7 @@ public class WriteExcel2010 {
 			
 			for(int j = 0; j < this.numSteps; j++){				
 				currentGranted = peers[i].getCurrentConsumed(j);						
-				currentDonatedOrRequested = (fairnessBased==true?peers[i].getCurrentDonated(this.numSteps-1):peers[i].getCurrentRequested(this.numSteps-1));
+				currentDonatedOrRequested = peers[i].getCurrentDonated(this.numSteps-1);
 				satisfaction = Simulator.getSatisfaction(currentGranted, currentDonatedOrRequested);
 				
 				this.addNumber(this.satisfactionPerStepSheet, j+2, i+1, satisfaction);
