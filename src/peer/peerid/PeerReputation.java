@@ -1,8 +1,8 @@
 package peer.peerid;
 
 
-//public class PeerReputation implements Comparable<Object>{
-public class PeerReputation{
+public class PeerReputation implements Comparable<Object>{
+//public class PeerReputation{
 
 
 	private int id;
@@ -14,28 +14,43 @@ public class PeerReputation{
 		this.id = id;
 		this.reputation = reputation;
 	}
-//	
-//	/**
-//	 * The list is sorted based on peers reputations.
-//	 */
-//	@Override
-//	public int compareTo(Object o) {
-//		final int BEFORE = -1;
-//	    final int EQUAL = 0;
-//	    final int AFTER = 1;
-//		
-//	    if(!(o instanceof PeerReputation))
-//			return EQUAL;
-//		
-//		PeerReputation otherPeer = (PeerReputation) o;
-//		
-//		if (this.reputation < otherPeer.getReputation()) 
-//	    	return BEFORE;
-//		else if(this.reputation == otherPeer.getReputation())
-//			return EQUAL;
-//		else	// (myReputation >= hisReputation) 
-//	    	return AFTER;
-//	}
+	
+	/**
+	 * The objects are equal if they have the same peerId.
+	 */
+	public boolean equals(Object obj) {
+	       if (obj == null || !(obj instanceof PeerReputation))
+	            return false;
+	       else{
+	    	   PeerReputation peerRep = (PeerReputation) obj;
+	    	   if(this.id == peerRep.getId())
+	    		   return true;
+	    	   else
+	    		   return false;
+	       }
+	}
+	
+	/**
+	 * The list is sorted based on peers reputations.
+	 */
+	@Override
+	public int compareTo(Object o) {
+		final int BEFORE = -1;
+	    final int EQUAL = 0;
+	    final int AFTER = 1;
+		
+	    if(!(o instanceof PeerReputation))
+			return EQUAL;
+		
+		PeerReputation otherPeer = (PeerReputation) o;
+		
+		if (this.reputation < otherPeer.getReputation()) 
+	    	return BEFORE;
+		else if(this.reputation == otherPeer.getReputation())
+			return EQUAL;
+		else	// (myReputation >= hisReputation) 
+	    	return AFTER;
+	}
 
 	public int getId() {
 		return id;

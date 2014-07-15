@@ -19,10 +19,10 @@ public class Main {
 		String file = "";
 		int [] numPeersSimulations = {100};
 		int [] numStepsSimulations = {1000};
-		boolean [] dynamicSimulations = {true,false};
-		double [] percentageCollaboratorsSimulations = {0.25, 0.75};			//0.25, 0.75
-		double [] consumingStateProbabilitySimulations = {0.2, 0.5};			//0.5
-		double [] peersDemandSimulations = {2, 5};								//2, 5
+		boolean [] dynamicSimulations = {false};							//{true,false};
+		double [] percentageCollaboratorsSimulations = {0.5};				//0.25, 0.75
+		double [] consumingStateProbabilitySimulations = {0.5};				//0.2, 0.5
+		double [] peersDemandSimulations = {5};							//2, 5
 		
 		
 		

@@ -2,7 +2,9 @@ package peer.peerid;
 
 import java.util.Comparator;
 
-public class PeerReputationComparator implements Comparator{
+
+//Pode deletar!!
+public class PeerReputationComparator implements Comparator<Object>{
 
 	@Override
 	public int compare(Object o1, Object o2) {

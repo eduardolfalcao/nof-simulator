@@ -2,6 +2,7 @@ package simulator;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.ConsoleHandler;
@@ -14,6 +15,7 @@ import peer.Collaborator;
 import peer.FreeRider;
 import peer.Peer;
 import peer.peerid.PeerReputation;
+import utils.SortedList;
 import utils.WriteExcel2010;
 
 public class Simulator {
@@ -323,10 +325,18 @@ public class Simulator {
 			/** Stop searching if the peers has not consumed and is in consuming state. **/
 			while(!(!this.consumedPeersList.contains((Integer)p.getPeerId()) && p.isConsuming())){
 				try{
-					index = c.getThePeerIdWithNthBestReputation(nth);
-					if(index==-1)											//we couldn't find a peer that hasn't interacted yet, and wants to consume
-						break;
-					p = peers[index];										//update the peer being evaluated
+					if(this.currentStep == 500){					
+						index = c.getThePeerIdWithNthBestReputation(nth);
+						if(index==-1)											//we couldn't find a peer that hasn't interacted yet, and wants to consume
+							break;
+						p = peers[index];										//update the peer being evaluated
+					}
+					else{
+						index = c.getThePeerIdWithNthBestReputation(nth);
+						if(index==-1)											//we couldn't find a peer that hasn't interacted yet, and wants to consume
+							break;
+						p = peers[index];										//update the peer being evaluated
+					}
 				}catch(ArrayIndexOutOfBoundsException ex){
 					ex.printStackTrace();
 					return null;
@@ -396,45 +406,47 @@ public class Simulator {
 			 * object "called" interaction (B,A).
 			 */
 			
-			/** If the donator is peerA. Performs the donation, and updates the peers reputation. **/
-			if(donator.getPeerId() == interaction.getPeerA().getPeerId()){
+			if(donator.getPeerId() == interaction.getPeerA().getPeerId())
 				interaction.peerADonatesValue(valueToBeDonated);		//update the interaction of peerA
-				
-				/** Add/Update the treeMap donator reputation, and Add/Update also the consumer reputation (if he is not a free rider). **/				
-				PeerReputation peerRep = donator.getPeersReputations().getPeer(consumer.getPeerId());
-				if(peerRep==null){		//Add
-					donator.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog)));
-					if(!(consumer instanceof FreeRider))
-						consumer.getPeersReputations().add(new PeerReputation(donator.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), this.nofWithLog)));
-				}
-				else{					//Update
-					peerRep.setReputation(NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog));
-					if(!(consumer instanceof FreeRider))
-						consumer.getPeersReputations().getPeer(donator.getPeerId()).setReputation(NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), this.nofWithLog));
-				}
-			}
-			/** The donator is PeerB. Performs the donation, and updates the peers reputation. **/
-			else if(donator.getPeerId() == interaction.getPeerB().getPeerId()){
+			else if(donator.getPeerId() == interaction.getPeerB().getPeerId())
 				interaction.peerBDonatesValue(valueToBeDonated);		//update the interaction of peerB
-				
-				/** Add/Update the treeMap donator reputation, and Add/Update also the consumer reputation (if he is not a free rider). **/				
-				PeerReputation peerRep = donator.getPeersReputations().getPeer(consumer.getPeerId());
-				if(peerRep==null){		//Add
-					donator.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), this.nofWithLog)));
-					if(!(consumer instanceof FreeRider))
-						consumer.getPeersReputations().add(new PeerReputation(donator.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog)));
-				}
-				else{					//Update
-					peerRep.setReputation(NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), this.nofWithLog));
-					if(!(consumer instanceof FreeRider))
-						consumer.getPeersReputations().getPeer(donator.getPeerId()).setReputation(NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog));
-				}
-			}
 			else{
 				Simulator.logger.severe("The interaction exists, but for some reason, I could not identify who is peer A (the donator) or peer B (the consumer). "
 						+ "You must check what is happening!");
 				System.exit(0);
 				return;
+			}
+			
+			double consumerReputation = (donator.getPeerId() == interaction.getPeerA().getPeerId()?
+					NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog):
+						NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), this.nofWithLog));
+			
+			double donatorReputation = (donator.getPeerId() == interaction.getPeerA().getPeerId()?
+					NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), this.nofWithLog):
+						NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog));
+			
+			/** Add the treeMap donator reputation, and add also the consumer reputation (if he is not a free rider). **/
+			int consumerIndex = donator.getPeersReputations().indexOf(new PeerReputation(consumer.getPeerId(), 0));
+			if(consumerIndex==-1){		//Add
+				donator.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), consumerReputation));
+				if(!(consumer instanceof FreeRider))
+					consumer.getPeersReputations().add(new PeerReputation(donator.getPeerId(), donatorReputation));
+			}
+			/** Update the treeMap donator reputation, and update also the consumer reputation (if he is not a free rider). **/
+			else{
+				donator.getPeersReputations().get(consumerIndex).setReputation(consumerReputation);
+				if(!(consumer instanceof FreeRider)){
+					int donatorIndex = consumer.getPeersReputations().indexOf(new PeerReputation(donator.getPeerId(), 0));
+					if(donatorIndex != -1)
+						consumer.getPeersReputations().get(donatorIndex).setReputation(donatorReputation);
+					else{
+						Simulator.logger.severe("Some problems happened when updateing donatorsReputation. It seems that consumer and donator already interacted "
+								+ "but the consumer doesn't have any reference to donator in its reputation list."
+								+ "You must check what is happening!");
+						System.exit(0);
+						return;
+					}
+				}
 			}
 		}
 		/**
@@ -459,6 +471,11 @@ public class Simulator {
 			Simulator.logger.finest("Reputação do consumidor em relação ao doador: "+NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog));
 			Simulator.logger.finest("Reputação do doador em relação ao consumidor: "+NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), this.nofWithLog));
 		}
+		
+		/** Sort the List by its reputations. **/
+		Collections.sort(donator.getPeersReputations());
+		if(!(consumer instanceof FreeRider))
+			Collections.sort(consumer.getPeersReputations());
 		
 		donator.setCapacitySupplied(donator.getCapacitySupplied()-valueToBeDonated);//update the capacity supplied by donator
 		donator.getDonatedHistory()[this.currentStep] += valueToBeDonated;			//update the donated amount (from donator) in this step

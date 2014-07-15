@@ -21,7 +21,7 @@ public class Peer{
 	
 	protected double demand;
 	protected boolean consuming; 
-	protected SortedList<PeerReputation> peersReputations;
+	protected ArrayList<PeerReputation> peersReputations;
 	protected ArrayList <Interaction> interactions;
 	protected int peerId;
 	
@@ -43,7 +43,7 @@ public class Peer{
 		this.setDemand(demand);
 		this.setPeerId(peerId);
 		this.setConsuming(consuming);	
-		this.setPeersReputations(new SortedList<PeerReputation>(new PeerReputationComparator()));
+		this.setPeersReputations(new ArrayList<PeerReputation>());
 		this.setInteractions(new ArrayList<Interaction>());
 		this.setDonatedHistory(new double[numSteps]);
 		this.setConsumedHistory(new double[numSteps]);
@@ -204,14 +204,14 @@ public class Peer{
 	/**
 	 * @return the peersReputations
 	 */
-	public SortedList<PeerReputation> getPeersReputations() {
+	public ArrayList<PeerReputation> getPeersReputations() {
 		return peersReputations;
 	}
 
 	/**
 	 * @param peersReputations the SortedList with peers reputations
 	 */
-	public void setPeersReputations(SortedList<PeerReputation> peersReputations) {
+	public void setPeersReputations(ArrayList<PeerReputation> peersReputations) {
 		this.peersReputations = peersReputations;
 	}
 	
