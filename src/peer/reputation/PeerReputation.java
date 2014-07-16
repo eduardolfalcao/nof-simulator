@@ -1,13 +1,10 @@
-package peer.peerid;
+package peer.reputation;
 
 
 public class PeerReputation implements Comparable<Object>{
-//public class PeerReputation{
-
 
 	private int id;
-	private double reputation;
-	
+	private double reputation;	
 	
 	public PeerReputation(int id, double reputation) {
 		super();

@@ -10,19 +10,19 @@ public class Main {
 	
 	public static void main(String [] args){
 		
-		int replication = 1;
+		int replication = 30;
 		double capacitySupplied = 1;
 		double changingValue = 0.05;		
 		boolean nofWithLog = false;			//with sqrt
 		
 		
 		String file = "";
-		int [] numPeersSimulations = {100};
-		int [] numStepsSimulations = {1000};
-		boolean [] dynamicSimulations = {false};							//{true,false};
-		double [] percentageCollaboratorsSimulations = {0.5};				//0.25, 0.75
-		double [] consumingStateProbabilitySimulations = {0.5};				//0.2, 0.5
-		double [] peersDemandSimulations = {5};							//2, 5
+		int [] numPeersSimulations = {100, 1000};
+		int [] numStepsSimulations = {5000};
+		boolean [] dynamicSimulations = {false,true};							//{true,false};
+		double [] percentageCollaboratorsSimulations = {0.25, 0.5};			//0.25, 0.75
+		double [] consumingStateProbabilitySimulations = {0.2, 0.5};			//0.2, 0.5
+		double [] peersDemandSimulations = {2, 5};							//2, 5
 		
 		
 		
@@ -36,7 +36,7 @@ public class Main {
 							for(double percentageCollaborators : percentageCollaboratorsSimulations){
 								for(double peersDemand : peersDemandSimulations){
 										String path = "/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation/";
-										file = "Dynamic  "+dynamic+" - Control  - "
+										file = "Dynamic  ("+dynamic+") - "
 												+numPeers+" peers - "
 												+numSteps+" steps - "
 												+((1-percentageCollaborators)*100)+"% freeriders - "+(consumingStateProbability*100)+"% consuming probability - "
@@ -44,8 +44,7 @@ public class Main {
 												+(changingValue*100)+"% change value - "
 												+ "NoF by "+(nofWithLog==false?"SquareRoot":"Log")
 												+ ".xlsx";
-										Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, nofWithLog, peersDemand, capacitySupplied, changingValue, Level.SEVERE, path+replication+"/"+file);
-										s1.setupSimulation();
+										Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, nofWithLog, peersDemand, capacitySupplied, changingValue, Level.INFO, path+replication+"/"+file);
 										s1.startSimulation();
 								}
 							}

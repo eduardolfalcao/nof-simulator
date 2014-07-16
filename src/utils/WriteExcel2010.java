@@ -4,12 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.apache.poi.hssf.usermodel.HSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import peer.Collaborator;
@@ -20,12 +16,12 @@ import simulator.Simulator;
 public class WriteExcel2010 {
 	
 	private String outputFile;
-	private XSSFSheet satisfactionSheet, satisfactionPerStepSheet, consumedSheet, requestedSheet, donatedSheet, capacitySuppliedPerStepSheet, freeRiderSuccessSheet;
+	private Sheet fairnessSheet, fairnessPerStepSheet, consumedSheet, requestedSheet, donatedSheet, capacitySuppliedPerStepSheet, freeRiderSuccessSheet;
 	private int numSteps;
 	
 	private XSSFWorkbook workbook;
-	private XSSFCellStyle timesBoldUnderline, times;
-	private XSSFFont times10ptBoldUnderline, times10pt;
+	private CellStyle timesBoldUnderline, timesBlue;
+	private Font times10ptBoldUnderline, times10pt;
 	
 	
 	/**
@@ -38,19 +34,27 @@ public class WriteExcel2010 {
 		this.numSteps = numSteps;
 		
 		this.workbook = new XSSFWorkbook();
-		
 		this.timesBoldUnderline = this.workbook.createCellStyle();
-		this.times10ptBoldUnderline = this.workbook.createFont();
-		this.times10ptBoldUnderline.setFontName(HSSFFont.FONT_ARIAL);
-		this.times10ptBoldUnderline.setFontHeightInPoints((short) 12);
-		this.times10ptBoldUnderline.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+		this.times10ptBoldUnderline = this.workbook.createFont();		
+		this.times10ptBoldUnderline.setFontHeightInPoints((short) 10);
+		this.times10ptBoldUnderline.setColor(IndexedColors.BLACK.getIndex());
+		this.times10ptBoldUnderline.setBoldweight(Font.BOLDWEIGHT_BOLD);
 		this.timesBoldUnderline.setFont(times10ptBoldUnderline);
 		
-		this.times = this.workbook.createCellStyle();
+		
+		this.timesBoldUnderline = this.workbook.createCellStyle();
+		this.times10ptBoldUnderline = this.workbook.createFont();		
+		this.times10ptBoldUnderline.setFontHeightInPoints((short) 10);
+		this.times10ptBoldUnderline.setColor(IndexedColors.BLACK.getIndex());
+		this.times10ptBoldUnderline.setBoldweight(Font.BOLDWEIGHT_BOLD);
+		this.timesBoldUnderline.setFont(times10ptBoldUnderline);
+		
+		
+		this.timesBlue = this.workbook.createCellStyle();
 		this.times10pt = this.workbook.createFont();
-		this.times10pt.setFontName(HSSFFont.FONT_ARIAL);
 		this.times10pt.setFontHeightInPoints((short) 10);
-		this.times.setFont(times10pt);
+		this.times10pt.setColor(IndexedColors.BLUE.getIndex());
+		this.timesBlue.setFont(times10pt);
 	}
 	
 	/**
@@ -58,16 +62,16 @@ public class WriteExcel2010 {
 	 */
 	public void setupFile() {		 
 		
-		satisfactionSheet = workbook.createSheet("Satisfaction");
-		satisfactionPerStepSheet = workbook.createSheet("Satisfaction per steps");
+		fairnessSheet = workbook.createSheet("Fairness");
+		fairnessPerStepSheet = workbook.createSheet("Fairness per steps");
 		consumedSheet = workbook.createSheet("Consumed");
 		requestedSheet = workbook.createSheet("Requested");
 		donatedSheet = workbook.createSheet("Donated");
 		capacitySuppliedPerStepSheet = workbook.createSheet("Capacity supplied per steps");
 		freeRiderSuccessSheet = workbook.createSheet("Free riders success per steps");
 
-		createLabel(satisfactionSheet);
-		createLabel(satisfactionPerStepSheet);
+		createLabel(fairnessSheet);
+		createLabel(fairnessPerStepSheet);
 		createLabel(consumedSheet);
 		createLabel(requestedSheet);
 		createLabel(donatedSheet);
@@ -80,21 +84,21 @@ public class WriteExcel2010 {
 	 * 
 	 * @param sheet the tab to be created the titles
 	 */
-	private void createLabel(XSSFSheet sheet){
+	private void createLabel(Sheet sheet){
 		
 		addLabel(sheet, 0, 0, "Peers");
 		addLabel(sheet, 1, 0, "ID");
 		
-		if (sheet.getSheetName().equals("Satisfaction")) 
-			addLabel(sheet, 2, 0, "Satisfaction");
+		if (sheet.getSheetName().equals("Fairness")) 
+			addLabel(sheet, 2, 0, "Fairness");
 		else if (sheet.getSheetName().equals("Consumed")
 				|| sheet.getSheetName().equals("Requested")
 				|| sheet.getSheetName().equals("Donated")
-				|| sheet.getSheetName().equals("Satisfaction per steps")
+				|| sheet.getSheetName().equals("Fairness per steps")
 				|| sheet.getSheetName().equals("Capacity supplied per steps")
 				|| sheet.getSheetName().equals("Free riders success per steps")) {
 			for (int i = 0; i < this.numSteps; i++)
-				addLabel(sheet, i + 2, 0, "Step " + (i + 1));
+				this.addLabel(sheet, i + 2, 0, "Step " + (i + 1));
 		}
 	}
 	
@@ -103,40 +107,32 @@ public class WriteExcel2010 {
 	 * 
 	 * @param peers the peers of simulation
 	 */
-	public void fulfillSatisfactions(Peer [] peers){
+	public void fulfillFairness(Peer [] peers){
 		
-		int numCollaborators = 0, numFreeRiders = 0;
+		int numCollaborators = 0;
 		
 		//fulfilling satisfaction peers cells
 		for (int i = 0; i < peers.length; i++) {
-			String peer = "";
 			if(peers[i] instanceof Collaborator){
-				peer = "Collaborator";
+				String peer = "Collaborator";
 				numCollaborators++;
+				
+				this.addLabel(this.fairnessSheet, 0, i+1, peer);
+				this.addLabel(this.fairnessSheet, 1, i+1, ""+peers[i].getPeerId());
+				
+				double currentConsumed, currentDonated, fairness;
+				
+				currentConsumed = peers[i].getCurrentConsumed(this.numSteps-1);	
+				currentDonated = peers[i].getCurrentDonated(this.numSteps-1);
+				fairness = Simulator.getFairness(currentConsumed, currentDonated);
+				
+				this.addNumber(this.fairnessSheet, 2, i+1, fairness);
 			}
-			else{
-				peer = "Free Rider";
-				numFreeRiders++;
-			}
-			this.addText(this.satisfactionSheet, 0, i+1, peer);
-			this.addNumber(this.satisfactionSheet, 1, i+1, peers[i].getPeerId());
-			
-			double currentGranted, currentDonatedOrRequested, satisfaction;
-			
-			currentGranted = peers[i].getCurrentConsumed(this.numSteps-1);	
-			currentDonatedOrRequested = peers[i].getCurrentDonated(this.numSteps-1);
-			satisfaction = Simulator.getSatisfaction(currentGranted, currentDonatedOrRequested);
-			
-			this.addNumber(this.satisfactionSheet, 2, i+1, satisfaction);
 		}
 		
-		this.addText(this.satisfactionSheet, 4, 0, "SUM - Collab Satisf");
-		this.addText(this.satisfactionSheet, 6, 0, "SUM - FreeRiders Satisf");
-		
-		String strFormulaCollab = "SUM(C2:C"+(numCollaborators+1)+")";
-		String strFormulaFreeRiders = "SUM(C"+(numCollaborators+2)+":C"+(numCollaborators+numFreeRiders+1)+")";
-		this.addFormula(this.satisfactionSheet, 4, 1, strFormulaCollab);
-		this.addFormula(this.satisfactionSheet, 6, 1, strFormulaFreeRiders);
+		this.addLabel(this.fairnessSheet, 4, 0, "Fairness(%)");
+		String strFormulaCollab = "SUM(C2:C"+(numCollaborators+1)+")/"+numCollaborators;
+		this.addFormula(this.fairnessSheet, 4, 1, strFormulaCollab);
 	}
 	
 	/**
@@ -144,23 +140,50 @@ public class WriteExcel2010 {
 	 * 
 	 * @param peers the peers of simulation
 	 */
-	public void fulfillSatisfactionsPerSteps(Peer [] peers){
+	public void fulfillFairnessPerSteps(Peer [] peers){
+		
+		int numCollaborators = 0;
 		
 		//fulfilling satisfaction peers cells
 		for (int i = 0; i < peers.length; i++) {
-			String peer = (peers[i] instanceof Collaborator)?"Collaborator":"Free Rider"; 
-			this.addText(this.satisfactionPerStepSheet, 0, i+1, peer);
-			this.addNumber(this.satisfactionPerStepSheet, 1, i+1, peers[i].getPeerId());
-			
-			double currentGranted, currentDonatedOrRequested, satisfaction;
-			
-			for(int j = 0; j < this.numSteps; j++){				
-				currentGranted = peers[i].getCurrentConsumed(j);						
-				currentDonatedOrRequested = peers[i].getCurrentDonated(this.numSteps-1);
-				satisfaction = Simulator.getSatisfaction(currentGranted, currentDonatedOrRequested);
+			if(peers[i] instanceof Collaborator){
+				String peer = "Collaborator";
+				numCollaborators++;
 				
-				this.addNumber(this.satisfactionPerStepSheet, j+2, i+1, satisfaction);
+				this.addLabel(this.fairnessPerStepSheet, 0, i+1, peer);
+				this.addLabel(this.fairnessPerStepSheet, 1, i+1, ""+peers[i].getPeerId());
+				
+				double currentConsumed, currentDonated, fairness;
+				
+				for(int j = 0; j < this.numSteps; j++){				
+					currentConsumed = peers[i].getCurrentConsumed(j);						
+					currentDonated = peers[i].getCurrentDonated(this.numSteps-1);
+					fairness = Simulator.getFairness(currentConsumed, currentDonated);
+					
+					this.addNumber(this.fairnessPerStepSheet, j+2, i+1, fairness);
+				}
 			}
+		}
+		
+		
+		int firstCollaborator = 2;
+		int lastCollaborator = numCollaborators+1;
+		
+		int column = 2;					//'C'
+		
+		this.addLabel(this.fairnessPerStepSheet, 0, lastCollaborator, "Fairness(%)");
+		for (int step = 0; step < this.numSteps; step++) {
+			String strFormulaCollab = "SUM("+CellReference.convertNumToColString(column)+""+firstCollaborator+":"+CellReference.convertNumToColString(column)+""+lastCollaborator+")/"+numCollaborators;
+			this.addFormula(this.fairnessPerStepSheet, column, lastCollaborator , strFormulaCollab);
+			column++;			
+		}
+		
+		column = 51;
+		this.addLabel(this.fairnessPerStepSheet, 0, lastCollaborator+1, "Fairness(Average(last50))%");
+		for (int step = 50; step <= this.numSteps; step++) {
+			String strFormulaCollab = "AVERAGE("+CellReference.convertNumToColString(column-50)+""+(lastCollaborator+1)+":"+CellReference.convertNumToColString(column)+""+(lastCollaborator+1)+")";
+			this.addFormula(this.fairnessPerStepSheet, column, lastCollaborator+1 , strFormulaCollab);
+			column++;			
 		}
 	}
 	
@@ -176,8 +199,8 @@ public class WriteExcel2010 {
 		//fulfilling consumed peers cells
 		for (int i = 0; i < peers.length; i++) {
 			String peer = (peers[i] instanceof Collaborator) ? "Collaborator": "Free Rider";
-			this.addText(this.consumedSheet, 0, i + 1, peer);
-			this.addNumber(this.consumedSheet, 1, i + 1, peers[i].getPeerId());
+			this.addLabel(this.consumedSheet, 0, i + 1, peer);
+			this.addLabel(this.consumedSheet, 1, i + 1, ""+peers[i].getPeerId());
 			
 			for(int j = 0; j < this.numSteps; j++)
 				this.addNumber(this.consumedSheet, j+2, i + 1, peers[i].getConsumedHistory()[j]);
@@ -194,8 +217,8 @@ public class WriteExcel2010 {
 		//fulfilling requested peers cells
 		for (int i = 0; i < peers.length; i++) {
 			String peer = (peers[i] instanceof Collaborator) ? "Collaborator": "Free Rider";
-			this.addText(this.requestedSheet, 0, i + 1, peer);
-			this.addNumber(this.requestedSheet, 1, i + 1, peers[i].getPeerId());
+			this.addLabel(this.requestedSheet, 0, i + 1, peer);
+			this.addLabel(this.requestedSheet, 1, i + 1, ""+peers[i].getPeerId());
 			
 			for(int j = 0; j < this.numSteps; j++)
 				this.addNumber(this.requestedSheet, j+2, i + 1, peers[i].getRequestedHistory()[j]);
@@ -210,17 +233,13 @@ public class WriteExcel2010 {
 	public void fulfillDonationData(Peer [] peers){
 		// fulfilling donated peers cells
 		for (int i = 0; i < peers.length; i++) {
-			String peer = (peers[i] instanceof Collaborator) ? "Collaborator": "Free Rider";
-			this.addText(this.donatedSheet, 0, i + 1, peer);
-			this.addNumber(this.donatedSheet, 1, i + 1, peers[i].getPeerId());
-
 			if(peers[i] instanceof Collaborator){
+				String peer = "Collaborator";
+				this.addLabel(this.donatedSheet, 0, i + 1, peer);
+				this.addLabel(this.donatedSheet, 1, i + 1, ""+peers[i].getPeerId());
+				
 				for (int j = 0; j < this.numSteps; j++)
 					this.addNumber(this.donatedSheet, j + 2, i + 1, peers[i].getDonatedHistory()[j]);
-			}
-			else{
-				for (int j = 0; j < this.numSteps; j++)
-					this.addNumber(this.donatedSheet, j + 2, i + 1, 0.0);
 			}
 		}	
 	}
@@ -233,18 +252,14 @@ public class WriteExcel2010 {
 	public void fulfillCapacitySuppliedData(Peer [] peers){
 		// fulfilling donated peers cells
 		for (int i = 0; i < peers.length; i++) {
-			String peer = (peers[i] instanceof Collaborator) ? "Collaborator": "Free Rider";
-			this.addText(this.capacitySuppliedPerStepSheet, 0, i + 1, peer);
-			this.addNumber(this.capacitySuppliedPerStepSheet, 1, i + 1, peers[i].getPeerId());
-
 			if(peers[i] instanceof Collaborator){
+				String peer = "Collaborator";
+				this.addLabel(this.capacitySuppliedPerStepSheet, 0, i + 1, peer);
+				this.addLabel(this.capacitySuppliedPerStepSheet, 1, i + 1, ""+peers[i].getPeerId());
+
 				Collaborator collab = (Collaborator) peers[i];
 				for (int j = 0; j < this.numSteps; j++)
 					this.addNumber(this.capacitySuppliedPerStepSheet, j + 2, i + 1, collab.getCapacitySuppliedHistory()[j]);
-			}
-			else{
-				for (int j = 0; j < this.numSteps; j++)
-					this.addNumber(this.capacitySuppliedPerStepSheet, j + 2, i + 1, 0.0);
 			}
 		}	
 	}
@@ -256,14 +271,37 @@ public class WriteExcel2010 {
 	 */
 	public void fulfillfreeRiderSuccessData(Peer [] peers){
 		// fulfilling donated peers cells
+		int row = 0;
 		for (int i = 0; i < peers.length; i++) {
 			if(peers[i] instanceof FreeRider){
-				this.addText(this.freeRiderSuccessSheet, 0, i + 1, "Free Rider");
-				this.addNumber(this.freeRiderSuccessSheet, 1, i + 1, peers[i].getPeerId());
-				for (int j = 0; j < this.numSteps; j++)
-					this.addText(this.freeRiderSuccessSheet, j + 2, i + 1, (((FreeRider)peers[i]).getSuccessHistory()[j])==true?"true":"false");
+				row++;
+				this.addLabel(this.freeRiderSuccessSheet, 0, row, "Free Rider");
+				this.addLabel(this.freeRiderSuccessSheet, 1, row, ""+peers[i].getPeerId());
+				for (int j = 0; j < this.numSteps; j++){
+					this.addNumber(this.freeRiderSuccessSheet, j + 2, row, (((FreeRider)peers[i]).getSuccessHistory()[j])==true?1:0);
+				}
 			}
-		}	
+		}
+		
+		int firstFreeRider = 1;
+		int lastFreeRider = row;
+		int column = 2;					//'C'		
+		
+		this.addLabel(this.freeRiderSuccessSheet, 0, lastFreeRider+1, "Success(%)");
+		for (int step = 0; step < this.numSteps; step++) {
+			String strFormulaCollab = "SUM("+CellReference.convertNumToColString(column)+""+firstFreeRider+":"+CellReference.convertNumToColString(column)+""+lastFreeRider+")/"+lastFreeRider;
+			this.addFormula(this.freeRiderSuccessSheet, column, lastFreeRider+1 , strFormulaCollab);
+			column++;			
+		}
+		
+		column = 51;
+		this.addLabel(this.freeRiderSuccessSheet, 0, lastFreeRider+2, "Success(Average(last50))%");
+		for (int step = 50; step <= this.numSteps; step++) {
+			String strFormulaCollab = "AVERAGE("+CellReference.convertNumToColString(column-50)+""+(lastFreeRider+2)+":"+CellReference.convertNumToColString(column)+""+(lastFreeRider+2)+")";
+			this.addFormula(this.freeRiderSuccessSheet, column, lastFreeRider+2 , strFormulaCollab);
+			column++;			
+		}
+		
 	}
 	
 	/**
@@ -295,11 +333,11 @@ public class WriteExcel2010 {
 	 * @param row the row on which will be written
 	 * @param text the text to be written
 	 */
-	private void addLabel(XSSFSheet sheet, int column, int row, String text){		
-		XSSFRow newRow = sheet.getRow(row);
+	private void addLabel(Sheet sheet, int column, int row, String text){		
+		Row newRow = sheet.getRow(row);
 		if(newRow==null)
 			newRow = sheet.createRow(row);
-	    XSSFCell cell = newRow.getCell(column);
+	    Cell cell = newRow.getCell(column);
 	    if(cell==null)
 	    	cell = newRow.createCell(column);
 	    cell.setCellValue(text);
@@ -315,15 +353,15 @@ public class WriteExcel2010 {
 	 * @throws WriteException
 	 * @throws RowsExceededException
 	 */
-	private void addNumber(XSSFSheet sheet, int column, int row, double currentSatisfaction){		
-		XSSFRow newRow = sheet.getRow(row);
+	private void addNumber(Sheet sheet, int column, int row, double currentSatisfaction){		
+		Row newRow = sheet.getRow(row);
 		if(newRow==null)
 			newRow = sheet.createRow(row);
-	    XSSFCell cell = newRow.getCell(column);
+	    Cell cell = newRow.getCell(column);
 	    if(cell==null)
 	    	cell = newRow.createCell(column);
 	    cell.setCellValue(currentSatisfaction);
-	    cell.setCellStyle(this.times);
+	    cell.setCellStyle(this.timesBlue);
 	}
 	
 	/**
@@ -332,15 +370,15 @@ public class WriteExcel2010 {
 	 * @param row the row on which will be written
 	 * @param text the text to be written
 	 */
-	private void addText(XSSFSheet sheet, int column, int row, String text){		
-		XSSFRow newRow = sheet.getRow(row);
+	private void addText(Sheet sheet, int column, int row, String text){		
+		Row newRow = sheet.getRow(row);
 		if(newRow==null)
 			newRow = sheet.createRow(row);
-	    XSSFCell cell = newRow.getCell(column);
+	    Cell cell = newRow.getCell(column);
 	    if(cell==null)
 	    	cell = newRow.createCell(column);
 	    cell.setCellValue(text);
-	    cell.setCellStyle(this.times);
+	    cell.setCellStyle(this.timesBlue);
 	}
 	
 	/**
@@ -349,16 +387,16 @@ public class WriteExcel2010 {
 	 * @param row the row on which will be written
 	 * @param formula the formula to be calculated
 	 */
-	private void addFormula(XSSFSheet sheet, int column, int row, String formula){		
-		XSSFRow newRow = sheet.getRow(row);
+	private void addFormula(Sheet sheet, int column, int row, String formula){		
+		Row newRow = sheet.getRow(row);
 		if(newRow==null)
 			newRow = sheet.createRow(row);
-	    XSSFCell cell = newRow.getCell(column);
+	    Cell cell = newRow.getCell(column);
 	    if(cell==null)
 	    	cell = newRow.createCell(column);
-		cell.setCellType(XSSFCell.CELL_TYPE_FORMULA);
+		cell.setCellType(Cell.CELL_TYPE_FORMULA);
 		cell.setCellFormula(formula);
-	    cell.setCellStyle(this.times);
+	    cell.setCellStyle(this.timesBlue);
 	}
 	
 }

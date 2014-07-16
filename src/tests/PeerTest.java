@@ -14,7 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import peer.Peer;
-import peer.peerid.PeerReputation;
+import peer.reputation.PeerReputation;
 
 /**
  * @author eduardolfalcao
