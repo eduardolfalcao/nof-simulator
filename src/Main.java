@@ -6,23 +6,25 @@ import simulator.Simulator;
 
 public class Main {
 	
-	public final static int replications = 1;
+	public final static int replications = 30;
 	
 	public static void main(String [] args){
 		
-		int replication = 30;
+//		long startTime = System.currentTimeMillis();
+		
+		int replication = 7;
 		double capacitySupplied = 1;
 		double changingValue = 0.05;		
 		boolean nofWithLog = false;			//with sqrt
 		
 		
 		String file = "";
-		int [] numPeersSimulations = {100, 1000};
-		int [] numStepsSimulations = {5000};
-		boolean [] dynamicSimulations = {false,true};							//{true,false};
-		double [] percentageCollaboratorsSimulations = {0.25, 0.5};			//0.25, 0.75
-		double [] consumingStateProbabilitySimulations = {0.2, 0.5};			//0.2, 0.5
-		double [] peersDemandSimulations = {2, 5};							//2, 5
+		int [] numPeersSimulations = {100};									//100
+		int [] numStepsSimulations = {2000};								//2000
+		boolean [] dynamicSimulations = {false,true};						//{true,false};
+		double [] percentageCollaboratorsSimulations = {0.2, 0.75};			//0.2, 0.75
+		double [] consumingStateProbabilitySimulations = {0.2, 0.5};		//0.2, 0.5
+		double [] peersDemandSimulations = {2};								//2
 		
 		
 		
@@ -44,7 +46,7 @@ public class Main {
 												+(changingValue*100)+"% change value - "
 												+ "NoF by "+(nofWithLog==false?"SquareRoot":"Log")
 												+ ".xlsx";
-										Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, nofWithLog, peersDemand, capacitySupplied, changingValue, Level.INFO, path+replication+"/"+file);
+										Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, nofWithLog, peersDemand, capacitySupplied, changingValue, Level.SEVERE, path+replication+"/"+file);
 										s1.startSimulation();
 								}
 							}
@@ -54,6 +56,10 @@ public class Main {
 			}
 			replication++;
 		}
+//		long estimatedTime = System.currentTimeMillis() - startTime;
+//		
+//		System.out.println("tempo: "+(estimatedTime));
 	}
+	
 
 }
