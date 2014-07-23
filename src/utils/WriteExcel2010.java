@@ -16,7 +16,7 @@ import simulator.Simulator;
 public class WriteExcel2010 {
 	
 	private String outputFile;
-	private Sheet fairnessSheet, fairnessPerStepSheet, consumedSheet, requestedSheet, donatedSheet, capacitySuppliedPerStepSheet, freeRiderSuccessSheet;
+	private Sheet fairnessSheet, fairnessPerStepSheet, consumedSheet, requestedSheet, satisfactionPerStepSheet, donatedSheet, capacitySuppliedPerStepSheet, freeRiderSuccessSheet;
 	private int numSteps;
 	
 	private XSSFWorkbook workbook;
@@ -66,6 +66,7 @@ public class WriteExcel2010 {
 		fairnessPerStepSheet = workbook.createSheet("Fairness per steps");
 		consumedSheet = workbook.createSheet("Consumed");
 		requestedSheet = workbook.createSheet("Requested");
+		satisfactionPerStepSheet = workbook.createSheet("Satisfaction");
 		donatedSheet = workbook.createSheet("Donated");
 		capacitySuppliedPerStepSheet = workbook.createSheet("Capacity supplied per steps");
 		freeRiderSuccessSheet = workbook.createSheet("Free riders success per steps");
@@ -74,6 +75,7 @@ public class WriteExcel2010 {
 		createLabel(fairnessPerStepSheet);
 		createLabel(consumedSheet);
 		createLabel(requestedSheet);
+		createLabel(satisfactionPerStepSheet);
 		createLabel(donatedSheet);
 		createLabel(capacitySuppliedPerStepSheet); 
 		createLabel(freeRiderSuccessSheet);
@@ -93,6 +95,7 @@ public class WriteExcel2010 {
 			addLabel(sheet, 2, 0, "Fairness");
 		else if (sheet.getSheetName().equals("Consumed")
 				|| sheet.getSheetName().equals("Requested")
+				|| sheet.getSheetName().equals("Satisfaction")
 				|| sheet.getSheetName().equals("Donated")
 				|| sheet.getSheetName().equals("Fairness per steps")
 				|| sheet.getSheetName().equals("Capacity supplied per steps")
@@ -136,7 +139,7 @@ public class WriteExcel2010 {
 	}
 	
 	/**
-	 * Write satisfactions data per step.
+	 * Write fairness data per step.
 	 * 
 	 * @param peers the peers of simulation
 	 */
@@ -178,8 +181,14 @@ public class WriteExcel2010 {
 			column++;			
 		}
 		
-		column = 51;
+		column = 2;
 		this.addLabel(this.fairnessPerStepSheet, 0, lastCollaborator+1, "Fairness(Average(last50))%");
+		for (int step = 1; step <= 49; step++) {
+			String strFormulaCollab = "AVERAGE("+CellReference.convertNumToColString(column-step+1)+""+(lastCollaborator+1)+":"+CellReference.convertNumToColString(column)+""+(lastCollaborator+1)+")";
+			this.addFormula(this.fairnessPerStepSheet, column, lastCollaborator+1 , strFormulaCollab);
+			column++;			
+		}
+		column = 51;
 		for (int step = 50; step <= this.numSteps; step++) {
 			String strFormulaCollab = "AVERAGE("+CellReference.convertNumToColString(column-50)+""+(lastCollaborator+1)+":"+CellReference.convertNumToColString(column)+""+(lastCollaborator+1)+")";
 			this.addFormula(this.fairnessPerStepSheet, column, lastCollaborator+1 , strFormulaCollab);
@@ -196,15 +205,39 @@ public class WriteExcel2010 {
 	 */
 	public void fulfillConsumptionData(Peer [] peers){
 		
+		int numCollaborators = 0;
+		
 		//fulfilling consumed peers cells
 		for (int i = 0; i < peers.length; i++) {
-			String peer = (peers[i] instanceof Collaborator) ? "Collaborator": "Free Rider";
-			this.addLabel(this.consumedSheet, 0, i + 1, peer);
-			this.addLabel(this.consumedSheet, 1, i + 1, ""+peers[i].getPeerId());
 			
-			for(int j = 0; j < this.numSteps; j++)
-				this.addNumber(this.consumedSheet, j+2, i + 1, peers[i].getConsumedHistory()[j]);
+			if(peers[i] instanceof Collaborator){
+				String peer = "Collaborator";
+				numCollaborators++;
+			
+				this.addLabel(this.consumedSheet, 0, i + 1, peer);
+				this.addLabel(this.consumedSheet, 1, i + 1, ""+peers[i].getPeerId());
+				
+				for(int j = 0; j < this.numSteps; j++)
+					this.addNumber(this.consumedSheet, j+2, i + 1, peers[i].getConsumedHistory()[j]);
+			}
 		}
+		
+		
+		
+		int firstCollaborator = 2;
+		int lastCollaborator = numCollaborators+1;
+		
+		int column = 2;					//'C'
+		
+		this.addLabel(this.consumedSheet, 0, lastCollaborator, "Consumed");
+		for (int step = 0; step < this.numSteps; step++) {
+			String strFormulaCollab = "SUM("+CellReference.convertNumToColString(column)+""+firstCollaborator+":"+CellReference.convertNumToColString(column)+""+lastCollaborator+")";
+			this.addFormula(this.consumedSheet, column, lastCollaborator , strFormulaCollab);
+			column++;			
+		}
+		
+		String strFormulaCollab = "SUM("+CellReference.convertNumToColString(2)+""+(lastCollaborator+1)+":"+CellReference.convertNumToColString(this.numSteps+1)+""+(lastCollaborator+1)+")";
+		this.addFormula(this.consumedSheet, 2, lastCollaborator+1 , strFormulaCollab);
 	}
 	
 	/**
@@ -225,16 +258,81 @@ public class WriteExcel2010 {
 		}
 	}
 	
+	
+	/**
+	 * Write satisfactions (consumed/requested) data per step.
+	 * 
+	 * @param peers the peers of simulation
+	 */
+	public void fulfillSatisfactionPerSteps(Peer [] peers){
+		
+		int numCollaborators = 0;
+		
+		//fulfilling satisfaction peers cells
+		for (int i = 0; i < peers.length; i++) {
+			if(peers[i] instanceof Collaborator){
+				String peer = "Collaborator";
+				numCollaborators++;
+				
+				this.addLabel(this.satisfactionPerStepSheet, 0, i+1, peer);
+				this.addLabel(this.satisfactionPerStepSheet, 1, i+1, ""+peers[i].getPeerId());
+				
+				double currentConsumed, currentRequested, satisfaction;
+				
+				for(int j = 0; j < this.numSteps; j++){				
+					currentConsumed = peers[i].getCurrentConsumed(j);						
+					currentRequested = peers[i].getCurrentRequested(this.numSteps-1);
+					satisfaction = Simulator.getFairness(currentConsumed, currentRequested);
+					
+					this.addNumber(this.satisfactionPerStepSheet, j+2, i+1, satisfaction);
+				}
+			}
+		}
+		
+		
+		int firstCollaborator = 2;
+		int lastCollaborator = numCollaborators+1;
+		
+		int column = 2;					//'C'
+		
+		this.addLabel(this.satisfactionPerStepSheet, 0, lastCollaborator, "Satisfaction(%)");
+		for (int step = 0; step < this.numSteps; step++) {
+			String strFormulaCollab = "SUM("+CellReference.convertNumToColString(column)+""+firstCollaborator+":"+CellReference.convertNumToColString(column)+""+lastCollaborator+")/"+numCollaborators;
+			this.addFormula(this.satisfactionPerStepSheet, column, lastCollaborator , strFormulaCollab);
+			column++;			
+		}
+		
+		column = 2;
+		this.addLabel(this.satisfactionPerStepSheet, 0, lastCollaborator+1, "Satisfaction(Average(last50))%");
+		for (int step = 1; step <= 49; step++) {
+			String strFormulaCollab = "AVERAGE("+CellReference.convertNumToColString(column-step+1)+""+(lastCollaborator+1)+":"+CellReference.convertNumToColString(column)+""+(lastCollaborator+1)+")";
+			this.addFormula(this.satisfactionPerStepSheet, column, lastCollaborator+1 , strFormulaCollab);
+			column++;			
+		}
+		
+		column = 51;
+		for (int step = 50; step <= this.numSteps; step++) {
+			String strFormulaCollab = "AVERAGE("+CellReference.convertNumToColString(column-50)+""+(lastCollaborator+1)+":"+CellReference.convertNumToColString(column)+""+(lastCollaborator+1)+")";
+			this.addFormula(this.satisfactionPerStepSheet, column, lastCollaborator+1 , strFormulaCollab);
+			column++;			
+		}
+	}
+	
 	/**
 	 * Write donation data.
 	 * 
 	 * @param peers the peers of simulation
 	 */
 	public void fulfillDonationData(Peer [] peers){
+		
+		int numCollaborators = 0;
+		
 		// fulfilling donated peers cells
 		for (int i = 0; i < peers.length; i++) {
 			if(peers[i] instanceof Collaborator){
 				String peer = "Collaborator";
+				numCollaborators++;
+				
 				this.addLabel(this.donatedSheet, 0, i + 1, peer);
 				this.addLabel(this.donatedSheet, 1, i + 1, ""+peers[i].getPeerId());
 				
@@ -242,6 +340,21 @@ public class WriteExcel2010 {
 					this.addNumber(this.donatedSheet, j + 2, i + 1, peers[i].getDonatedHistory()[j]);
 			}
 		}	
+		
+		int firstCollaborator = 2;
+		int lastCollaborator = numCollaborators+1;
+		
+		int column = 2;					//'C'
+		
+		this.addLabel(this.donatedSheet, 0, lastCollaborator, "Donated");
+		for (int step = 0; step < this.numSteps; step++) {
+			String strFormulaCollab = "SUM("+CellReference.convertNumToColString(column)+""+firstCollaborator+":"+CellReference.convertNumToColString(column)+""+lastCollaborator+")";
+			this.addFormula(this.donatedSheet, column, lastCollaborator , strFormulaCollab);
+			column++;			
+		}
+		
+		String strFormulaCollab = "SUM("+CellReference.convertNumToColString(2)+""+(lastCollaborator+1)+":"+CellReference.convertNumToColString(this.numSteps+1)+""+(lastCollaborator+1)+")";
+		this.addFormula(this.donatedSheet, 2, lastCollaborator+1 , strFormulaCollab);
 	}
 	
 	/**
@@ -283,7 +396,7 @@ public class WriteExcel2010 {
 			}
 		}
 		
-		int firstFreeRider = 1;
+		int firstFreeRider = 2;
 		int lastFreeRider = row;
 		int column = 2;					//'C'		
 		
@@ -294,8 +407,15 @@ public class WriteExcel2010 {
 			column++;			
 		}
 		
-		column = 51;
+		column = 2;
 		this.addLabel(this.freeRiderSuccessSheet, 0, lastFreeRider+2, "Success(Average(last50))%");
+		for (int step = 1; step <= 49; step++) {
+			String strFormulaCollab = "AVERAGE("+CellReference.convertNumToColString(column-step+1)+""+(lastFreeRider+2)+":"+CellReference.convertNumToColString(column)+""+(lastFreeRider+2)+")";
+			this.addFormula(this.freeRiderSuccessSheet, column, lastFreeRider+2 , strFormulaCollab);
+			column++;			
+		}
+		
+		column = 51;
 		for (int step = 50; step <= this.numSteps; step++) {
 			String strFormulaCollab = "AVERAGE("+CellReference.convertNumToColString(column-50)+""+(lastFreeRider+2)+":"+CellReference.convertNumToColString(column)+""+(lastFreeRider+2)+")";
 			this.addFormula(this.freeRiderSuccessSheet, column, lastFreeRider+2 , strFormulaCollab);

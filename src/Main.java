@@ -10,9 +10,9 @@ public class Main {
 	
 	public static void main(String [] args){
 		
-//		long startTime = System.currentTimeMillis();
+		long startTime = System.currentTimeMillis();
 		
-		int replication = 7;
+		int replicationIndex = 11;
 		double capacitySupplied = 1;
 		double changingValue = 0.05;		
 		boolean nofWithLog = false;			//with sqrt
@@ -24,13 +24,13 @@ public class Main {
 		boolean [] dynamicSimulations = {false,true};						//{true,false};
 		double [] percentageCollaboratorsSimulations = {0.2, 0.75};			//0.2, 0.75
 		double [] consumingStateProbabilitySimulations = {0.2, 0.5};		//0.2, 0.5
-		double [] peersDemandSimulations = {2};								//2
+		double [] peersDemandSimulations = {2, 5};								//2
 		
 		
 		
 	
 		
-		while(replication <= Main.replications){
+		while(replicationIndex <= Main.replications){
 			for(boolean dynamic : dynamicSimulations){
 				for(int numPeers : numPeersSimulations){
 					for(int numSteps : numStepsSimulations){
@@ -46,7 +46,7 @@ public class Main {
 												+(changingValue*100)+"% change value - "
 												+ "NoF by "+(nofWithLog==false?"SquareRoot":"Log")
 												+ ".xlsx";
-										Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, nofWithLog, peersDemand, capacitySupplied, changingValue, Level.SEVERE, path+replication+"/"+file);
+										Simulator s1 = new Simulator(numPeers, numSteps, consumingStateProbability, percentageCollaborators, dynamic, nofWithLog, peersDemand, capacitySupplied, changingValue, Level.SEVERE, path+replicationIndex+"/"+file);
 										s1.startSimulation();
 								}
 							}
@@ -54,11 +54,11 @@ public class Main {
 					}
 				}
 			}
-			replication++;
+			replicationIndex++;
 		}
-//		long estimatedTime = System.currentTimeMillis() - startTime;
-//		
-//		System.out.println("tempo: "+(estimatedTime));
+		long estimatedTime = System.currentTimeMillis() - startTime;
+		
+		System.out.println("tempo: "+(estimatedTime));
 	}
 	
 

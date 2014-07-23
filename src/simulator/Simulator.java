@@ -599,6 +599,7 @@ public class Simulator {
 		we.fulfillFairnessPerSteps(peers);
 		we.fulfillConsumptionData(peers);
 		we.fulfillRequestedData(peers);
+		we.fulfillSatisfactionPerSteps(peers);
 		we.fulfillDonationData(peers);
 		we.fulfillCapacitySuppliedData(peers);
 		we.fulfillfreeRiderSuccessData(peers);
