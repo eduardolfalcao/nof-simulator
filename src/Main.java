@@ -6,13 +6,13 @@ import simulator.Simulator;
 
 public class Main {
 	
-	public final static int replications = 30;
+	public final static int replications = 1;
 	
 	public static void main(String [] args){
 		
 		long startTime = System.currentTimeMillis();
 		
-		int replicationIndex = 11;
+		int replicationIndex = 1;
 		double capacitySupplied = 1;
 		double changingValue = 0.05;		
 		boolean nofWithLog = false;			//with sqrt
@@ -20,7 +20,7 @@ public class Main {
 		
 		String file = "";
 		int [] numPeersSimulations = {100};									//100
-		int [] numStepsSimulations = {2000};								//2000
+		int [] numStepsSimulations = {4000};								//2000
 		boolean [] dynamicSimulations = {false,true};						//{true,false};
 		double [] percentageCollaboratorsSimulations = {0.2, 0.75};			//0.2, 0.75
 		double [] consumingStateProbabilitySimulations = {0.2, 0.5};		//0.2, 0.5
@@ -37,7 +37,7 @@ public class Main {
 						for(double consumingStateProbability : consumingStateProbabilitySimulations){
 							for(double percentageCollaborators : percentageCollaboratorsSimulations){
 								for(double peersDemand : peersDemandSimulations){
-										String path = "/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation/";
+										String path = "/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation Debug/";
 										file = "Dynamic  ("+dynamic+") - "
 												+numPeers+" peers - "
 												+numSteps+" steps - "

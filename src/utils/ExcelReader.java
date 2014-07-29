@@ -63,11 +63,11 @@ public class ExcelReader{
     
     public static void mountTables(){
     	
-    	String fileName = "/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation/INDEX/Dynamic  (DYNAMIC) - 100 peers - 2000 steps - FREERIDERS.0% freeriders - CONSUMING.0% consuming probability - DEMAND.0 peers demand - 5.0% change value - NoF by SquareRoot.xlsx";
+    	String fileName = "/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation Debueg/INDEX/Dynamic  (DYNAMIC) - 100 peers - 2000 steps - FREERIDERS.0% freeriders - CONSUMING.0% consuming probability - DEMAND.0 peers demand - 5.0% change value - NoF by SquareRoot.xlsx";
         
     	//fairness, satisfaction, free riders success
-//    	int [] sheet = {1,4,7};
-    	int [] sheet = {2, 5};
+    	int [] sheet = {1,4,7};
+//    	int [] sheet = {2, 5};
     	
     	boolean [] dynamic = {false, true};
     	int [] consumingStateProbability = {20, 50};
@@ -84,7 +84,7 @@ public class ExcelReader{
     		else if(localSheet == 5)
     			System.out.println("## DONATED AMOUNT ##\n\n");
     		else if(localSheet == 7)
-    			System.out.println("## Free Riders Success ##\n\n");
+    			System.out.println("## Free Riders Satisfaction ##\n\n");
     		
     		for(boolean localDynamic : dynamic){
     			String aux4 = fileName;

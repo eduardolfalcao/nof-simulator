@@ -602,7 +602,7 @@ public class Simulator {
 		we.fulfillSatisfactionPerSteps(peers);
 		we.fulfillDonationData(peers);
 		we.fulfillCapacitySuppliedData(peers);
-		we.fulfillfreeRiderSuccessData(peers);
+		we.fulfillfreeRiderSatisfactionsData(peers);
 		we.writeFile();
 	}
 	
