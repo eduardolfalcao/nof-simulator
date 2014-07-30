@@ -6,13 +6,13 @@ import simulator.Simulator;
 
 public class Main {
 	
-	public final static int replications = 1;
+	public final static int replications = 30;
 	
 	public static void main(String [] args){
 		
 		long startTime = System.currentTimeMillis();
 		
-		int replicationIndex = 1;
+		int replicationIndex = 2;
 		double capacitySupplied = 1;
 		double changingValue = 0.05;		
 		boolean nofWithLog = false;			//with sqrt
