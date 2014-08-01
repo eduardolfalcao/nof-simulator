@@ -6,25 +6,31 @@ import simulator.Simulator;
 
 public class Main {
 	
-	public final static int replications = 30;
+	public final static int replications = 1;
 	
 	public static void main(String [] args){
 		
 		long startTime = System.currentTimeMillis();
 		
-		int replicationIndex = 2;
+		int replicationIndex = 1;
 		double capacitySupplied = 1;
 		double changingValue = 0.05;		
 		boolean nofWithLog = false;			//with sqrt
 		
 		
 		String file = "";
+//		int [] numPeersSimulations = {100};									//100
+//		int [] numStepsSimulations = {4000};								//2000
+//		boolean [] dynamicSimulations = {false,true};						//{true,false};
+//		double [] percentageCollaboratorsSimulations = {0.2, 0.75};			//0.2, 0.75
+//		double [] consumingStateProbabilitySimulations = {0.2, 0.5};		//0.2, 0.5
+//		double [] peersDemandSimulations = {2, 5};								//2
 		int [] numPeersSimulations = {100};									//100
 		int [] numStepsSimulations = {4000};								//2000
 		boolean [] dynamicSimulations = {false,true};						//{true,false};
-		double [] percentageCollaboratorsSimulations = {0.2, 0.75};			//0.2, 0.75
-		double [] consumingStateProbabilitySimulations = {0.2, 0.5};		//0.2, 0.5
-		double [] peersDemandSimulations = {2, 5};								//2
+		double [] percentageCollaboratorsSimulations = {0.8};			//0.2, 0.75
+		double [] consumingStateProbabilitySimulations = {0.2};		//0.2, 0.5
+		double [] peersDemandSimulations = {4};								//2
 		
 		
 		
@@ -37,7 +43,9 @@ public class Main {
 						for(double consumingStateProbability : consumingStateProbabilitySimulations){
 							for(double percentageCollaborators : percentageCollaboratorsSimulations){
 								for(double peersDemand : peersDemandSimulations){
-										String path = "/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation Debug/";
+//										String path = "/home/eduardolfalcao/Área de Trabalho/grive/Doutorado - UFCG/LSD/NoF Simulation Debug2/";
+										String path = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/NoF Testes/";
+										
 										file = "Dynamic  ("+dynamic+") - "
 												+numPeers+" peers - "
 												+numSteps+" steps - "
