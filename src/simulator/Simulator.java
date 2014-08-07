@@ -122,7 +122,7 @@ public class Simulator {
 			Collaborator collab = null;
 			if(beginsConsuming){
 				collab = new Collaborator(this.peersDemand, i, beginsConsuming, this.capacitySupplied, this.numSteps);
-				collab.getCapacitySuppliedHistory()[this.currentStep] = 0;
+				collab.getCapacitySuppliedHistory()[this.currentStep] = this.capacitySupplied;
 				collab.getRequestedHistory()[this.currentStep] = this.peersDemand-this.peersCapacity;
 				collab.getConsumedHistory()[this.currentStep] = 0;
 				collab.setDemand(collab.getDemand()-this.peersCapacity);
@@ -239,7 +239,7 @@ public class Simulator {
 			if(peers[collabId].isConsuming()){				
 				if((this.currentStep+1)<this.numSteps){
 					peers[collabId].setDemand(this.peersDemand);
-					((Collaborator)peers[collabId]).getCapacitySuppliedHistory()[currentStep+1] = 0;
+					((Collaborator)peers[collabId]).getCapacitySuppliedHistory()[currentStep+1] = ((Collaborator)peers[collabId]).getCapacitySuppliedHistory()[currentStep];
 					peers[collabId].getRequestedHistory()[this.currentStep+1] = this.peersDemand-this.peersCapacity;
 					peers[collabId].getConsumedHistory()[this.currentStep+1] = 0;
 					peers[collabId].setDemand(peers[collabId].getDemand()-this.peersCapacity);
@@ -595,14 +595,15 @@ public class Simulator {
 	private void exportData(){		
 		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
 		we.setupFile();		
-		we.fulfillFairness(peers);
+//		we.fulfillFairness(peers);
 		we.fulfillFairnessPerSteps(peers);
-		we.fulfillConsumptionData(peers);
-		we.fulfillRequestedData(peers);
+//		we.fulfillConsumptionData(peers);
+//		we.fulfillRequestedData(peers);
 		we.fulfillSatisfactionPerSteps(peers);
-		we.fulfillDonationData(peers);
-		we.fulfillCapacitySuppliedData(peers);
+//		we.fulfillDonationData(peers);
 		we.fulfillfreeRiderSatisfactionsData(peers);
+		we.fulfillCapacitySuppliedData(peers);
+		
 		we.writeFile();
 	}
 	

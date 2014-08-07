@@ -62,23 +62,25 @@ public class WriteExcel2010 {
 	 */
 	public void setupFile() {		 
 		
-		fairnessSheet = workbook.createSheet("Fairness");
+//		fairnessSheet = workbook.createSheet("Fairness");
 		fairnessPerStepSheet = workbook.createSheet("Fairness per steps");
-		consumedSheet = workbook.createSheet("Consumed");
-		requestedSheet = workbook.createSheet("Requested");
+//		consumedSheet = workbook.createSheet("Consumed");
+//		requestedSheet = workbook.createSheet("Requested");
 		satisfactionPerStepSheet = workbook.createSheet("Satisfaction");
-		donatedSheet = workbook.createSheet("Donated");
-		capacitySuppliedPerStepSheet = workbook.createSheet("Capacity supplied per steps");
+//		donatedSheet = workbook.createSheet("Donated");
 		freeRidersSatisfactionSheet = workbook.createSheet("Free riders satisfactions");
+		capacitySuppliedPerStepSheet = workbook.createSheet("Capacity supplied per steps");
+		
 
-		createLabel(fairnessSheet);
+//		createLabel(fairnessSheet);
 		createLabel(fairnessPerStepSheet);
-		createLabel(consumedSheet);
-		createLabel(requestedSheet);
+//		createLabel(consumedSheet);
+//		createLabel(requestedSheet);
 		createLabel(satisfactionPerStepSheet);
-		createLabel(donatedSheet);
-		createLabel(capacitySuppliedPerStepSheet); 
+//		createLabel(donatedSheet);
 		createLabel(freeRidersSatisfactionSheet);
+		createLabel(capacitySuppliedPerStepSheet); 
+		
 	}
 	
 	/**
