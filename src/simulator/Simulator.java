@@ -54,9 +54,10 @@ public class Simulator {
 	private List <Integer> consumedPeersList;		//list of all peers that have already consumed (collaborators + free riders)
 	private List <Integer> donatedPeersList;		//list of all peers (collaborators + free riders)
 	private List <Integer> consumersCollabList;		//list of consumers collaborators
-	private List <Integer> donorsList;			//list of donors
+	private List <Integer> donorsList;				//list of donors
 	private List <Integer> freeRidersList;			//list of free-riders	
-	private Random randomGenerator;					//to randomly retrieve an element from ArrayList
+	private Random randomGenerator;					//to randomly define who is donor or consumer (besides collaborator or free rider) 
+	private Random anyPeerRandomGenerator;			//to randomly retrieve an element from ArrayList (with a seed)
 	private int numCollaborators;					//number of collaborators
 	
 	private String outputFile;						//file to export Data
@@ -74,9 +75,10 @@ public class Simulator {
 	 * @param capacitySupplied capacity of resources that peers can donate
 	 * @param returnLevelVerificationTime times in steps to measure the necessity of supplying more or less resources
 	 * @param changingValue value added or subtracted to/from capacitySupplied
+	 * @param seed value used to calculate probability of being consumer or donor
 	 */
 	public Simulator(int numPeers, int numSteps, double consumingStateProbability, double percentageCollaborators, boolean dynamic, boolean nofWithLog,
-			double peersDemand, double capacitySupplied, double changingValue, Level level, String outputFile) {
+			double peersDemand, double capacitySupplied, double changingValue, long seed, Level level, String outputFile) {
 		super();
 		this.numPeers = numPeers;
 		this.numSteps = numSteps;
@@ -93,8 +95,9 @@ public class Simulator {
 		this.donatedPeersList = new ArrayList<Integer> ();
 		this.consumersCollabList = new ArrayList<Integer> ();
 		this.donorsList = new ArrayList<Integer> ();
-		this.freeRidersList = new ArrayList<Integer> ();
-		this.randomGenerator = new Random();
+		this.freeRidersList = new ArrayList<Integer> ();		
+		this.randomGenerator = new Random(seed);
+		this.anyPeerRandomGenerator = new Random(seed);
 		this.outputFile = outputFile;
 		
 		this.peersCapacity = capacitySupplied;
@@ -221,13 +224,14 @@ public class Simulator {
 		
 		//just to check if everything is OK until now
 		Simulator.logger.finest("#donors("+donorsList.size()+") + #Consumers("+consumersCollabList.size()+") == #Collaborators("+numCollaborators+") :-)");
-		Simulator.logger.finest("#Collaborators("+(donorsList.size()+consumersCollabList.size())+") + #FreeRiders("+freeRidersList.size()+") = #Peers("+this.numPeers+") :-)");
+		Simulator.logger.finest("#Collaborators("+(donorsList.size()+consumersCollabList.size())+") + #FreeRiders("+freeRidersList.size()+") = #Peers("+this.numPeers+") :-)");		
 		
 			
 		/** Join all collaborators in a list, and clear donorsList and consumersList, to fulfill them again. **/
 		List <Integer> allCollaborators = new ArrayList<Integer>();
 		allCollaborators.addAll(donorsList);
-		allCollaborators.addAll(consumersCollabList);			
+		allCollaborators.addAll(consumersCollabList);
+		Collections.sort(allCollaborators);
 		donorsList.clear();
 		consumersCollabList.clear();
 		
@@ -235,7 +239,7 @@ public class Simulator {
 		/** Fulfilling consumersCollabList and donorsList with collaborators with their new consuming status. **/
 		for(int collabId : allCollaborators){
 			/** Based in consumingStateProbability, we decide if the collaborator will consume or not in the next step. **/
-			peers[collabId].setConsuming((this.randomGenerator.nextInt(100)+1 <= (this.consumingStateProbability*100))?true:false);				
+			peers[collabId].setConsuming((this.randomGenerator.nextInt(100)+1 <= (this.consumingStateProbability*100)));
 			if(peers[collabId].isConsuming()){				
 				if((this.currentStep+1)<this.numSteps){
 					peers[collabId].setDemand(this.peersDemand);
@@ -533,7 +537,8 @@ public class Simulator {
 						double lastFairness = Simulator.getFairness(lastConsumed, lastDonated);
 						
 						/** If my fairness is decreasing or equal to last fairness, try changing the behavior.**/
-						if(currentFairness <= lastFairness){													
+						if(currentFairness <= lastFairness){
+//						if(currentFairness <= lastFairness || currentFairness > 1){
 							collaborator.setIncreasingCapacitySupplied(!collaborator.isIncreasingCapacitySupplied());
 						}
 						
@@ -612,8 +617,8 @@ public class Simulator {
 	 * @param peersList	 the list of integers (peer ids) on which we will randomly choose one
 	 * @return the index of item randomly choosed
 	 */
-    private int anyPeer(List <Integer> peersList){    	
-        return randomGenerator.nextInt(peersList.size());
+    private int anyPeer(List <Integer> peersList){    
+        return this.anyPeerRandomGenerator.nextInt(peersList.size());
     }
     
     private void sortReputations(Collaborator donor, Peer consumer){
@@ -622,10 +627,33 @@ public class Simulator {
 		if(!(consumer instanceof FreeRider))
 			Collections.sort(consumer.getPeersReputations());
     }
-
     
 }
 
 
 
 
+///**
+// * checando o seed
+// */
+//System.out.println();
+//System.out.println("Step "+this.currentStep);
+//Collections.sort(donorsList);
+//Collections.sort(consumersCollabList);
+//System.out.print("Donators: ");
+//for(Integer index : donorsList){
+//	System.out.print(peers[index].getPeerId()+",");
+//}
+//System.out.println();
+//System.out.print("Consumers: ");
+//for(Integer index : consumersCollabList){
+//	System.out.print(peers[index].getPeerId()+",");
+//}
+//
+//if(this.currentStep==9){
+//	System.exit(0);
+//}
+//
+///**
+// * fim de checando o seed
+// */
