@@ -9,6 +9,7 @@ import peer.reputation.PeerReputation;
 public class Peer{
 	
 	
+	protected double initialDemand;
 	protected double demand;
 	protected boolean consuming; 
 	protected ArrayList<PeerReputation> peersReputations;
@@ -30,6 +31,7 @@ public class Peer{
 	 */
 	public Peer(double demand, int peerId, boolean consuming, int numSteps) {
 		super();
+		this.initialDemand = demand;
 		this.setDemand(demand);
 		this.setPeerId(peerId);
 		this.setConsuming(consuming);	
@@ -51,6 +53,7 @@ public class Peer{
 	 */
 	public Peer(double demand, int peerId, boolean consuming, int numSteps, boolean isFreeRider) {
 		super();
+		this.initialDemand = demand;
 		this.setDemand(demand);
 		this.setPeerId(peerId);
 		this.setConsuming(consuming);		
@@ -182,6 +185,13 @@ public class Peer{
 	 */
 	public double getDemand() {
 		return demand;
+	}
+	
+	/**
+	 * @return the initial demand of the peer
+	 */
+	public double getInitialDemand() {
+		return this.initialDemand;
 	}
 	
 	/**

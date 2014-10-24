@@ -32,6 +32,7 @@ public class Simulator {
 	 */
 	private boolean dynamic;						//[FACTOR]: if the capacity supply changes dynamicly or not
 	private boolean nofWithLog;					//if the reputations will be calculated with log or with sqrt
+	private double fairnessLowerThreshold;			//the threshold in which fairness must have in order to prioritize satisfaction
 	
 	/**
 	 * Peers characteristics.
@@ -78,7 +79,7 @@ public class Simulator {
 	 * @param seed value used to calculate probability of being consumer or donor
 	 */
 	public Simulator(int numPeers, int numSteps, double consumingStateProbability, double percentageCollaborators, boolean dynamic, boolean nofWithLog,
-			double peersDemand, double capacitySupplied, double changingValue, long seed, Level level, String outputFile) {
+			double fairnessLowerThreshold, double peersDemand, double capacitySupplied, double changingValue, long seed, Level level, String outputFile) {
 		super();
 		this.numPeers = numPeers;
 		this.numSteps = numSteps;
@@ -86,6 +87,7 @@ public class Simulator {
 		this.percentageCollaborators = percentageCollaborators;
 		this.dynamic = dynamic;
 		this.nofWithLog = nofWithLog;
+		this.fairnessLowerThreshold = fairnessLowerThreshold;
 		this.peersDemand = peersDemand;
 		this.capacitySupplied = capacitySupplied;
 		this.changingValue = changingValue;
@@ -528,24 +530,36 @@ public class Simulator {
 //				if(collaborator.getConsumedHistory()[this.currentStep]>0){
 					
 					if(this.currentStep>0){
+						
 						double currentConsumed = collaborator.getCurrentConsumed(this.currentStep);
 						double currentDonated = collaborator.getCurrentDonated(this.currentStep);
 						double currentFairness = Simulator.getFairness(currentConsumed, currentDonated);
 						
+						double lastRequested = collaborator.getCurrentRequested(this.currentStep-1);
 						double lastConsumed = collaborator.getCurrentConsumed(this.currentStep-1);
 						double lastDonated = collaborator.getCurrentDonated(this.currentStep-1);
 						double lastFairness = Simulator.getFairness(lastConsumed, lastDonated);
 						
-						/** If my fairness is decreasing or equal to last fairness, try changing the behavior.**/
+						/** If my fairness is decreasing or equal to last fairness, then:
+						 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
+						 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
+						 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
+						 *  		have a nice fairness value. **/
 						if(currentFairness <= lastFairness){
-//						if(currentFairness <= lastFairness || currentFairness > 1){
-							collaborator.setIncreasingCapacitySupplied(!collaborator.isIncreasingCapacitySupplied());
+							if(!collaborator.isIncreasingCapacitySupplied()){
+								collaborator.setIncreasingCapacitySupplied(true);
+							}
+							else{
+								if(currentFairness < this.fairnessLowerThreshold){
+									collaborator.setIncreasingCapacitySupplied(false);
+								}
+							}
 						}
 						
 						/** Change it's capacity in order to achiever a greater fairness. **/
 						if(collaborator.isIncreasingCapacitySupplied())				
 							collaborator.setCapacitySuppliedReferenceValue(Math.min(1, collaborator.getCapacitySuppliedReferenceValue()+this.changingValue));	//try to increase the current capacitySuppliedReferenceValue
-						else														//if we were decreasing and it decreased my fairness, keep decreasing
+						else
 							collaborator.setCapacitySuppliedReferenceValue(Math.max(0, collaborator.getCapacitySuppliedReferenceValue()-this.changingValue));	//try to decrease the current capacitySuppliedReferenceValue
 							
 						collaborator.setCapacitySupplied(collaborator.getCapacitySuppliedReferenceValue());
@@ -599,17 +613,24 @@ public class Simulator {
 	 */
 	private void exportData(){		
 		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
-		we.setupFile();		
-//		we.fulfillFairness(peers);
-		we.fulfillFairnessPerSteps(peers);
-//		we.fulfillConsumptionData(peers);
-//		we.fulfillRequestedData(peers);
-		we.fulfillSatisfactionPerSteps(peers);
-//		we.fulfillDonationData(peers);
-		we.fulfillfreeRiderSatisfactionsData(peers);
-		we.fulfillCapacitySuppliedData(peers);
+//		we.setupFile();
+//		we.fulfillFairnessPerSteps(peers);
+//		we.fulfillSatisfactionPerSteps(peers);
+//		we.fulfillfreeRiderSatisfactionsData(peers);
+		we.setupFileLastStep();		
+		we.fulfillFairnessLastStep(peers);
+		we.fulfillSatisfactionLastStep(peers);
+		we.fulfillfreeRiderSatisfactionsLastStep(peers);
+	
 		
 		we.writeFile();
+		
+		if(this.dynamic){
+			WriteExcel2010 we2 = new WriteExcel2010(this.outputFile.replace(".xlsx","-Contention.xlsx"), this.numSteps);
+			we2.setupFile2();	
+			we2.fulfillContentionData(peers);		
+			we2.writeFile();
+		}
 	}
 	
 	/**

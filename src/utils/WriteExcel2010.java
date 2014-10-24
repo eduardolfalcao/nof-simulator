@@ -16,7 +16,7 @@ import simulator.Simulator;
 public class WriteExcel2010 {
 	
 	private String outputFile;
-	private Sheet fairnessSheet, fairnessPerStepSheet, consumedSheet, requestedSheet, satisfactionPerStepSheet, donatedSheet, capacitySuppliedPerStepSheet, freeRidersSatisfactionSheet;
+	private Sheet fairnessSheet, fairnessPerStepSheet, consumedSheet, requestedSheet, satisfactionPerStepSheet, donatedSheet, capacitySuppliedPerStepSheet, freeRidersSatisfactionSheet, kPerStepSheet;
 	private int numSteps;
 	
 	private XSSFWorkbook workbook;
@@ -69,7 +69,8 @@ public class WriteExcel2010 {
 		satisfactionPerStepSheet = workbook.createSheet("Satisfaction");
 //		donatedSheet = workbook.createSheet("Donated");
 		freeRidersSatisfactionSheet = workbook.createSheet("Free riders satisfactions");
-		capacitySuppliedPerStepSheet = workbook.createSheet("Capacity supplied per steps");
+//		capacitySuppliedPerStepSheet = workbook.createSheet("Capacity supplied per steps");
+//		kPerStepSheet = workbook.createSheet("Contention per steps");
 		
 
 //		createLabel(fairnessSheet);
@@ -79,7 +80,31 @@ public class WriteExcel2010 {
 		createLabel(satisfactionPerStepSheet);
 //		createLabel(donatedSheet);
 		createLabel(freeRidersSatisfactionSheet);
-		createLabel(capacitySuppliedPerStepSheet); 
+//		createLabel(capacitySuppliedPerStepSheet);
+//		createLabel(kPerStepSheet);
+		
+	}
+	
+	/**
+	 * Setup the xslx file for output.
+	 * Only for last Step.
+	 */
+	public void setupFileLastStep() {		 
+		
+		fairnessPerStepSheet = workbook.createSheet("Fairness per steps");
+		satisfactionPerStepSheet = workbook.createSheet("Satisfaction");
+		freeRidersSatisfactionSheet = workbook.createSheet("Free riders satisfactions");
+		
+		createLabelLastStep(fairnessPerStepSheet);
+		createLabelLastStep(satisfactionPerStepSheet);
+		createLabelLastStep(freeRidersSatisfactionSheet);
+		
+	}
+	
+	public void setupFile2() {
+
+		kPerStepSheet = workbook.createSheet("Contention per steps");
+		createLabel(kPerStepSheet);
 		
 	}
 	
@@ -102,8 +127,40 @@ public class WriteExcel2010 {
 				|| sheet.getSheetName().equals("Fairness per steps")
 				|| sheet.getSheetName().equals("Capacity supplied per steps")
 				|| sheet.getSheetName().equals("Free riders satisfactions")) {
+//			for (int i = 0; i < this.numSteps; i++)
+//				this.addLabel(sheet, i + 2, 0, "Step " + (i + 1));
+			this.addLabel(sheet, 2, 0, "Fairness");
+		}
+		else if(sheet.getSheetName().equals("Contention per steps")){
+			addLabel(sheet, 0, 1, "Free Riders Demand");
+			addLabel(sheet, 0, 2, "Collaborators Demand");
+			addLabel(sheet, 0, 3, "Capacity Supplied");
+			addLabel(sheet, 0, 4, "Contention");
 			for (int i = 0; i < this.numSteps; i++)
-				this.addLabel(sheet, i + 2, 0, "Step " + (i + 1));
+				this.addLabel(sheet, i + 1, 0, "Step " +(i+1));
+		}
+	}
+	
+	/**
+	 * Creates the label of the tabs.
+	 * 
+	 * @param sheet the tab to be created the titles
+	 */
+	private void createLabelLastStep(Sheet sheet){
+		
+		addLabel(sheet, 0, 0, "Peers");
+		addLabel(sheet, 1, 0, "ID");
+		
+		if (sheet.getSheetName().equals("Fairness")) 
+			addLabel(sheet, 2, 0, "Fairness");
+		else if (sheet.getSheetName().equals("Consumed")
+				|| sheet.getSheetName().equals("Requested")
+				|| sheet.getSheetName().equals("Satisfaction")
+				|| sheet.getSheetName().equals("Donated")
+				|| sheet.getSheetName().equals("Fairness per steps")
+				|| sheet.getSheetName().equals("Capacity supplied per steps")
+				|| sheet.getSheetName().equals("Free riders satisfactions")) {
+			this.addLabel(sheet, 2, 0, "Step "+this.numSteps);
 		}
 	}
 	
@@ -196,6 +253,34 @@ public class WriteExcel2010 {
 			this.addFormula(this.fairnessPerStepSheet, column, lastCollaborator+1 , strFormulaCollab);
 			column++;			
 		}
+	}
+	
+	/**
+	 * Write fairness data Last step.
+	 * 
+	 * @param peers the peers of simulation
+	 */
+	public void fulfillFairnessLastStep(Peer [] peers){
+		
+		//fulfilling satisfaction peers cells
+		for (int i = 0; i < peers.length; i++) {
+			if(peers[i] instanceof Collaborator){
+				String peer = "Collaborator";
+				
+				this.addLabel(this.fairnessPerStepSheet, 0, i+1, peer);
+				this.addLabel(this.fairnessPerStepSheet, 1, i+1, ""+peers[i].getPeerId());
+				
+				double currentConsumed, currentDonated, fairness;
+				
+				for(int j = this.numSteps-1; j < this.numSteps; j++){				
+					currentConsumed = peers[i].getCurrentConsumed(j);			
+					currentDonated = peers[i].getCurrentDonated(j);
+					fairness = Simulator.getFairness(currentConsumed, currentDonated);
+					
+					this.addNumber(this.fairnessPerStepSheet, 2, i+1, fairness);
+				}
+			}
+		}		
 	}
 	
 	
@@ -321,6 +406,34 @@ public class WriteExcel2010 {
 	}
 	
 	/**
+	 * Write satisfactions (consumed/requested) data last step.
+	 * 
+	 * @param peers the peers of simulation
+	 */
+	public void fulfillSatisfactionLastStep(Peer [] peers){
+		
+		//fulfilling satisfaction peers cells
+		for (int i = 0; i < peers.length; i++) {
+			if(peers[i] instanceof Collaborator){
+				String peer = "Collaborator";
+				
+				this.addLabel(this.satisfactionPerStepSheet, 0, i+1, peer);
+				this.addLabel(this.satisfactionPerStepSheet, 1, i+1, ""+peers[i].getPeerId());
+				
+				double currentConsumed, currentRequested, satisfaction;
+				
+				for(int j = this.numSteps-1; j < this.numSteps; j++){				
+					currentConsumed = peers[i].getCurrentConsumed(j);				
+					currentRequested = peers[i].getCurrentRequested(j);
+					satisfaction = Simulator.getFairness(currentConsumed, currentRequested);
+					
+					this.addNumber(this.satisfactionPerStepSheet, 2, i+1, satisfaction);
+				}
+			}
+		}
+	}
+	
+	/**
 	 * Write donation data.
 	 * 
 	 * @param peers the peers of simulation
@@ -365,7 +478,7 @@ public class WriteExcel2010 {
 	 * @param peers the peers of simulation
 	 */
 	public void fulfillCapacitySuppliedData(Peer [] peers){
-		// fulfilling donated peers cells
+		// fulfilling capacity supplied peers cells
 		for (int i = 0; i < peers.length; i++) {
 			if(peers[i] instanceof Collaborator){
 				String peer = "Collaborator";
@@ -377,6 +490,46 @@ public class WriteExcel2010 {
 					this.addNumber(this.capacitySuppliedPerStepSheet, j + 2, i + 1, collab.getCapacitySuppliedHistory()[j]);
 			}
 		}	
+	}
+	
+	
+	public void fulfillContentionData(Peer [] peers){
+		// fulfilling contention peers cells
+		
+		double [] demandRequestedByCollaborators = new double[this.numSteps];
+		double [] demandRequestedByFreeRiders = new double[this.numSteps];
+		double [] capacitySupplied = new double[this.numSteps];
+		double [] contention = new double[this.numSteps];
+		
+		
+		for (int i = 0; i < peers.length; i++) {		
+			
+			if(peers[i] instanceof Collaborator){
+				Collaborator collab = (Collaborator) peers[i];
+				for (int j = 0; j < this.numSteps; j++){					
+					if(collab.getRequestedHistory()[j]==0)
+						capacitySupplied[j] += collab.getCapacitySuppliedHistory()[j];
+					else{
+						demandRequestedByCollaborators[j] += collab.getRequestedHistory()[j];
+					}
+				}
+			}
+			else{
+				for (int j = 0; j < this.numSteps; j++)
+					demandRequestedByFreeRiders[j] += peers[i].getRequestedHistory()[j]; 				
+			}
+		}
+		
+		for (int i = 0; i < this.numSteps; i++)
+			contention[i] = demandRequestedByCollaborators[i]/capacitySupplied[i];
+		
+		//fulfilling requested peers cells
+		for (int i = 0; i < this.numSteps; i++) {
+			this.addNumber(this.kPerStepSheet, i+1, 1, demandRequestedByFreeRiders[i]);
+			this.addNumber(this.kPerStepSheet, i+1, 2, demandRequestedByCollaborators[i]);
+			this.addNumber(this.kPerStepSheet, i+1, 3, capacitySupplied[i]);
+			this.addNumber(this.kPerStepSheet, i+1, 4, contention[i]);
+		}
 	}
 	
 	/**
@@ -435,6 +588,37 @@ public class WriteExcel2010 {
 			String strFormulaCollab = "AVERAGE("+CellReference.convertNumToColString(column-50)+""+(lastFreeRider+1)+":"+CellReference.convertNumToColString(column)+""+(lastFreeRider+1)+")";
 			this.addFormula(this.freeRidersSatisfactionSheet, column, lastFreeRider+1 , strFormulaCollab);
 			column++;			
+		}
+	}
+	
+	/**
+	 * Write free riders success in last step data.
+	 * 
+	 * @param peers the peers of simulation
+	 */
+	public void fulfillfreeRiderSatisfactionsLastStep(Peer [] peers){
+		
+		int numFreeRiders = 0;
+		
+		//fulfilling satisfaction peers cells
+		for (int i = 0; i < peers.length; i++) {
+			if(peers[i] instanceof FreeRider){
+				String peer = "Free Rider";
+				
+				this.addLabel(this.freeRidersSatisfactionSheet, 0, numFreeRiders+1, peer);
+				this.addLabel(this.freeRidersSatisfactionSheet, 1, numFreeRiders+1, ""+peers[i].getPeerId());
+				
+				double currentConsumed, currentRequested, satisfaction;
+				
+				for(int j = this.numSteps-1; j < this.numSteps; j++){				
+					currentConsumed = peers[i].getCurrentConsumed(j);				
+					currentRequested = peers[i].getCurrentRequested(j);
+					satisfaction = Simulator.getFairness(currentConsumed, currentRequested);
+					
+					this.addNumber(this.freeRidersSatisfactionSheet, 2, numFreeRiders+1, satisfaction);
+				}
+				numFreeRiders++;
+			}
 		}
 	}
 	
