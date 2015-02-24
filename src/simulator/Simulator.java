@@ -27,7 +27,7 @@ public class Simulator {
 	private int numPeers;							//[FACTOR]: (collaborators + freeRiders)	
 	private int numSteps;							//[FACTOR]: number of steps of the simulation	
 	private double consumingStateProbability;		//[FACTOR]: probability of being in consuming state. Ranges (0,1).
-	private double percentageCollaborators;		//[FACTOR]: percentage of peers that will be collaborators. Ranges (0,1).
+//	private double percentageCollaborators;		//[FACTOR]: percentage of peers that will be collaborators. Ranges (0,1).
 	
 	/**
 	 * NoF characteristics.
@@ -76,7 +76,6 @@ public class Simulator {
 	 * @param numPeers	number of collaborators + free riders
 	 * @param numSteps number of steps of the simulation
 	 * @param consumingStateProbability probability of being in consuming state
-	 * @param percentageCollaborators percentage of peers that will be collaborators
 	 * @param dynamic the context of capacity supply
 	 * @param peersDemand the demand the peers will try to use from other peers
 	 * @param capacitySupplied capacity of resources that peers can donate
@@ -84,14 +83,13 @@ public class Simulator {
 	 * @param changingValue value added or subtracted to/from capacitySupplied
 	 * @param seed value used to calculate probability of being consumer or provider
 	 */
-	public Simulator(int numSteps, double consumingStateProbability, double percentageCollaborators, boolean dynamic, boolean nofWithLog,
+	public Simulator(int numSteps, double consumingStateProbability, boolean dynamic, boolean nofWithLog,
 			double fairnessLowerThreshold, double peersDemand, double capacitySupplied, double changingValue, long seed, Level level, String outputFile,
 			PeerGroup [] peerGroups) {
 		super();
 		
 		this.numSteps = numSteps;
 		this.consumingStateProbability = consumingStateProbability;
-		this.percentageCollaborators = percentageCollaborators;
 		this.dynamic = dynamic;
 		this.nofWithLog = nofWithLog;
 		this.fairnessLowerThreshold = fairnessLowerThreshold;
@@ -129,7 +127,7 @@ public class Simulator {
 	 * based in consumingStateProbability. The free riders are always in consuming state, despite they achieve
 	 * or not success.
 	 */
-	private void setupSimulation(){
+	public void setupSimulation(){
 		
 		
 		//account the number of collaborators
@@ -681,33 +679,40 @@ public class Simulator {
 		if(!(consumer instanceof FreeRider))
 			Collections.sort(consumer.getPeersReputations());
     }
+
+	/**
+	 * @return the numPeers
+	 */
+	public int getNumPeers() {
+		return numPeers;
+	}
+
+	/**
+	 * @return the peers
+	 */
+	public static Peer[] getPeers() {
+		return peers;
+	}
+
+	/**
+	 * @return the providersList
+	 */
+	public List<Integer> getProvidersList() {
+		return providersList;
+	}
+
+	/**
+	 * @return the freeRidersList
+	 */
+	public List<Integer> getFreeRidersList() {
+		return freeRidersList;
+	}
+
+	/**
+	 * @return the numCollaborators
+	 */
+	public int getNumCollaborators() {
+		return numCollaborators;
+	}
     
 }
-
-
-
-
-///**
-// * checando o seed
-// */
-//System.out.println();
-//System.out.println("Step "+this.currentStep);
-//Collections.sort(donorsList);
-//Collections.sort(consumersCollabList);
-//System.out.print("Donators: ");
-//for(Integer index : donorsList){
-//	System.out.print(peers[index].getPeerId()+",");
-//}
-//System.out.println();
-//System.out.print("Consumers: ");
-//for(Integer index : consumersCollabList){
-//	System.out.print(peers[index].getPeerId()+",");
-//}
-//
-//if(this.currentStep==9){
-//	System.exit(0);
-//}
-//
-///**
-// * fim de checando o seed
-// */

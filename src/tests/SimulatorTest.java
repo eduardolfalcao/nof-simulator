@@ -1,10 +1,12 @@
 package tests;
 
 import static org.junit.Assert.*;
+import input.PeerGroup;
 
 import java.util.List;
 import java.util.logging.Level;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import peer.Collaborator;
@@ -14,6 +16,44 @@ import simulator.Simulator;
 
 public class SimulatorTest {
 
+	/**
+	 * Test method for {@link simulator.Simulator#setupSimulation()}.
+	 */
+	@Test
+	public void testSetupSimulation() {
+		
+		PeerGroup group1 = new PeerGroup(new char [] {'A'}, new char [] {'B'}, 50);
+		PeerGroup group2 = new PeerGroup(new char [] {'B'}, new char [] {'C'}, 50);
+		PeerGroup group3 = new PeerGroup(new char [] {'C'}, new char [] {'A'}, 50);
+		
+		
+		PeerGroup [] peerGroups = new PeerGroup [] {group1, group2, group3}; 
+		
+		int numSteps = 1000;
+		double consumingStateProbability = 0.5;
+		boolean dynamic = false;
+		boolean nofWithLog = false;
+		double fairnessLowerThreshold = 0.9;
+		double peersDemand = 1;
+		double capacitySupplied = 1;
+		double changingValue = 0.05;
+		long seed = 1;
+		Level level = null;
+		String outputFile = "";
+		Simulator s = new Simulator(numSteps, consumingStateProbability, dynamic, nofWithLog, fairnessLowerThreshold, peersDemand, capacitySupplied, changingValue, seed, level, outputFile, peerGroups);
+		
+		s.setupSimulation();
+		
+		Assert.assertTrue(s.getFreeRidersList().isEmpty());
+		Assert.assertTrue(s.getNumPeers()==150);
+		Assert.assertTrue(s.getNumCollaborators()==150);
+		System.out.println(s.getProvidersList().size());
+		
+		s.getProvi
+		
+		
+	}
+	
 //	/**
 //	 * Test method for {@link simulator.Simulator#setupSimulation()}.
 //	 */
