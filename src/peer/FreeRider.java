@@ -1,7 +1,7 @@
 package peer;
 
 public class FreeRider extends Peer{
-
+	
 	private boolean successHistory[];
 	
 	/**
@@ -9,9 +9,13 @@ public class FreeRider extends Peer{
 	 * @param peerId the id of the peer
 	 * @param numSteps the number of steps of the simulation
 	 */
-	public FreeRider(double demand, int peerId, int numSteps) {
-		super(demand, peerId, true, numSteps);
+	public FreeRider(double demand, int peerId, int numSteps, char [] productsDemanded) {
+		super(demand, peerId, true, numSteps, null, productsDemanded);
 		this.setSuccessHistory(new boolean[numSteps]);
+		
+		int initialStep = 0;
+		this.getRequestedHistory()[initialStep] = this.getInitialDemand();
+		this.getConsumedHistory()[initialStep] = 0;
 	}
 
 	/**

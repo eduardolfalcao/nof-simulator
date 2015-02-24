@@ -15,19 +15,34 @@ public class Collaborator extends Peer{
 	
 	private boolean increasingCapacitySupplied;
 	
+	private String [] services;
+	
+	
 	/**
 	 * @param demand the amount of demand for resources from another peer
 	 * @param peerId the id of the peer
 	 * @param consuming the state of the peer: consuming or not
 	 * @param capacitySupplied the capacity to be supplied in the current step
 	 * @param numSteps the number of steps of the simulation
+	 * @param services supported by this peer
 	 */
-	public Collaborator(double demand, int peerId, boolean consuming, double capacitySupplied,  int numSteps) {
-		super(demand, peerId, consuming, numSteps);
+	public Collaborator(double demand, int peerId, boolean consuming, double capacitySupplied,  int numSteps, char [] productsProvided, char [] productsDemanded) {
+		super(demand, peerId, consuming, numSteps, productsProvided, productsDemanded);
 		this.setCapacitySupplied(capacitySupplied);
 		this.setCapacitySuppliedReferenceValue(capacitySupplied);
 		this.setCapacitySuppliedHistory(new double[numSteps]);
 		this.setIncreasingCapacitySupplied(false);
+		
+		int initialStep = 0;
+		if(consuming){
+			this.getCapacitySuppliedHistory()[initialStep] = 0;
+			this.getRequestedHistory()[initialStep] = this.initialDemand;
+			this.getConsumedHistory()[initialStep] = 0;
+		}
+		else{			
+			this.getCapacitySuppliedHistory()[initialStep] = this.capacitySuppliedReferenceValue;
+			this.getRequestedHistory()[initialStep] = 0;
+		}
 	}
 
 	/**
@@ -85,6 +100,20 @@ public class Collaborator extends Peer{
 	 */
 	public void setIncreasingCapacitySupplied(boolean increasingCapacitySupplied) {
 		this.increasingCapacitySupplied = increasingCapacitySupplied;
+	}
+
+	/**
+	 * @return the products
+	 */
+	public String [] getProducts() {
+		return services;
+	}
+
+	/**
+	 * @param products the products to set
+	 */
+	public void setServices(String [] products) {
+		this.services = products;
 	}
 	
 	

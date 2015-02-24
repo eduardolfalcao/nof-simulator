@@ -8,13 +8,19 @@ import peer.reputation.PeerReputation;
 
 public class Peer{
 	
-	
-	protected double initialDemand;
-	protected double demand;
-	protected boolean consuming; 
-	protected ArrayList<PeerReputation> peersReputations;
-	protected ArrayList <Interaction> interactions;
 	protected int peerId;
+	
+	
+	protected double initialDemand;		//the beginning reference value
+	protected double currentDemand;		//the current value (generally 1 or 0)
+	protected boolean consuming; 
+	
+	protected char [] productsProvided;
+	protected char [] productsDemanded;
+	
+	protected ArrayList<PeerReputation> peersReputations;
+	protected ArrayList <Interaction> interactions;	
+	
 	
 	protected double donatedHistory[];
 	protected double consumedHistory[];
@@ -29,7 +35,7 @@ public class Peer{
 	 * @param consuming
 	 * @param numSteps
 	 */
-	public Peer(double demand, int peerId, boolean consuming, int numSteps) {
+	public Peer(double demand, int peerId, boolean consuming, int numSteps, char [] productsProvided, char [] productsDemanded) {
 		super();
 		this.initialDemand = demand;
 		this.setDemand(demand);
@@ -40,6 +46,8 @@ public class Peer{
 		this.setDonatedHistory(new double[numSteps]);
 		this.setConsumedHistory(new double[numSteps]);
 		this.setRequestedHistory(new double[numSteps]);
+		this.setProductsProvided(productsProvided);
+		this.setProductsDemanded(productsDemanded);
 	}
 
 	/**
@@ -184,7 +192,7 @@ public class Peer{
 	 * @return the demand of the peer
 	 */
 	public double getDemand() {
-		return demand;
+		return currentDemand;
 	}
 	
 	/**
@@ -198,7 +206,7 @@ public class Peer{
 	 * @param demand the new demand of the peer
 	 */
 	public void setDemand(double demand) {
-		this.demand = demand;
+		this.currentDemand = demand;
 	}
 	
 	/**
@@ -257,6 +265,32 @@ public class Peer{
 		this.requestedHistory = requestedHistory;
 	}
 	
-	
+	/**
+	 * @return the productsProvided
+	 */
+	public char[] getProductsProvided() {
+		return productsProvided;
+	}
+
+	/**
+	 * @return the productsDemanded
+	 */
+	public char[] getProductsDemanded() {
+		return productsDemanded;
+	}
+
+	/**
+	 * @param productsProvided the productsProvided to set
+	 */
+	public void setProductsProvided(char[] productsProvided) {
+		this.productsProvided = productsProvided;
+	}
+
+	/**
+	 * @param productsDemanded the productsDemanded to set
+	 */
+	public void setProductsDemanded(char[] productsDemanded) {
+		this.productsDemanded = productsDemanded;
+	}
 	
 }
