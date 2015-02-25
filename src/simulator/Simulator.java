@@ -23,10 +23,16 @@ public class Simulator {
 	 * Simulation characteristics.
 	 */
 	private int numPeers;							//[FACTOR]: (collaborators + freeRiders)	
-	private int numSteps;							//[FACTOR]: number of steps of the simulation	
-	private double consumingStateProbability;		//[FACTOR]: probability of being in consuming state. Ranges (0,1).
-	private double percentageCollaborators;		//[FACTOR]: percentage of peers that will be collaborators. Ranges (0,1).
+	private int numSteps;							//[FACTOR]: number of steps of the simulation
 	
+	//each array item is a group of collaborators with the same characteristics
+	private double [] consumingStateProbability;	//[FACTOR]: probability of being in consuming state. Ranges (0,1).
+	private int [] numberOfCollaborators;		//[FACTOR]: number of collaborators, formed in groups
+	private int [] numberOfFreeRiders;		//[FACTOR]: number of free riders, formed in groups
+	
+	private int numCollaborators;
+	private int numFreeRiders;
+		
 	/**
 	 * NoF characteristics.
 	 */
@@ -37,13 +43,13 @@ public class Simulator {
 	/**
 	 * Peers characteristics.
 	 */
-	private double peersDemand;					//[FACTOR]: the demand the peers will try to use from other peers
-	private double peersCapacity;
+	private double [] peersDemand;					//[FACTOR]: the demand the peers will try to use from other peers
+	private double [] peersCapacity;
 	
 	/**
 	 * Collaborators characteristics.
 	 */
-	private double capacitySupplied;				//capacity of resources that peers can donate 			[begins with 1]
+	//private double capacitySupplied;				//capacity of resources that peers can donate 			[begins with 1]
 	private double changingValue;					//value added or subtracted to/from capacitySupplied	[assumed 0.05]
 	
 	/**
@@ -55,11 +61,11 @@ public class Simulator {
 	private List <Integer> consumedPeersList;		//list of all peers that have already consumed (collaborators + free riders)
 	private List <Integer> donatedPeersList;		//list of all peers (collaborators + free riders)
 	private List <Integer> consumersCollabList;		//list of consumers collaborators
-	private List <Integer> donorsList;				//list of donors
+	private List <Integer> providersList;				//list of donors
 	private List <Integer> freeRidersList;			//list of free-riders	
 	private Random randomGenerator;					//to randomly define who is donor or consumer (besides collaborator or free rider) 
 	private Random anyPeerRandomGenerator;			//to randomly retrieve an element from ArrayList (with a seed)
-	private int numCollaborators;					//number of collaborators
+	
 	
 	private String outputFile;						//file to export Data
 	
@@ -78,25 +84,26 @@ public class Simulator {
 	 * @param changingValue value added or subtracted to/from capacitySupplied
 	 * @param seed value used to calculate probability of being consumer or donor
 	 */
-	public Simulator(int numPeers, int numSteps, double consumingStateProbability, double percentageCollaborators, boolean dynamic, boolean nofWithLog,
-			double fairnessLowerThreshold, double peersDemand, double capacitySupplied, double changingValue, long seed, Level level, String outputFile) {
+	public Simulator(int numPeers, int numSteps, double [] consumingStateProbability, int [] numberOfCollaborators, int [] numberOfFreeRiders, boolean dynamic, boolean nofWithLog,
+			double fairnessLowerThreshold, double [] peersDemand, double [] capacitySupplied, double changingValue, long seed, Level level, String outputFile) {
 		super();
 		this.numPeers = numPeers;
 		this.numSteps = numSteps;
 		this.consumingStateProbability = consumingStateProbability;
-		this.percentageCollaborators = percentageCollaborators;
+		this.numberOfCollaborators = numberOfCollaborators;
+		this.numberOfFreeRiders = numberOfFreeRiders;
 		this.dynamic = dynamic;
 		this.nofWithLog = nofWithLog;
 		this.fairnessLowerThreshold = fairnessLowerThreshold;
 		this.peersDemand = peersDemand;
-		this.capacitySupplied = capacitySupplied;
+		//this.capacitySupplied = capacitySupplied;
 		this.changingValue = changingValue;
 		this.currentStep = 0;
 		Simulator.peers = new Peer[numPeers];
 		this.consumedPeersList = new ArrayList<Integer> ();
 		this.donatedPeersList = new ArrayList<Integer> ();
 		this.consumersCollabList = new ArrayList<Integer> ();
-		this.donorsList = new ArrayList<Integer> ();
+		this.providersList = new ArrayList<Integer> ();
 		this.freeRidersList = new ArrayList<Integer> ();		
 		this.randomGenerator = new Random(seed);
 		this.anyPeerRandomGenerator = new Random(seed);
@@ -118,42 +125,54 @@ public class Simulator {
 	 * or not success.
 	 */
 	private void setupSimulation(){
-		//creating the peers (collaborators + freeRiders)		
-		numCollaborators = (int) Math.ceil(this.numPeers*this.percentageCollaborators);
+		//creating the peers (collaborators + freeRiders)	
 		
-		for(int i = 0; i < numCollaborators; i++){			
-			//based in consumingStateProbability, we decide if the peer will begin consuming or not
-			boolean beginsConsuming = (this.randomGenerator.nextInt(100)+1 <= (this.consumingStateProbability*100));
-			Collaborator collab = null;
-			if(beginsConsuming){
-				collab = new Collaborator(this.peersDemand, i, beginsConsuming, this.capacitySupplied, this.numSteps);
-				collab.getCapacitySuppliedHistory()[this.currentStep] = this.capacitySupplied;
-				collab.getRequestedHistory()[this.currentStep] = this.peersDemand-this.peersCapacity;
-				collab.getConsumedHistory()[this.currentStep] = 0;
-				collab.setDemand(collab.getDemand()-this.peersCapacity);
-				consumersCollabList.add(i);
-			}				
-			else{
-				collab = new Collaborator(0, i, beginsConsuming, this.capacitySupplied, this.numSteps);
-				collab.getCapacitySuppliedHistory()[this.currentStep] = this.capacitySupplied;
-				collab.getRequestedHistory()[this.currentStep] = 0;
-				donorsList.add(i);
-			}
-			Simulator.peers[i] = collab;
+		
+		int id = 0;
+		for(int group = 0; group < numberOfCollaborators.length; group++){
+			for(int j = 0; j < numberOfCollaborators[group]; j++){
+				//based in consumingStateProbability, we decide if the peer will begin consuming or not
+				boolean beginsConsuming = (this.randomGenerator.nextInt(100)+1 <= (this.consumingStateProbability[group]*100));
+				Collaborator collab = new Collaborator(this.peersDemand[group], id, beginsConsuming, this.consumingStateProbability[group], this.peersCapacity[group], this.numSteps);
+				if(beginsConsuming){
+					collab.getCapacitySuppliedHistory()[this.currentStep] = this.peersCapacity[group];
+					collab.getRequestedHistory()[this.currentStep] = this.peersDemand[group]-this.peersCapacity[group];
+					collab.getConsumedHistory()[this.currentStep] = 0;
+					collab.setDemand(collab.getDemand()-this.peersCapacity[group]);
+					consumersCollabList.add(id);
+				}				
+				else{
+					collab.setDemand(0);
+					collab.getCapacitySuppliedHistory()[this.currentStep] = this.peersCapacity[group];
+					collab.getRequestedHistory()[this.currentStep] = 0;
+					providersList.add(id);
+				}
+				
+				Simulator.peers[id] = collab;				
+				id++;
+			}						
 		}
 		
-		int numFreeRiders = numPeers - numCollaborators;
-		for(int i = 0; i < numFreeRiders; i++){
-			//freeRiders never donates, they are always in consuming state. At least, they are always trying to consume.
-			Peer p = new FreeRider(this.peersDemand, i+numCollaborators, this.numSteps);
-			p.getRequestedHistory()[this.currentStep] = this.peersDemand-this.peersCapacity;
-			p.getConsumedHistory()[this.currentStep] = 0;
-			p.setDemand(p.getDemand()-this.peersCapacity);
-			freeRidersList.add(i+numCollaborators);
-			Simulator.peers[i+numCollaborators] = p;
-		}		
+		for(int group = 0; group < numberOfFreeRiders.length; group++){
+			for(int j = 0; j < numberOfFreeRiders[group]; j++){
+				//freeRiders never donates, they are always in consuming state. At least, they are always trying to consume.
+				Peer p = new FreeRider(this.peersCapacity[group], this.peersDemand[group], id, this.numSteps);
+				p.getRequestedHistory()[this.currentStep] = this.peersDemand[group]-this.peersCapacity[group];
+				p.getConsumedHistory()[this.currentStep] = 0;
+				p.setDemand(p.getDemand()-this.peersCapacity[group]);
+				freeRidersList.add(id);
+				Simulator.peers[id] = p;
+				id++;
+			}
+		}	
 		
-		Simulator.logger.info("Created: "+numCollaborators+" collaborators and "+numFreeRiders+" free riders.");
+		for(int n : numberOfCollaborators)
+			this.numCollaborators += n;
+		
+		for(int n : numberOfFreeRiders)
+			this.numFreeRiders += n;
+		
+		Simulator.logger.info("Created: "+this.numCollaborators+" collaborators and "+this.numFreeRiders+" free riders.");
 
 	}
 	
@@ -177,7 +196,7 @@ public class Simulator {
 		/**
 		 * While there is any collaborator willing to donate, try to choose one.
 		 */
-		while(!this.donorsList.isEmpty()){			
+		while(!this.providersList.isEmpty()){			
 			/**
 			 * If all peers who wanted to consume already consumed the quantity of resources
 			 * he wanted, then there is not another possible match.
@@ -212,7 +231,7 @@ public class Simulator {
 		Simulator.logger.fine("Step "+this.currentStep);
 		
 		/** Join all collaborators, consumers, and free riders in their lists. **/
-		donorsList.addAll(donatedPeersList);
+		providersList.addAll(donatedPeersList);
 		donatedPeersList.clear();
 		
 		for(int peerId : consumedPeersList){
@@ -225,30 +244,30 @@ public class Simulator {
 		
 		
 		//just to check if everything is OK until now
-		Simulator.logger.finest("#donors("+donorsList.size()+") + #Consumers("+consumersCollabList.size()+") == #Collaborators("+numCollaborators+") :-)");
-		Simulator.logger.finest("#Collaborators("+(donorsList.size()+consumersCollabList.size())+") + #FreeRiders("+freeRidersList.size()+") = #Peers("+this.numPeers+") :-)");		
+		Simulator.logger.finest("#donors("+providersList.size()+") + #Consumers("+consumersCollabList.size()+") == #Collaborators("+numCollaborators+") :-)");
+		Simulator.logger.finest("#Collaborators("+(providersList.size()+consumersCollabList.size())+") + #FreeRiders("+freeRidersList.size()+") = #Peers("+this.numPeers+") :-)");		
 		
 			
 		/** Join all collaborators in a list, and clear donorsList and consumersList, to fulfill them again. **/
 		List <Integer> allCollaborators = new ArrayList<Integer>();
-		allCollaborators.addAll(donorsList);
+		allCollaborators.addAll(providersList);
 		allCollaborators.addAll(consumersCollabList);
 		Collections.sort(allCollaborators);
-		donorsList.clear();
+		providersList.clear();
 		consumersCollabList.clear();
 		
 		
 		/** Fulfilling consumersCollabList and donorsList with collaborators with their new consuming status. **/
 		for(int collabId : allCollaborators){
 			/** Based in consumingStateProbability, we decide if the collaborator will consume or not in the next step. **/
-			peers[collabId].setConsuming((this.randomGenerator.nextInt(100)+1 <= (this.consumingStateProbability*100)));
+			peers[collabId].setConsuming((this.randomGenerator.nextInt(100)+1 <= (((Collaborator)peers[collabId]).getConsumingStateProbability()*100)));
 			if(peers[collabId].isConsuming()){				
 				if((this.currentStep+1)<this.numSteps){
-					peers[collabId].setDemand(this.peersDemand);
+					//peers[collabId].setDemand(peers[collabId].getInitialDemand());
 					((Collaborator)peers[collabId]).getCapacitySuppliedHistory()[currentStep+1] = ((Collaborator)peers[collabId]).getCapacitySuppliedHistory()[currentStep];
-					peers[collabId].getRequestedHistory()[this.currentStep+1] = this.peersDemand-this.peersCapacity;
+					peers[collabId].getRequestedHistory()[this.currentStep+1] = peers[collabId].getInitialDemand()-peers[collabId].getInitialCapacity();
 					peers[collabId].getConsumedHistory()[this.currentStep+1] = 0;
-					peers[collabId].setDemand(peers[collabId].getDemand()-this.peersCapacity);
+					peers[collabId].setDemand(peers[collabId].getInitialDemand()-peers[collabId].getInitialCapacity());
 					
 					consumersCollabList.add(collabId);
 				}
@@ -260,7 +279,7 @@ public class Simulator {
 					((Collaborator)peers[collabId]).getCapacitySuppliedHistory()[currentStep+1] = ((Collaborator)peers[collabId]).getCapacitySuppliedReferenceValue();
 					((Collaborator)peers[collabId]).getRequestedHistory()[this.currentStep+1] = 0;
 					
-					donorsList.add(collabId);	
+					providersList.add(collabId);	
 				}
 			}
 		}
@@ -268,10 +287,10 @@ public class Simulator {
 		/** Refreshing Free Riders' demand. **/
 		for(Integer fId : freeRidersList){
 			if((this.currentStep+1)<this.numSteps){
-				peers[fId].setDemand(this.peersDemand);			
-				peers[fId].getRequestedHistory()[this.currentStep+1] = this.peersDemand-this.peersCapacity;
+				//peers[fId].setDemand(peers[fId].getInitialDemand());			
+				peers[fId].getRequestedHistory()[this.currentStep+1] = peers[fId].getInitialDemand()-peers[fId].getInitialCapacity();
 				peers[fId].getConsumedHistory()[this.currentStep+1] = 0;
-				peers[fId].setDemand(peers[fId].getDemand()-this.peersCapacity);
+				peers[fId].setDemand(peers[fId].getInitialDemand()-peers[fId].getInitialCapacity());
 			}
 		}
 			
@@ -305,7 +324,7 @@ public class Simulator {
 	 * @return the collaborator that is not consuming, randomly choosed, or null if something strange happens
 	 */
 	private Collaborator choosesCollaboratorToDonate(){
-		int id = this.donorsList.get(anyPeer(this.donorsList));
+		int id = this.providersList.get(anyPeer(this.providersList));
 		return peers[id] instanceof Collaborator?(Collaborator)peers[id]:null;
 	}
 	
@@ -327,7 +346,7 @@ public class Simulator {
 			/** Id = -1, so that we won't find it on consumedPeersList in first iteration.
 			 *  consuming should be false, so that we assure entering in while loop.
 			 **/
-			Peer p = new Peer(0, -1, false, 0);		
+			Peer p = new Peer(0, 0, -1, false, 0);	
 			
 			/** Stop searching if the peers has not consumed and is in consuming state. **/
 			while(!(!this.consumedPeersList.contains((Integer)p.getPeerId()) && p.isConsuming())){
@@ -507,7 +526,7 @@ public class Simulator {
 	 */
 	private void removePeerIfFullyDonated(Collaborator donor){
 		if(donor.getCapacitySupplied()==0){
-			this.donorsList.remove((Integer)donor.getPeerId());
+			this.providersList.remove((Integer)donor.getPeerId());
 			this.donatedPeersList.add(donor.getPeerId());
 		}
 	}
@@ -518,7 +537,7 @@ public class Simulator {
 	private void updateCapacitySupplied(){
 		
 		List <Integer> allCollaborators = new ArrayList<Integer>();
-		allCollaborators.addAll(donorsList);
+		allCollaborators.addAll(providersList);
 		allCollaborators.addAll(consumersCollabList);
 		
 		for(int i : allCollaborators){		

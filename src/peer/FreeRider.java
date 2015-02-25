@@ -9,8 +9,8 @@ public class FreeRider extends Peer{
 	 * @param peerId the id of the peer
 	 * @param numSteps the number of steps of the simulation
 	 */
-	public FreeRider(double demand, int peerId, int numSteps) {
-		super(demand, peerId, true, numSteps);
+	public FreeRider(double capacity, double demand, int peerId, int numSteps) {
+		super(capacity, demand, peerId, true, numSteps);
 		this.setSuccessHistory(new boolean[numSteps]);
 	}
 

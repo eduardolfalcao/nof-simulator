@@ -13,6 +13,8 @@ public class Collaborator extends Peer{
 	private double capacitySupplied;						//capacity supplied in the current step		
 	private double capacitySuppliedHistory[];
 	
+	private double consumingStateProbability;
+	
 	private boolean increasingCapacitySupplied;
 	
 	/**
@@ -22,8 +24,9 @@ public class Collaborator extends Peer{
 	 * @param capacitySupplied the capacity to be supplied in the current step
 	 * @param numSteps the number of steps of the simulation
 	 */
-	public Collaborator(double demand, int peerId, boolean consuming, double capacitySupplied,  int numSteps) {
-		super(demand, peerId, consuming, numSteps);
+	public Collaborator(double demand, int peerId, boolean consuming, double consumingStateProbability, double capacitySupplied,  int numSteps) {
+		super(capacitySupplied, demand, peerId, consuming, numSteps);
+		this.setConsumingStateProbability(consumingStateProbability);
 		this.setCapacitySupplied(capacitySupplied);
 		this.setCapacitySuppliedReferenceValue(capacitySupplied);
 		this.setCapacitySuppliedHistory(new double[numSteps]);
@@ -88,6 +91,18 @@ public class Collaborator extends Peer{
 	}
 	
 	
+	/**
+	 * @return the consumingStateProbability
+	 */
+	public double getConsumingStateProbability() {
+		return consumingStateProbability;
+	}
 
+	/**
+	 * @param consumingStateProbability the consumingStateProbability to set
+	 */
+	public void setConsumingStateProbability(double consumingStateProbability) {
+		this.consumingStateProbability = consumingStateProbability;
+	}	
 
 }

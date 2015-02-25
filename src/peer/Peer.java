@@ -9,6 +9,7 @@ import peer.reputation.PeerReputation;
 public class Peer{
 	
 	
+	protected double initialCapacity;
 	protected double initialDemand;
 	protected double demand;
 	protected boolean consuming; 
@@ -29,8 +30,9 @@ public class Peer{
 	 * @param consuming
 	 * @param numSteps
 	 */
-	public Peer(double demand, int peerId, boolean consuming, int numSteps) {
+	public Peer(double initialCapacity, double demand, int peerId, boolean consuming, int numSteps) {
 		super();
+		this.initialCapacity = initialCapacity;
 		this.initialDemand = demand;
 		this.setDemand(demand);
 		this.setPeerId(peerId);
@@ -51,8 +53,9 @@ public class Peer{
 	 * @param numSteps
 	 * @param isFreeRider (force Free Riders to use this constructor)
 	 */
-	public Peer(double demand, int peerId, boolean consuming, int numSteps, boolean isFreeRider) {
+	public Peer(double initialCapacity, double demand, int peerId, boolean consuming, int numSteps, boolean isFreeRider) {
 		super();
+		this.initialCapacity = initialCapacity;
 		this.initialDemand = demand;
 		this.setDemand(demand);
 		this.setPeerId(peerId);
@@ -62,6 +65,8 @@ public class Peer{
 	}
 	
 	
+	
+
 	/**
 	 * The peer with highest reputation might already been used. Therefore, we will seek
 	 * the higher value before this. Where attempt = 2, means the second higher value in
@@ -255,6 +260,13 @@ public class Peer{
 	 */
 	public void setRequestedHistory(double [] requestedHistory) {
 		this.requestedHistory = requestedHistory;
+	}
+
+	/**
+	 * @return the initialCapacity
+	 */
+	public double getInitialCapacity() {
+		return initialCapacity;
 	}
 	
 	
