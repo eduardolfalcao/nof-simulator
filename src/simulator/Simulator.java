@@ -15,6 +15,7 @@ import peer.Collaborator;
 import peer.FreeRider;
 import peer.Peer;
 import peer.reputation.PeerReputation;
+import utils.GenerateCsv;
 import utils.WriteExcel2010;
 
 public class Simulator {
@@ -244,11 +245,11 @@ public class Simulator {
 		
 		
 		//just to check if everything is OK until now
-		Simulator.logger.finest("#donors("+providersList.size()+") + #Consumers("+consumersCollabList.size()+") == #Collaborators("+numCollaborators+") :-)");
+		Simulator.logger.finest("#providers("+providersList.size()+") + #Consumers("+consumersCollabList.size()+") == #Collaborators("+numCollaborators+") :-)");
 		Simulator.logger.finest("#Collaborators("+(providersList.size()+consumersCollabList.size())+") + #FreeRiders("+freeRidersList.size()+") = #Peers("+this.numPeers+") :-)");		
 		
 			
-		/** Join all collaborators in a list, and clear donorsList and consumersList, to fulfill them again. **/
+		/** Join all collaborators in a list, and clear providersList and consumersList, to fulfill them again. **/
 		List <Integer> allCollaborators = new ArrayList<Integer>();
 		allCollaborators.addAll(providersList);
 		allCollaborators.addAll(consumersCollabList);
@@ -257,13 +258,14 @@ public class Simulator {
 		consumersCollabList.clear();
 		
 		
-		/** Fulfilling consumersCollabList and donorsList with collaborators with their new consuming status. **/
+		/** Fulfilling consumersCollabList and providersList with collaborators with their new consuming status. **/
 		for(int collabId : allCollaborators){
 			/** Based in consumingStateProbability, we decide if the collaborator will consume or not in the next step. **/
 			peers[collabId].setConsuming((this.randomGenerator.nextInt(100)+1 <= (((Collaborator)peers[collabId]).getConsumingStateProbability()*100)));
 			if(peers[collabId].isConsuming()){				
 				if((this.currentStep+1)<this.numSteps){
 					//peers[collabId].setDemand(peers[collabId].getInitialDemand());
+					//FIXME we have to check it better!
 					((Collaborator)peers[collabId]).getCapacitySuppliedHistory()[currentStep+1] = ((Collaborator)peers[collabId]).getCapacitySuppliedHistory()[currentStep];
 					peers[collabId].getRequestedHistory()[this.currentStep+1] = peers[collabId].getInitialDemand()-peers[collabId].getInitialCapacity();
 					peers[collabId].getConsumedHistory()[this.currentStep+1] = 0;
@@ -395,20 +397,20 @@ public class Simulator {
 
 	/**
 	 * Performs the donation from a donor to a consumer.
-	 * @param donor the collaborator peer who will donate his spare resources
+	 * @param provider the collaborator peer who will donate his spare resources
 	 * @param consumer the peer who will consume the resources
 	 */
-	private void performDonation(Collaborator donor, Peer consumer){
+	private void performDonation(Collaborator provider, Peer consumer){
 		
-		Interaction artificialInteraction = new Interaction(donor, consumer);		//just to retrieve the real interaction by comparison
+		Interaction artificialInteraction = new Interaction(provider, consumer);		//just to retrieve the real interaction by comparison
 		
-		double valueToBeDonated = Math.min(consumer.getDemand(), donor.getCapacitySupplied());	//value to be donated is the minimum between consumers demand and donors capacity
+		double valueToBeDonated = Math.min(consumer.getDemand(), provider.getCapacitySupplied());	//value to be donated is the minimum between consumers demand and donors capacity
 		
 		/** The peers have already interacted. **/
-		if(donor.getInteractions().contains(artificialInteraction) && consumer.getInteractions().contains(artificialInteraction)){
+		if(provider.getInteractions().contains(artificialInteraction) && consumer.getInteractions().contains(artificialInteraction)){
 			
-			int index = donor.getInteractions().indexOf(artificialInteraction);
-			Interaction interaction = donor.getInteractions().get(index);			//retrieve the interaction object with its history
+			int index = provider.getInteractions().indexOf(artificialInteraction);
+			Interaction interaction = provider.getInteractions().get(index);			//retrieve the interaction object with its history
 						
 			/**
 			 * This if-else is necessary because we don't want to duplicate the interaction (objects) of peers A and B.
@@ -416,9 +418,9 @@ public class Simulator {
 			 * object "called" interaction (B,A).
 			 */
 			
-			if(donor.getPeerId() == interaction.getPeerA().getPeerId())
+			if(provider.getPeerId() == interaction.getPeerA().getPeerId())
 				interaction.peerADonatesValue(valueToBeDonated);		//update the interaction of peerA
-			else if(donor.getPeerId() == interaction.getPeerB().getPeerId())
+			else if(provider.getPeerId() == interaction.getPeerB().getPeerId())
 				interaction.peerBDonatesValue(valueToBeDonated);		//update the interaction of peerB
 			else{
 				Simulator.logger.severe("The interaction exists, but for some reason, I could not identify who is peer A (the donor) or peer B (the consumer). "
@@ -427,26 +429,26 @@ public class Simulator {
 				return;
 			}
 			
-			double consumerReputation = (donor.getPeerId() == interaction.getPeerA().getPeerId()?
+			double consumerReputation = (provider.getPeerId() == interaction.getPeerA().getPeerId()?
 					NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog):
 						NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), this.nofWithLog));
 			
-			double donorReputation = (donor.getPeerId() == interaction.getPeerA().getPeerId()?
+			double donorReputation = (provider.getPeerId() == interaction.getPeerA().getPeerId()?
 					NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), this.nofWithLog):
 						NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog));
 			
 			/** Add the treeMap donor reputation, and add also the consumer reputation (if he is not a free rider). **/
-			int consumerIndex = donor.getPeersReputations().indexOf(new PeerReputation(consumer.getPeerId(), 0));
+			int consumerIndex = provider.getPeersReputations().indexOf(new PeerReputation(consumer.getPeerId(), 0));
 			if(consumerIndex==-1){		//Add
-				donor.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), consumerReputation));
-				consumer.getPeersReputations().add(new PeerReputation(donor.getPeerId(), donorReputation));
+				provider.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), consumerReputation));
+				consumer.getPeersReputations().add(new PeerReputation(provider.getPeerId(), donorReputation));
 			}
 			/** Update the treeMap donor reputation, and update also the consumer reputation (if he is not a free rider). **/
 			else{
-				donor.getPeersReputations().get(consumerIndex).setReputation(consumerReputation);
-				int donorIndex = consumer.getPeersReputations().indexOf(new PeerReputation(donor.getPeerId(), 0));
-				if(donorIndex != -1)
-					consumer.getPeersReputations().get(donorIndex).setReputation(donorReputation);
+				provider.getPeersReputations().get(consumerIndex).setReputation(consumerReputation);
+				int providerIndex = consumer.getPeersReputations().indexOf(new PeerReputation(provider.getPeerId(), 0));
+				if(providerIndex != -1)
+					consumer.getPeersReputations().get(providerIndex).setReputation(donorReputation);
 				else{
 					Simulator.logger.severe("Some problems happened when updateing donorsReputation. It seems that consumer and donor already interacted "
 							+ "but the consumer doesn't have any reference to donor in its reputation list."
@@ -456,41 +458,41 @@ public class Simulator {
 				}
 				
 			}
-			this.sortReputations(donor, consumer);
+			this.sortReputations(provider, consumer);
 		}
 		/**
 		 * The peers never interacted and the consumer is a Collaborator.
 		 */
 		else if(consumer instanceof Collaborator){
-			Interaction interaction = new Interaction(donor, consumer);
+			Interaction interaction = new Interaction(provider, consumer);
 			interaction.peerADonatesValue(valueToBeDonated);		
-			donor.getInteractions().add(interaction);																		//adds the new interaction to the donor peer	
+			provider.getInteractions().add(interaction);																		//adds the new interaction to the donor peer	
 			consumer.getInteractions().add(interaction);																	//adds the new interaction to the consumer peer
 			
-			Simulator.logger.finest("donor: "+donor.getPeerId()+". Consumer: "+consumer.getPeerId()+".");
+			Simulator.logger.finest("donor: "+provider.getPeerId()+". Consumer: "+consumer.getPeerId()+".");
 			Simulator.logger.finest("Donation: "+valueToBeDonated+". Reputation: "+NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog));
 			
 			/**
 			 * Add the new PeerReputation to the treeMap of the donor and consumer reputation (if he is not a free rider). 
 			 */
-			donor.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog)));
-			consumer.getPeersReputations().add(new PeerReputation(donor.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), this.nofWithLog)));
+			provider.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog)));
+			consumer.getPeersReputations().add(new PeerReputation(provider.getPeerId(), NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), this.nofWithLog)));
 			
 			Simulator.logger.finest("Reputação do consumidor em relação ao doador: "+NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerA(), interaction.getDonatedValueByPeerA(), this.nofWithLog));
 			Simulator.logger.finest("Reputação do doador em relação ao consumidor: "+NetworkOfFavors.calculateLocalReputation(interaction.getConsumedValueByPeerB(), interaction.getDonatedValueByPeerB(), this.nofWithLog));
-			this.sortReputations(donor, consumer);
+			this.sortReputations(provider, consumer);
 		}
 		/**
 		 * The peers never interacted and the consumer is a Free Rider.
 		 */
 		else{
-			Simulator.logger.finest("Consumer (FreeRider): "+consumer.getPeerId()+".\n donor reputations will not include any free rider!");
+			Simulator.logger.finest("Consumer (FreeRider): "+consumer.getPeerId()+".\n Provider reputations will not include any free rider!");
 			/** To calculate the probability of success of free riders in all steps **/
 			((FreeRider)consumer).getSuccessHistory()[this.currentStep] = true;
 		}
 		
-		donor.setCapacitySupplied(donor.getCapacitySupplied()-valueToBeDonated);//update the capacity supplied by donor
-		donor.getDonatedHistory()[this.currentStep] += valueToBeDonated;			//update the donated amount (from donor) in this step
+		provider.setCapacitySupplied(provider.getCapacitySupplied()-valueToBeDonated);//update the capacity supplied by donor
+		provider.getDonatedHistory()[this.currentStep] += valueToBeDonated;			//update the donated amount (from donor) in this step
 		consumer.setDemand(consumer.getDemand()-valueToBeDonated);					//update the demand of the consumer in the current step
 		consumer.getConsumedHistory()[this.currentStep] += valueToBeDonated;		//update the consumed amount (from consumer) in this step
 		
@@ -577,10 +579,11 @@ public class Simulator {
 						
 						/** Change it's capacity in order to achiever a greater fairness. **/
 						if(collaborator.isIncreasingCapacitySupplied())				
-							collaborator.setCapacitySuppliedReferenceValue(Math.min(1, collaborator.getCapacitySuppliedReferenceValue()+this.changingValue));	//try to increase the current capacitySuppliedReferenceValue
+							collaborator.setCapacitySuppliedReferenceValue(Math.min(collaborator.getInitialCapacity(), collaborator.getCapacitySuppliedReferenceValue()+this.changingValue));	//try to increase the current capacitySuppliedReferenceValue
 						else
 							collaborator.setCapacitySuppliedReferenceValue(Math.max(0, collaborator.getCapacitySuppliedReferenceValue()-this.changingValue));	//try to decrease the current capacitySuppliedReferenceValue
 							
+						
 						collaborator.setCapacitySupplied(collaborator.getCapacitySuppliedReferenceValue());
 						if((this.currentStep+1)<this.numSteps)
 							collaborator.getCapacitySuppliedHistory()[this.currentStep+1] = collaborator.getCapacitySuppliedReferenceValue();
@@ -631,25 +634,30 @@ public class Simulator {
 	 * Export the main data of simmulation to an excel (xlsx) file.
 	 */
 	private void exportData(){		
-		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
-//		we.setupFile();
-//		we.fulfillFairnessPerSteps(peers);
-//		we.fulfillSatisfactionPerSteps(peers);
-//		we.fulfillfreeRiderSatisfactionsData(peers);
-		we.setupFileLastStep();		
-		we.fulfillFairnessLastStep(peers);
-		we.fulfillSatisfactionLastStep(peers);
-		we.fulfillfreeRiderSatisfactionsLastStep(peers);
-	
 		
-		we.writeFile();
+		GenerateCsv csvGen = new GenerateCsv(this.outputFile, this.numSteps);
+		csvGen.outputCollaborators();
+		csvGen.outputFreeRiders();
 		
-		if(this.dynamic){
-			WriteExcel2010 we2 = new WriteExcel2010(this.outputFile.replace(".xlsx","-Contention.xlsx"), this.numSteps);
-			we2.setupFile2();	
-			we2.fulfillContentionData(peers);		
-			we2.writeFile();
-		}
+//		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
+////		we.setupFile();
+////		we.fulfillFairnessPerSteps(peers);
+////		we.fulfillSatisfactionPerSteps(peers);
+////		we.fulfillfreeRiderSatisfactionsData(peers);
+//		we.setupFileLastStep();		
+//		we.fulfillFairnessLastStep(peers);
+//		we.fulfillSatisfactionLastStep(peers);
+//		we.fulfillfreeRiderSatisfactionsLastStep(peers);
+//	
+//		
+//		we.writeFile();
+//		
+//		if(this.dynamic){
+//			WriteExcel2010 we2 = new WriteExcel2010(this.outputFile.replace(".xlsx","-Contention.xlsx"), this.numSteps);
+//			we2.setupFile2();	
+//			we2.fulfillContentionData(peers);		
+//			we2.writeFile();
+//		}
 	}
 	
 	/**
