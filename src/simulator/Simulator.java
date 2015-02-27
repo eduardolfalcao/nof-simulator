@@ -579,9 +579,9 @@ public class Simulator {
 						
 						/** Change it's capacity in order to achiever a greater fairness. **/
 						if(collaborator.isIncreasingCapacitySupplied())				
-							collaborator.setCapacitySuppliedReferenceValue(Math.min(collaborator.getInitialCapacity(), collaborator.getCapacitySuppliedReferenceValue()+this.changingValue));	//try to increase the current capacitySuppliedReferenceValue
+							collaborator.setCapacitySuppliedReferenceValue(Math.min(collaborator.getInitialCapacity(), collaborator.getCapacitySuppliedReferenceValue()+(this.changingValue*collaborator.getInitialCapacity())));	//try to increase the current capacitySuppliedReferenceValue
 						else
-							collaborator.setCapacitySuppliedReferenceValue(Math.max(0, collaborator.getCapacitySuppliedReferenceValue()-this.changingValue));	//try to decrease the current capacitySuppliedReferenceValue
+							collaborator.setCapacitySuppliedReferenceValue(Math.max(0, collaborator.getCapacitySuppliedReferenceValue()-(this.changingValue*collaborator.getInitialCapacity())));	//try to decrease the current capacitySuppliedReferenceValue
 							
 						
 						collaborator.setCapacitySupplied(collaborator.getCapacitySuppliedReferenceValue());
@@ -628,6 +628,22 @@ public class Simulator {
 				System.out.println("FreeRider ID=["+freeRider.getPeerId()+"] ==> Satisfatcion: "+currentSatisfaction+"; Granted: "+currentGranted+"; Requested: "+currentRequested);
 			}
 		}
+		
+		for(Peer peer : Simulator.peers){
+			System.out.println("\n\n\n####################Collaborators Capacity Supplied#####################");
+			System.out.println("Demanda = 0.5C");
+			if(peer instanceof Collaborator){
+				Collaborator collaborator = (Collaborator) peer;
+				if((collaborator.getInitialDemand()-collaborator.getInitialCapacity())/collaborator.getInitialCapacity() == 0.5){
+					System.out.print("Collaborator ID=["+collaborator.getPeerId()+"] ==> ");
+					for(double supplied : collaborator.getCapacitySuppliedHistory()){
+						System.out.print(supplied+" ");
+					}
+					System.out.println();
+				}
+				
+			}
+		}
 	}
 
 	/**
@@ -637,6 +653,7 @@ public class Simulator {
 		
 		GenerateCsv csvGen = new GenerateCsv(this.outputFile, this.numSteps);
 		csvGen.outputCollaborators();
+		csvGen.outputCapacitySupplied();
 		csvGen.outputFreeRiders();
 		
 //		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
