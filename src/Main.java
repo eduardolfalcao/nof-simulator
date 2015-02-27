@@ -41,7 +41,6 @@ public class Main {
 				dynamic, nofWithLog, fairnessLowerThreshold, peersDemand, capacitySupplied, changingValue, seed, level, outputDir+file);
 		sim.startSimulation();
 		
-		
 		consumingStateProbability = new double [] {0.4615384615, 0.4615384615, 0.4615384615};
 		file = "design1Kappa1";
 		sim = new Simulator(numPeers, numSteps, consumingStateProbability, numberOfCollaborators, numberOfFreeRiders,

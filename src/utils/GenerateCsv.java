@@ -21,6 +21,12 @@ public class GenerateCsv{
 		FileWriter writer = this.createHeaderForCollaborator();
 		writer = this.writeCollaborators(writer);
 		this.flushFile(writer);
+	}
+	
+	public void outputCapacitySupplied(){
+		FileWriter writer = this.createHeaderForCapacitySupplied();
+		writer = this.writeCapacitySupplied(writer);
+		this.flushFile(writer);
 	}	
 	
 	
@@ -50,6 +56,32 @@ public class GenerateCsv{
 	    
 	}
 	
+	private FileWriter createHeaderForCapacitySupplied(){
+		
+		FileWriter writer = null;
+		try {
+			writer = new FileWriter(this.outputFile+"CapacitySupplied.csv");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			writer.append("demand");
+			for(int i = 1; i <= numSteps; i++){
+				writer.append(',');
+				writer.append(i+"");
+			}
+		    writer.append('\n');
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return writer;
+	    
+	}
+	
 	private FileWriter writeCollaborators(FileWriter writer){
 		for (int i = 0; i < Simulator.peers.length; i++) {
 			if(Simulator.peers[i] instanceof Collaborator){				
@@ -69,6 +101,30 @@ public class GenerateCsv{
 					double currentRequested = Simulator.peers[i].getCurrentRequested(numSteps-1);
 					double satisfaction = Simulator.getFairness(currentConsumed, currentRequested);
 					writer.append(satisfaction+"");
+					writer.append('\n');
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}	
+			}
+		}
+		
+		return writer;
+	}
+	
+	private FileWriter writeCapacitySupplied(FileWriter writer){
+		for (int i = 0; i < Simulator.peers.length; i++) {
+			if(Simulator.peers[i] instanceof Collaborator){				
+							
+				try {
+					double demandRatio = (Simulator.peers[i].getInitialDemand()-Simulator.peers[i].getInitialCapacity())/Simulator.peers[i].getInitialCapacity();	
+					writer.append(demandRatio+"C");					
+					
+					Collaborator c = (Collaborator) Simulator.peers[i];
+					for(int j = 0; j < numSteps; j++){
+						writer.append(',');
+						writer.append(c.getCapacitySuppliedHistory()[j]+"");
+					}
 					writer.append('\n');
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
