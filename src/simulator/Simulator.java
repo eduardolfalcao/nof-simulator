@@ -2,12 +2,15 @@ package simulator;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import nof.Interaction;
 import nof.NetworkOfFavors;
@@ -184,7 +187,14 @@ public class Simulator {
 		Simulator.logger.info("Setting up simulation...");
 		this.setupSimulation();
 		Simulator.logger.info("Starting simulation...");
-		this.performCurrentStepDonations();
+		
+		for(int i = 0; i < this.numSteps; i++){
+			this.performCurrentStepDonations();
+		}
+		
+		if(Simulator.logger.isLoggable(Level.INFO))
+			printSummary();			
+		exportData();
 	}
 	
 	/**
@@ -302,14 +312,14 @@ public class Simulator {
 
 		/** Set next step.**/
 		this.currentStep++;
-		if(this.currentStep<this.numSteps){
-			performCurrentStepDonations();
-		}
-		else{
-			if(Simulator.logger.isLoggable(Level.INFO))
-				printSummary();			
-			exportData();
-		}			
+//		if(this.currentStep<this.numSteps){
+//			performCurrentStepDonations();
+//		}
+//		else{
+//			if(Simulator.logger.isLoggable(Level.INFO))
+//				printSummary();			
+//			exportData();
+//		}			
 	}
 
 	
@@ -556,33 +566,102 @@ public class Simulator {
 						double currentDonated = collaborator.getCurrentDonated(this.currentStep);
 						double currentFairness = Simulator.getFairness(currentConsumed, currentDonated);
 						
+						collaborator.getFairnessHistory()[this.currentStep] = currentFairness;
+						
 						double lastRequested = collaborator.getCurrentRequested(this.currentStep-1);
 						double lastConsumed = collaborator.getCurrentConsumed(this.currentStep-1);
 						double lastDonated = collaborator.getCurrentDonated(this.currentStep-1);
 						double lastFairness = Simulator.getFairness(lastConsumed, lastDonated);
 						
-						/** If my fairness is decreasing or equal to last fairness, then:
-						 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
-						 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
-						 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
-						 *  		have a nice fairness value. **/
-						if(currentFairness <= lastFairness){
-							if(!collaborator.isIncreasingCapacitySupplied()){
-								collaborator.setIncreasingCapacitySupplied(true);
-							}
-							else{
-								if(currentFairness < this.fairnessLowerThreshold){
-									collaborator.setIncreasingCapacitySupplied(false);
-								}
-							}
+//						/** If my fairness is decreasing or equal to last fairness, then:
+//						 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
+//						 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
+//						 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
+//						 *  		have a nice fairness value. **/
+//						if(currentFairness <= lastFairness){
+//							if(!collaborator.isIncreasingCapacitySupplied()){
+//								collaborator.setIncreasingCapacitySupplied(true);
+//							}
+//							else{
+//								if(currentFairness < this.fairnessLowerThreshold){
+//									collaborator.setIncreasingCapacitySupplied(false);
+//								}
+//							}
+//						}
+						
+						
+						// threshold driven
+						
+						double maxLim = Math.min(collaborator.getInitialCapacity(), collaborator.getInitialDemand()-collaborator.getInitialCapacity());
+												
+						if(currentFairness < this.fairnessLowerThreshold){
+							if(currentFairness < lastFairness)								
+								collaborator.setCapacitySuppliedReferenceValue(Math.max(this.changingValue,collaborator.getCapacitySuppliedReferenceValue()-this.changingValue));
+						}
+						else{
+							collaborator.setCapacitySuppliedReferenceValue(maxLim);
 						}
 						
-						/** Change it's capacity in order to achiever a greater fairness. **/
-						if(collaborator.isIncreasingCapacitySupplied())				
-							collaborator.setCapacitySuppliedReferenceValue(Math.min(collaborator.getInitialCapacity(), collaborator.getCapacitySuppliedReferenceValue()+(this.changingValue*collaborator.getInitialCapacity())));	//try to increase the current capacitySuppliedReferenceValue
-						else
-							collaborator.setCapacitySuppliedReferenceValue(Math.max(0, collaborator.getCapacitySuppliedReferenceValue()-(this.changingValue*collaborator.getInitialCapacity())));	//try to decrease the current capacitySuppliedReferenceValue
+						
+						
+						
+						//Tit for Tat — First line: be nice (never nasty first); 2nd line: do whatever the other guy did on the last move; Tit for tat retaliates only once, letting bygones be bygones.
+						//double currentRequested = collaborator.getCurrentRequested(this.currentStep);
+						//double satisfaction = Simulator.getSatisfaction(currentConsumed,currentRequested);
+						
+//						double maxLim = Math.min(collaborator.getInitialCapacity(), collaborator.getInitialDemand()-collaborator.getInitialCapacity());
+//						double error = this.fairnessLowerThreshold - currentFairness;
+//						
+//						if(currentFairness < this.fairnessLowerThreshold){
+//							collaborator.setCapacitySuppliedReferenceValue(Math.max(0,currentFairness-error));
+//							if(collaborator.getCapacitySuppliedReferenceValue()==0)
+//								collaborator.setCapacitySuppliedReferenceValue(this.changingValue);
+//						}
+//						else{
+//							collaborator.setCapacitySuppliedReferenceValue(maxLim);
+//						}
+						
+												
+//						if(this.currentStep > 5000){
+//							System.out.println("Significance: "+regression.getSignificance());
+//							System.out.println("InterceptedError: "+regression.getInterceptStdErr());
+//							System.out.println("SlopeError: "+regression.getSlopeStdErr());
+//							
+//							double capacityToSupply = (this.fairnessLowerThreshold-regression.getIntercept())/regression.getSlope();
+//							
+//							System.out.println();
+//							System.out.println(capacityToSupply);
+//							
+////							System.out.println(Arrays.toString(collaborator.getFairnessHistory()));
+//						}
+						
+//						double maxLim = Math.min(collaborator.getInitialCapacity(), collaborator.getInitialDemand()-collaborator.getInitialCapacity());
+//						double error = this.fairnessLowerThreshold - currentFairness;
+//						
+//						if(currentFairness < this.fairnessLowerThreshold){			
+//							double capacityToSupply = (this.fairnessLowerThreshold-regression.getIntercept())/regression.getSlope();
+//							if(capacityToSupply>0 && this.currentStep>50)
+//								collaborator.setCapacitySuppliedReferenceValue((Math.min(capacityToSupply,maxLim)));
+//							else
+//								collaborator.setCapacitySuppliedReferenceValue((Math.max(0,currentFairness-error)));										
+//						}
+//						else{
+//							collaborator.setCapacitySuppliedReferenceValue(maxLim);
+//						}
+						
+						
+						
+						
+						
+//						double maximumCapacityToSupply = Math.min(collaborator.getInitialCapacity(), collaborator.getInitialDemand()-collaborator.getInitialCapacity());
+//							
+//						/** Change it's capacity in order to achiever a greater fairness. **/
+//						if(collaborator.isIncreasingCapacitySupplied())				
+//							collaborator.setCapacitySuppliedReferenceValue(Math.min(maximumCapacityToSupply, collaborator.getCapacitySuppliedReferenceValue()+(this.changingValue*maximumCapacityToSupply)));	//try to increase the current capacitySuppliedReferenceValue
+//						else
+//							collaborator.setCapacitySuppliedReferenceValue(Math.max(0, collaborator.getCapacitySuppliedReferenceValue()-(this.changingValue*maximumCapacityToSupply)));	//try to decrease the current capacitySuppliedReferenceValue
 							
+//						System.out.println(collaborator.getCapacitySuppliedReferenceValue());
 						
 						collaborator.setCapacitySupplied(collaborator.getCapacitySuppliedReferenceValue());
 						if((this.currentStep+1)<this.numSteps)
@@ -592,6 +671,8 @@ public class Simulator {
 			}
 		}	
 	}
+	
+	
 	
 	/**
 	 * Given the amount consumed and donated, returns the fairness.
@@ -605,6 +686,16 @@ public class Simulator {
 			return -1;
 		else
 			return consumed/donated;
+	}
+	
+	/**
+	 * 
+	 * @param consumed
+	 * @param requested
+	 * @return
+	 */
+	public static double getSatisfaction(double consumed, double requested){
+		return 	getFairness(consumed, requested);
 	}
 			
 	/**
@@ -656,18 +747,18 @@ public class Simulator {
 		csvGen.outputCapacitySupplied();
 		csvGen.outputFreeRiders();
 		
-//		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
-////		we.setupFile();
-////		we.fulfillFairnessPerSteps(peers);
-////		we.fulfillSatisfactionPerSteps(peers);
-////		we.fulfillfreeRiderSatisfactionsData(peers);
+		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
+		we.setupFile();
+		we.fulfillFairnessPerSteps(peers);
+//		we.fulfillSatisfactionPerSteps(peers);
+//		we.fulfillfreeRiderSatisfactionsData(peers);
 //		we.setupFileLastStep();		
 //		we.fulfillFairnessLastStep(peers);
 //		we.fulfillSatisfactionLastStep(peers);
 //		we.fulfillfreeRiderSatisfactionsLastStep(peers);
-//	
-//		
-//		we.writeFile();
+	
+		
+		we.writeFile();
 //		
 //		if(this.dynamic){
 //			WriteExcel2010 we2 = new WriteExcel2010(this.outputFile.replace(".xlsx","-Contention.xlsx"), this.numSteps);

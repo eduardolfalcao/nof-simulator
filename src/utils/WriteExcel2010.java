@@ -30,7 +30,7 @@ public class WriteExcel2010 {
 	 */
 	public WriteExcel2010(String outputFile, int numSteps) {
 		super();
-		this.outputFile = outputFile;
+		this.outputFile = outputFile+".xlsx";
 		this.numSteps = numSteps;
 		
 		this.workbook = new XSSFWorkbook();

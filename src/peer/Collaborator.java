@@ -13,6 +13,8 @@ public class Collaborator extends Peer{
 	private double capacitySupplied;						//capacity supplied in the current step		
 	private double capacitySuppliedHistory[];
 	
+	private double fairnessHistory[];
+	
 	private double consumingStateProbability;
 	
 	private boolean increasingCapacitySupplied;
@@ -31,6 +33,7 @@ public class Collaborator extends Peer{
 		this.setCapacitySuppliedReferenceValue(capacitySupplied);
 		this.setCapacitySuppliedHistory(new double[numSteps]);
 		this.setIncreasingCapacitySupplied(false);
+		this.setFairnessHistory(new double[numSteps]);
 	}
 
 	/**
@@ -103,6 +106,20 @@ public class Collaborator extends Peer{
 	 */
 	public void setConsumingStateProbability(double consumingStateProbability) {
 		this.consumingStateProbability = consumingStateProbability;
+	}
+
+	/**
+	 * @return the fairnessHistory
+	 */
+	public double[] getFairnessHistory() {
+		return fairnessHistory;
+	}
+
+	/**
+	 * @param fairnessHistory the fairnessHistory to set
+	 */
+	public void setFairnessHistory(double fairnessHistory[]) {
+		this.fairnessHistory = fairnessHistory;
 	}	
 
 }
