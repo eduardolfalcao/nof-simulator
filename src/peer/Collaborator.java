@@ -3,21 +3,17 @@ package peer;
 
 public class Collaborator extends Peer{
 	
-	/**
-	 * When the context is dynamic, we must have a reference value of
-	 * capacity to be supplied in the current step. In static context,
-	 * this value is always 1, but in dynamic context, this value changes
-	 * according to the users satisfaction.
-	 */
-	private double capacitySuppliedReferenceValue;			
-	private double capacitySupplied;						//capacity supplied in the current step		
+	private double maxCapacityToSupply;			
+	private double capacityDonatedInThisStep;						//capacity donated in the current step		
 	private double capacitySuppliedHistory[];
+	private boolean increasingCapacitySupplied;
 	
 	private double fairnessHistory[];
+	protected double donatedHistory[];
 	
 	private double consumingStateProbability;
 	
-	private boolean increasingCapacitySupplied;
+	
 	
 	/**
 	 * @param demand the amount of demand for resources from another peer
@@ -27,71 +23,67 @@ public class Collaborator extends Peer{
 	 * @param numSteps the number of steps of the simulation
 	 */
 	public Collaborator(double demand, int peerId, boolean consuming, double consumingStateProbability, double capacitySupplied,  int numSteps) {
-		super(capacitySupplied, demand, peerId, consuming, numSteps);
-		this.setConsumingStateProbability(consumingStateProbability);
-		this.setCapacitySupplied(capacitySupplied);
-		this.setCapacitySuppliedReferenceValue(capacitySupplied);
-		this.setCapacitySuppliedHistory(new double[numSteps]);
-		this.setIncreasingCapacitySupplied(false);
+		super(capacitySupplied, demand, peerId, consuming, numSteps);		
+		this.setCapacityDonatedInThisStep(0);
+		this.setConsumingStateProbability(consumingStateProbability);		
 		this.setFairnessHistory(new double[numSteps]);
+		this.setDonatedHistory(new double[numSteps]);
+		this.setIncreasingCapacitySupplied(false);
+		this.capacitySuppliedHistory = new double[numSteps];
+		this.setMaxCapacityToSupply(capacitySupplied);
+		if(consuming){
+			this.setDemand(demand);
+			this.getRequestedHistory()[0] = demand-capacitySupplied;
+			this.getConsumedHistory()[0] = 0;
+		}
+		else{
+			this.setDemand(0);
+			this.getRequestedHistory()[0] = 0;
+		}
+	}
+	
+	/**
+	 * @param step current step
+	 * @return currrentDonated the amount donated until this step
+	 */
+	public double getCurrentDonated(int step) {
+		double currrentDonated = 0;
+		for(int i = 0; i <= step; i++)
+			currrentDonated += this.donatedHistory[i];
+		return currrentDonated;
+	}
+	
+	/**
+	 * @return the donatedHistory
+	 */
+	public double[] getDonatedHistory() {
+		return donatedHistory;
 	}
 
 	/**
-	 * @return the capacitySuppliedReferenceValue
+	 * @param donatedHistory the donatedHistory to set
 	 */
-	public double getCapacitySuppliedReferenceValue() {
-		return capacitySuppliedReferenceValue;
+	public void setDonatedHistory(double[] donatedHistory) {
+		this.donatedHistory = donatedHistory;
+	}
+	
+	/**
+	 * @return the capacityDonatedInThisStep
+	 */
+	public double getCapacityDonatedInThisStep() {
+		return capacityDonatedInThisStep;
 	}
 
 	/**
-	 * @param capacitySuppliedReferenceValue the capacitySuppliedReferenceValue to set
+	 * @param capacityDonatedInThisStep the capacityDonatedInThisStep to set
 	 */
-	public void setCapacitySuppliedReferenceValue(
-			double capacitySuppliedReferenceValue) {
-		this.capacitySuppliedReferenceValue = capacitySuppliedReferenceValue;
+	public void setCapacityDonatedInThisStep(double capacityDonatedInThisStep) {
+		this.capacityDonatedInThisStep = capacityDonatedInThisStep;
 	}
 
-	/**
-	 * @return the capacitySupplied
-	 */
-	public double getCapacitySupplied() {
-		return capacitySupplied;
-	}
+	
 
-	/**
-	 * @param capacitySupplied the capacitySupplied to set
-	 */
-	public void setCapacitySupplied(double capacitySupplied) {
-		this.capacitySupplied = capacitySupplied;
-	}
-
-	/**
-	 * @return the capacitySuppliedHistory
-	 */
-	public double[] getCapacitySuppliedHistory() {
-		return capacitySuppliedHistory;
-	}
-
-	/**
-	 * @param capacitySuppliedHistory the capacitySuppliedHistory to set
-	 */
-	public void setCapacitySuppliedHistory(double capacitySuppliedHistory[]) {
-		this.capacitySuppliedHistory = capacitySuppliedHistory;
-	}
-
-	/**
-	 * @return the increasingCapacitySupplied
-	 */
-	public boolean isIncreasingCapacitySupplied() {
-		return increasingCapacitySupplied;
-	}
-
-	/**
-	 * @param increasingCapacitySupplied the increasingCapacitySupplied to set
-	 */
-	public void setIncreasingCapacitySupplied(boolean increasingCapacitySupplied) {
-		this.increasingCapacitySupplied = increasingCapacitySupplied;
-	}
+	
 	
 	
 	/**
@@ -120,6 +112,42 @@ public class Collaborator extends Peer{
 	 */
 	public void setFairnessHistory(double fairnessHistory[]) {
 		this.fairnessHistory = fairnessHistory;
+	}
+
+	/**
+	 * @return the capacitySuppliedReferenceValue
+	 */
+	public double getMaxCapacityToSupply() {
+		return maxCapacityToSupply;
+	}
+
+	/**
+	 * @return the capacitySuppliedHistory
+	 */
+	public double[] getCapacitySuppliedHistory() {
+		return capacitySuppliedHistory;
+	}
+
+	/**
+	 * @return the increasingCapacitySupplied
+	 */
+	public boolean isIncreasingCapacitySupplied() {
+		return increasingCapacitySupplied;
+	}
+
+	/**
+	 * @param maxCapacityToSupply the maxCapacityToSupply to set
+	 */
+	public void setMaxCapacityToSupply(
+			double maxCapacityToSupply) {
+		this.maxCapacityToSupply = maxCapacityToSupply;
+	}
+
+	/**
+	 * @param increasingCapacitySupplied the increasingCapacitySupplied to set
+	 */
+	public void setIncreasingCapacitySupplied(boolean increasingCapacitySupplied) {
+		this.increasingCapacitySupplied = increasingCapacitySupplied;
 	}	
 
 }

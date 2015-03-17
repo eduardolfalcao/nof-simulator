@@ -33,7 +33,7 @@ public class Main {
 		double changingValue = 0.05;
 		long seed = 1;
 		Level level = Level.SEVERE;
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 2/SoCC2015/csv/hill-climbing/";
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 2/SoCC2015/csv/pairwise/";
 		
 		double [] consumingStateProbability = new double [] {0.3012048193, 0.3012048193, 0.3012048193};
 		String file = "design1Kappa05";		

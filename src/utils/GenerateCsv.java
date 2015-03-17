@@ -91,9 +91,11 @@ public class GenerateCsv{
 					writer.append(demandRatio+"C");					
 					writer.append(',');
 					
+					Collaborator collab = (Collaborator) Simulator.peers[i];
+					
 					double currentConsumed, currentDonated, fairness;
-					currentConsumed = Simulator.peers[i].getCurrentConsumed(numSteps-1);			
-					currentDonated = Simulator.peers[i].getCurrentDonated(numSteps-1);
+					currentConsumed = collab.getCurrentConsumed(numSteps-1);			
+					currentDonated = collab.getCurrentDonated(numSteps-1);
 					fairness = Simulator.getFairness(currentConsumed, currentDonated);				
 					writer.append(fairness+"");
 					writer.append(',');

@@ -12,6 +12,9 @@ public class FreeRider extends Peer{
 	public FreeRider(double capacity, double demand, int peerId, int numSteps) {
 		super(capacity, demand, peerId, true, numSteps);
 		this.setSuccessHistory(new boolean[numSteps]);
+		this.getRequestedHistory()[0] = demand-capacity;
+		this.getConsumedHistory()[0] = 0;
+		this.setDemand(demand);
 	}
 
 	/**

@@ -184,8 +184,10 @@ public class WriteExcel2010 {
 				
 				double currentConsumed, currentDonated, fairness;
 				
-				currentConsumed = peers[i].getCurrentConsumed(this.numSteps-1);	
-				currentDonated = peers[i].getCurrentDonated(this.numSteps-1);
+				Collaborator collab = (Collaborator) peers[i];
+				
+				currentConsumed = collab.getCurrentConsumed(this.numSteps-1);	
+				currentDonated = collab.getCurrentDonated(this.numSteps-1);
 				fairness = Simulator.getFairness(currentConsumed, currentDonated);
 				
 				this.addNumber(this.fairnessSheet, 2, i+1, fairness);
@@ -219,7 +221,7 @@ public class WriteExcel2010 {
 				
 				for(int j = 0; j < this.numSteps; j++){				
 					currentConsumed = peers[i].getCurrentConsumed(j);			
-					currentDonated = peers[i].getCurrentDonated(j);
+					currentDonated = ((Collaborator)peers[i]).getCurrentDonated(j);
 					fairness = Simulator.getFairness(currentConsumed, currentDonated);
 					
 					this.addNumber(this.fairnessPerStepSheet, j+2, i+1, fairness);
@@ -274,7 +276,7 @@ public class WriteExcel2010 {
 				
 				for(int j = this.numSteps-1; j < this.numSteps; j++){				
 					currentConsumed = peers[i].getCurrentConsumed(j);			
-					currentDonated = peers[i].getCurrentDonated(j);
+					currentDonated = ((Collaborator)peers[i]).getCurrentDonated(j);
 					fairness = Simulator.getFairness(currentConsumed, currentDonated);
 					
 					this.addNumber(this.fairnessPerStepSheet, 2, i+1, fairness);
@@ -452,7 +454,7 @@ public class WriteExcel2010 {
 				this.addLabel(this.donatedSheet, 1, i + 1, ""+peers[i].getPeerId());
 				
 				for (int j = 0; j < this.numSteps; j++)
-					this.addNumber(this.donatedSheet, j + 2, i + 1, peers[i].getDonatedHistory()[j]);
+					this.addNumber(this.donatedSheet, j + 2, i + 1, ((Collaborator)peers[i]).getDonatedHistory()[j]);
 			}
 		}	
 		

@@ -9,7 +9,7 @@ import peer.reputation.PeerReputation;
 public class Peer{
 	
 	
-	protected double initialCapacity;
+	protected final double INITIAL_CAPACITY;
 	protected double initialDemand;
 	protected double demand;
 	protected boolean consuming; 
@@ -17,7 +17,7 @@ public class Peer{
 	protected ArrayList <Interaction> interactions;
 	protected int peerId;
 	
-	protected double donatedHistory[];
+	
 	protected double consumedHistory[];
 	protected double requestedHistory[];
 	
@@ -32,14 +32,13 @@ public class Peer{
 	 */
 	public Peer(double initialCapacity, double demand, int peerId, boolean consuming, int numSteps) {
 		super();
-		this.initialCapacity = initialCapacity;
+		this.INITIAL_CAPACITY = initialCapacity;
 		this.initialDemand = demand;
 		this.setDemand(demand);
 		this.setPeerId(peerId);
 		this.setConsuming(consuming);	
 		this.setPeersReputations(new ArrayList<PeerReputation>());
 		this.setInteractions(new ArrayList<Interaction>());
-		this.setDonatedHistory(new double[numSteps]);
 		this.setConsumedHistory(new double[numSteps]);
 		this.setRequestedHistory(new double[numSteps]);
 	}
@@ -55,7 +54,7 @@ public class Peer{
 	 */
 	public Peer(double initialCapacity, double demand, int peerId, boolean consuming, int numSteps, boolean isFreeRider) {
 		super();
-		this.initialCapacity = initialCapacity;
+		this.INITIAL_CAPACITY = initialCapacity;
 		this.initialDemand = demand;
 		this.setDemand(demand);
 		this.setPeerId(peerId);
@@ -99,16 +98,7 @@ public class Peer{
 		return currrentRequested;
 	}
 	
-	/**
-	 * @param step current step
-	 * @return currrentDonated the amount donated until this step
-	 */
-	public double getCurrentDonated(int step) {
-		double currrentDonated = 0;
-		for(int i = 0; i <= step; i++)
-			currrentDonated += this.donatedHistory[i];
-		return currrentDonated;
-	}
+	
 	
 	/**
 	 * @param step current step
@@ -221,20 +211,6 @@ public class Peer{
 	}
 	
 	/**
-	 * @return the donatedHistory
-	 */
-	public double[] getDonatedHistory() {
-		return donatedHistory;
-	}
-
-	/**
-	 * @param donatedHistory the donatedHistory to set
-	 */
-	public void setDonatedHistory(double[] donatedHistory) {
-		this.donatedHistory = donatedHistory;
-	}
-	
-	/**
 	 * @return the consumedHistory
 	 */
 	public double[] getConsumedHistory() {
@@ -266,7 +242,7 @@ public class Peer{
 	 * @return the initialCapacity
 	 */
 	public double getInitialCapacity() {
-		return initialCapacity;
+		return INITIAL_CAPACITY;
 	}
 	
 	
