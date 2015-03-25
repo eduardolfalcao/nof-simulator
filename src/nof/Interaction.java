@@ -24,6 +24,8 @@ public class Interaction {
 		this.initialCapacity = initialCapacity;
 		maxCapacitySupplied = initialCapacity;
 		capacitySuppliedHistory = new double[numSteps];
+		if(numSteps != 0)
+			capacitySuppliedHistory[0] = initialCapacity;
 		increasingCapacity = false;
 	}
 	

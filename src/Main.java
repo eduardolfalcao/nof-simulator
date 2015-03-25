@@ -32,7 +32,7 @@ public class Main {
 		double [] capacitySupplied = new double [] {1, 1, 1}; 
 		double changingValue = 0.05;
 		long seed = 1;
-		Level level = Level.SEVERE;
+		Level level = Level.INFO;
 		String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 2/SoCC2015/csv/pairwise/";
 		
 		double [] consumingStateProbability = new double [] {0.3012048193, 0.3012048193, 0.3012048193};
@@ -67,35 +67,35 @@ public class Main {
 		 * Design 2
 		 */
 		
-		capacitySupplied = new double [] {1, 10, 100};
-		peersDemand = new double [] {1.5, 20, 300};
-		
-		consumingStateProbability = new double [] {0.2095193654, 0.2095193654, 0.2095193654};
-		file = "design2Kappa05";
-		sim = new Simulator(numPeers, numSteps, consumingStateProbability, numberOfCollaborators, numberOfFreeRiders,
-				dynamic, nofWithLog, fairnessLowerThreshold, peersDemand, capacitySupplied, changingValue, seed, level, outputDir+file);
-		sim.startSimulation();
-		
-		
-		consumingStateProbability = new double [] {0.3464506173, 0.3464506173, 0.3464506173};
-		file = "design2Kappa1";
-		sim = new Simulator(numPeers, numSteps, consumingStateProbability, numberOfCollaborators, numberOfFreeRiders,
-				dynamic, nofWithLog, fairnessLowerThreshold, peersDemand, capacitySupplied, changingValue, seed, level, outputDir+file);
-		sim.startSimulation();
-		
-		
-		consumingStateProbability = new double [] {0.5146131805, 0.5146131805, 0.5146131805};
-		file = "design2Kappa2";
-		sim = new Simulator(numPeers, numSteps, consumingStateProbability, numberOfCollaborators, numberOfFreeRiders,
-				dynamic, nofWithLog, fairnessLowerThreshold, peersDemand, capacitySupplied, changingValue, seed, level, outputDir+file);
-		sim.startSimulation();
-		
-		
-		consumingStateProbability = new double [] {0.6795308362, 0.6795308362, 0.6795308362};
-		file = "design2Kappa4";
-		sim = new Simulator(numPeers, numSteps, consumingStateProbability, numberOfCollaborators, numberOfFreeRiders,
-				dynamic, nofWithLog, fairnessLowerThreshold, peersDemand, capacitySupplied, changingValue, seed, level, outputDir+file);
-		sim.startSimulation();
+//		capacitySupplied = new double [] {1, 10, 100};
+//		peersDemand = new double [] {1.5, 20, 300};
+//		
+//		consumingStateProbability = new double [] {0.2095193654, 0.2095193654, 0.2095193654};
+//		file = "design2Kappa05";
+//		sim = new Simulator(numPeers, numSteps, consumingStateProbability, numberOfCollaborators, numberOfFreeRiders,
+//				dynamic, nofWithLog, fairnessLowerThreshold, peersDemand, capacitySupplied, changingValue, seed, level, outputDir+file);
+//		sim.startSimulation();
+//		
+//		
+//		consumingStateProbability = new double [] {0.3464506173, 0.3464506173, 0.3464506173};
+//		file = "design2Kappa1";
+//		sim = new Simulator(numPeers, numSteps, consumingStateProbability, numberOfCollaborators, numberOfFreeRiders,
+//				dynamic, nofWithLog, fairnessLowerThreshold, peersDemand, capacitySupplied, changingValue, seed, level, outputDir+file);
+//		sim.startSimulation();
+//		
+//		
+//		consumingStateProbability = new double [] {0.5146131805, 0.5146131805, 0.5146131805};
+//		file = "design2Kappa2";
+//		sim = new Simulator(numPeers, numSteps, consumingStateProbability, numberOfCollaborators, numberOfFreeRiders,
+//				dynamic, nofWithLog, fairnessLowerThreshold, peersDemand, capacitySupplied, changingValue, seed, level, outputDir+file);
+//		sim.startSimulation();
+//		
+//		
+//		consumingStateProbability = new double [] {0.6795308362, 0.6795308362, 0.6795308362};
+//		file = "design2Kappa4";
+//		sim = new Simulator(numPeers, numSteps, consumingStateProbability, numberOfCollaborators, numberOfFreeRiders,
+//				dynamic, nofWithLog, fairnessLowerThreshold, peersDemand, capacitySupplied, changingValue, seed, level, outputDir+file);
+//		sim.startSimulation();
 		
 		
 	}
