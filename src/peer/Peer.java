@@ -17,8 +17,6 @@ public class Peer{
 	protected ArrayList <Interaction> interactions;
 	protected int peerId;
 	
-	private boolean newComer;
-	
 	
 	protected double consumedHistory[];
 	protected double requestedHistory[];
@@ -43,7 +41,6 @@ public class Peer{
 		this.setInteractions(new ArrayList<Interaction>());
 		this.setConsumedHistory(new double[numSteps]);
 		this.setRequestedHistory(new double[numSteps]);
-		this.setNewComer(true);
 	}
 
 	/**
@@ -246,20 +243,6 @@ public class Peer{
 	 */
 	public double getInitialCapacity() {
 		return INITIAL_CAPACITY;
-	}
-
-	/**
-	 * @return the newComer
-	 */
-	public boolean isNewComer() {
-		return newComer;
-	}
-
-	/**
-	 * @param newComer the newComer to set
-	 */
-	public void setNewComer(boolean newComer) {
-		this.newComer = newComer;
 	}
 	
 	

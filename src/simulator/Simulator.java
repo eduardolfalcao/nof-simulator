@@ -248,11 +248,6 @@ public class Simulator {
 	 */
 	private void nextStep(){
 		
-		if(this.currentStep == 0){
-			for (Peer peer : peers) 
-				peer.setNewComer(false);
-		}
-		
 		Simulator.logger.info("Step "+this.currentStep);
 		
 		/** Join all collaborators, consumers, and free riders in their lists. **/
@@ -507,11 +502,7 @@ public class Simulator {
 							
 							boolean change = false;
 							
-							if(currentFairness==0){
-								interaction.setIncreasingCapacity(false);
-								change = true;
-							}
-							else if(currentFairness>0){
+							if(currentFairness>=0){
 								/** If my fairness is decreasing or equal to last fairness, then:
 								 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
 								 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
@@ -564,11 +555,7 @@ public class Simulator {
 					double lastFairness = Simulator.getFairness(lastConsumed, lastDonated);
 					
 					boolean change = false;					
-					if(currentFairness==0){
-						collaborator.setIncreasingCapacitySupplied(false);
-						change = true;
-					}
-					else if(currentFairness>0){
+					if(currentFairness>=0){
 						/** If my fairness is decreasing or equal to last fairness, then:
 						 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
 						 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
@@ -595,10 +582,6 @@ public class Simulator {
 							collaborator.setMaxCapacityToSupply(Math.min(maxLim, collaborator.getMaxCapacityToSupply()+(this.changingValue*collaborator.getInitialCapacity())));	//try to increase the current capacitySuppliedReferenceValue
 						else
 							collaborator.setMaxCapacityToSupply(Math.max(0, Math.min(maxLim,collaborator.getMaxCapacityToSupply()-(this.changingValue*collaborator.getInitialCapacity()))));	//try to decrease the current capacitySuppliedReferenceValue
-					}
-					
-					if(collaborator.getPeerId()==20){
-						System.out.println();
 					}
 					
 						if((this.currentStep+1)<this.numSteps)
@@ -713,7 +696,14 @@ public class Simulator {
 		Interaction interaction = provider.getInteractions().get(index);		//retrieve the interaction object with its history		
 		
 		double maxToBeDonated = 0;
-		if(consumer.isNewComer() || !pairwise)
+		
+		boolean newComer = true;
+		if(interaction.getDonated()>0 || interaction.getConsumed()>0)
+			newComer = false;
+			
+		double fairness = getFairness(interaction.getConsumed(), interaction.getDonated());
+		
+		if(newComer || fairness<=0 || !pairwise) 
 			maxToBeDonated = provider.getMaxCapacityToSupply();
 		else
 			maxToBeDonated = interaction.getMaxCapacitySupplied();	
