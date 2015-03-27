@@ -43,6 +43,7 @@ public class Simulator {
 	private boolean dynamic;						//[FACTOR]: if the capacity supply changes dynamicly or not
 	private boolean nofWithLog;					//if the reputations will be calculated with log or with sqrt
 	private double fairnessLowerThreshold;			//the threshold in which fairness must have in order to prioritize satisfaction
+	private boolean pairwise;
 	
 	/**
 	 * Peers characteristics.
@@ -88,7 +89,7 @@ public class Simulator {
 	 * @param seed value used to calculate probability of being consumer or donor
 	 */
 	public Simulator(int numPeers, int numSteps, double [] consumingStateProbability, int [] numberOfCollaborators, int [] numberOfFreeRiders, boolean dynamic, boolean nofWithLog,
-			double fairnessLowerThreshold, double [] peersDemand, double [] capacitySupplied, double changingValue, long seed, Level level, String outputFile) {
+			double fairnessLowerThreshold, double [] peersDemand, double [] capacitySupplied, double changingValue, long seed, Level level, String outputFile, boolean pairwise) {
 		super();
 		this.numPeers = numPeers;
 		this.numSteps = numSteps;
@@ -119,6 +120,8 @@ public class Simulator {
 		ConsoleHandler handler = new ConsoleHandler();
 	    handler.setLevel(level);
 	    logger.addHandler(handler);
+	    
+	    this.pairwise = pairwise;
 	}
 
 	/**
@@ -186,7 +189,7 @@ public class Simulator {
 	 */
 	private void performCurrentStepDonations(){
 		
-		if(this.currentStep>0){
+		if(this.currentStep>0 && this.pairwise){
 			updateLastConsumedAndDonatedInteractions();
 		}
 		
@@ -490,52 +493,65 @@ public class Simulator {
 
 				if(this.currentStep>0){
 					
-					for (Interaction interaction : collaborator.getInteractions()) {
+					if(pairwise){
 						
-						double lastFairness = getFairness(interaction.getLastConsumed(), interaction.getLastDonated());	
-						double currentFairness = getFairness(interaction.getConsumed(), interaction.getDonated());
-						
-						Simulator.logger.fine("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-						Simulator.logger.fine("LastFairness: "+lastFairness+"; CurrentFairness: "+currentFairness);
-						Simulator.logger.fine("LastConsumed: "+interaction.getLastConsumed()+"; LastDonated: "+interaction.getLastDonated());
-						Simulator.logger.fine("CurrentConsumed: "+interaction.getConsumed()+"; CurrentDonated: "+interaction.getDonated());
-						
-						if(currentFairness>0){
-							/** If my fairness is decreasing or equal to last fairness, then:
-							 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
-							 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
-							 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
-							 *  		have a nice fairness value. **/
-							if(currentFairness <= lastFairness){
-								if(!interaction.isIncreasingCapacity())
-									interaction.setIncreasingCapacity(true);
-								else{
-									if(currentFairness < this.fairnessLowerThreshold)
-										interaction.setIncreasingCapacity(false);
-								}
+						for (Interaction interaction : collaborator.getInteractions()) {
+							
+							double lastFairness = getFairness(interaction.getLastConsumed(), interaction.getLastDonated());	
+							double currentFairness = getFairness(interaction.getConsumed(), interaction.getDonated());
+							
+							Simulator.logger.fine("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+							Simulator.logger.fine("LastFairness: "+lastFairness+"; CurrentFairness: "+currentFairness);
+							Simulator.logger.fine("LastConsumed: "+interaction.getLastConsumed()+"; LastDonated: "+interaction.getLastDonated());
+							Simulator.logger.fine("CurrentConsumed: "+interaction.getConsumed()+"; CurrentDonated: "+interaction.getDonated());
+							
+							boolean change = false;
+							
+							if(currentFairness==0){
+								interaction.setIncreasingCapacity(false);
+								change = true;
 							}
+							else if(currentFairness>0){
+								/** If my fairness is decreasing or equal to last fairness, then:
+								 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
+								 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
+								 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
+								 *  		have a nice fairness value. **/
+								if(currentFairness <= lastFairness){
+									if(!interaction.isIncreasingCapacity())
+										interaction.setIncreasingCapacity(true);
+									else{
+										if(currentFairness < this.fairnessLowerThreshold)
+											interaction.setIncreasingCapacity(false);
+									}
+								}
+								change = true;
+							}
+							
+								
+							Simulator.logger.fine("LastMaxCapacitySupplied: "+interaction.getMaxCapacitySupplied());
+							
+							
+							if(change){
+								/** Change it's capacity in order to achiever a greater fairness. **/							
+								double maxLim = Math.min(collaborator.getInitialDemand()-collaborator.getInitialCapacity(), collaborator.getInitialCapacity()); 
+									
+								if(interaction.isIncreasingCapacity())		//try to increase the current maxCapacitySupplied
+									interaction.setMaxCapacitySupplied(Math.min(maxLim, interaction.getMaxCapacitySupplied()+(this.changingValue*interaction.getInitialCapacity())));	
+								else										//try to decrease the current maxCapacitySupplied
+									interaction.setMaxCapacitySupplied(Math.max(0, Math.min(maxLim, interaction.getMaxCapacitySupplied()-(this.changingValue*interaction.getInitialCapacity()))));
+							}
+							
+							interaction.getCapacitySuppliedHistory()[this.currentStep] = interaction.getMaxCapacitySupplied();
+							
+							
+							Simulator.logger.fine("CurrentMaxCapacitySupplied: "+interaction.getMaxCapacitySupplied());
+							Simulator.logger.fine("**********************************************************************");
+							
 						}
 						
-							
-						Simulator.logger.fine("LastMaxCapacitySupplied: "+interaction.getMaxCapacitySupplied());
-						
-						
-						/** Change it's capacity in order to achiever a greater fairness. **/							
-						double maxLim = Math.min(collaborator.getInitialDemand()-collaborator.getInitialCapacity(), collaborator.getInitialCapacity()); 
-							
-						if(interaction.isIncreasingCapacity())		//try to increase the current maxCapacitySupplied
-							interaction.setMaxCapacitySupplied(Math.min(maxLim, interaction.getMaxCapacitySupplied()+(this.changingValue*interaction.getInitialCapacity())));	
-						else										//try to decrease the current maxCapacitySupplied
-							interaction.setMaxCapacitySupplied(Math.max(0, Math.min(maxLim, interaction.getMaxCapacitySupplied()-(this.changingValue*interaction.getInitialCapacity()))));
-						
-						interaction.getCapacitySuppliedHistory()[this.currentStep] = interaction.getMaxCapacitySupplied();
-							
-						
-						
-						Simulator.logger.fine("CurrentMaxCapacitySupplied: "+interaction.getMaxCapacitySupplied());
-						Simulator.logger.fine("**********************************************************************");
-						
-					}
+					}					
+					
 							
 					double currentConsumed = collaborator.getCurrentConsumed(this.currentStep);
 					double currentDonated = collaborator.getCurrentDonated(this.currentStep);
@@ -547,12 +563,17 @@ public class Simulator {
 					double lastDonated = collaborator.getCurrentDonated(this.currentStep-1);
 					double lastFairness = Simulator.getFairness(lastConsumed, lastDonated);
 					
-					/** If my fairness is decreasing or equal to last fairness, then:
-					 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
-					 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
-					 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
-					 *  		have a nice fairness value. **/
-					if(currentFairness>0){
+					boolean change = false;					
+					if(currentFairness==0){
+						collaborator.setIncreasingCapacitySupplied(false);
+						change = true;
+					}
+					else if(currentFairness>0){
+						/** If my fairness is decreasing or equal to last fairness, then:
+						 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
+						 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
+						 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
+						 *  		have a nice fairness value. **/
 						if(currentFairness <= lastFairness){
 							if(!collaborator.isIncreasingCapacitySupplied()){
 								collaborator.setIncreasingCapacitySupplied(true);
@@ -563,8 +584,10 @@ public class Simulator {
 								}
 							}
 						}
+						change = true;
+					}
 					
-					
+					if(change){
 						double maxLim = Math.min(collaborator.getInitialCapacity(), collaborator.getInitialDemand()-collaborator.getInitialCapacity());
 							
 						/** Change it's capacity in order to achieve a greater fairness. **/
@@ -572,6 +595,10 @@ public class Simulator {
 							collaborator.setMaxCapacityToSupply(Math.min(maxLim, collaborator.getMaxCapacityToSupply()+(this.changingValue*collaborator.getInitialCapacity())));	//try to increase the current capacitySuppliedReferenceValue
 						else
 							collaborator.setMaxCapacityToSupply(Math.max(0, Math.min(maxLim,collaborator.getMaxCapacityToSupply()-(this.changingValue*collaborator.getInitialCapacity()))));	//try to decrease the current capacitySuppliedReferenceValue
+					}
+					
+					if(collaborator.getPeerId()==20){
+						System.out.println();
 					}
 					
 						if((this.currentStep+1)<this.numSteps)
@@ -654,7 +681,7 @@ public class Simulator {
 		
 		GenerateCsv csvGen = new GenerateCsv(this.outputFile, this.numSteps);
 		csvGen.outputCollaborators();
-		csvGen.outputCapacitySupplied();
+//		csvGen.outputCapacitySupplied();
 		csvGen.outputFreeRiders();
 		
 //		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
@@ -683,17 +710,15 @@ public class Simulator {
 	private double updateProvidersInteraction(Collaborator provider, Peer consumer){
 		
 		int index = provider.getInteractions().indexOf(new Interaction(consumer, 0, 0));
-		Interaction interaction = provider.getInteractions().get(index);		//retrieve the interaction object with its history
-		
-//		double maxToBeDonated = Math.min(interaction.getMaxCapacitySupplied(),provider.getMaxCapacityToSupply());
-//		if(this.currentStep>5000 && (consumer instanceof FreeRider))
-//			System.out.print("");
+		Interaction interaction = provider.getInteractions().get(index);		//retrieve the interaction object with its history		
 		
 		double maxToBeDonated = 0;
-		if(consumer.isNewComer())
+		if(consumer.isNewComer() || !pairwise)
 			maxToBeDonated = provider.getMaxCapacityToSupply();
 		else
-			maxToBeDonated = interaction.getMaxCapacitySupplied();			
+			maxToBeDonated = interaction.getMaxCapacitySupplied();	
+		
+			
 		double consumerDemand = consumer.getDemand()-consumer.getInitialCapacity();
 		double amountThatCouldBeDonated = Math.min(consumerDemand, maxToBeDonated);
 		double spareResources = maxToBeDonated - provider.getCapacityDonatedInThisStep();

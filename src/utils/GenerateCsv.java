@@ -100,6 +100,11 @@ public class GenerateCsv{
 					writer.append(fairness+"");
 					writer.append(',');
 					
+					if(fairness < 0.5){
+						System.out.println("Id: "+collab.getPeerId());
+						System.out.println("Fairness: "+fairness);
+					}
+					
 					double currentRequested = Simulator.peers[i].getCurrentRequested(numSteps-1);
 					double satisfaction = Simulator.getFairness(currentConsumed, currentRequested);
 					writer.append(satisfaction+"");
