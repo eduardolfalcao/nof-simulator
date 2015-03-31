@@ -525,7 +525,8 @@ public class Simulator {
 							
 							if(change){
 								/** Change it's capacity in order to achiever a greater fairness. **/							
-								double maxLim = Math.min(collaborator.getInitialDemand()-collaborator.getInitialCapacity(), collaborator.getInitialCapacity()); 
+//								double maxLim = Math.min(collaborator.getInitialDemand()-collaborator.getInitialCapacity(), collaborator.getInitialCapacity()); 
+								double maxLim = collaborator.getInitialCapacity();
 									
 								if(interaction.isIncreasingCapacity())		//try to increase the current maxCapacitySupplied
 									interaction.setMaxCapacitySupplied(Math.min(maxLim, interaction.getMaxCapacitySupplied()+(this.changingValue*interaction.getInitialCapacity())));	
@@ -575,7 +576,8 @@ public class Simulator {
 					}
 					
 					if(change){
-						double maxLim = Math.min(collaborator.getInitialCapacity(), collaborator.getInitialDemand()-collaborator.getInitialCapacity());
+//						double maxLim = Math.min(collaborator.getInitialCapacity(), collaborator.getInitialDemand()-collaborator.getInitialCapacity());
+						double maxLim = collaborator.getInitialCapacity();
 							
 						/** Change it's capacity in order to achieve a greater fairness. **/
 						if(collaborator.isIncreasingCapacitySupplied())				
@@ -589,6 +591,8 @@ public class Simulator {
 				}
 			}
 		}	
+		
+		
 		
 		Simulator.logger.fine("FIM Update capacity supplied");
 	}
