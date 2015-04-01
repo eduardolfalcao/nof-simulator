@@ -586,8 +586,8 @@ public class Simulator {
 							collaborator.setMaxCapacityToSupply(Math.max(0, Math.min(maxLim,collaborator.getMaxCapacityToSupply()-(this.changingValue*collaborator.getInitialCapacity()))));	//try to decrease the current capacitySuppliedReferenceValue
 					}
 					
-						if((this.currentStep+1)<this.numSteps)
-							collaborator.getCapacitySuppliedHistory()[this.currentStep+1] = collaborator.getMaxCapacityToSupply();
+					if((this.currentStep+1)<this.numSteps)
+						collaborator.getCapacitySuppliedHistory()[this.currentStep+1] = collaborator.getMaxCapacityToSupply();
 				}
 			}
 		}	
@@ -704,13 +704,17 @@ public class Simulator {
 		boolean newComer = true;
 		if(interaction.getDonated()>0 || interaction.getConsumed()>0)
 			newComer = false;
-			
-		double fairness = getFairness(interaction.getConsumed(), interaction.getDonated());
 		
-		if(newComer || fairness<=0 || !pairwise) 
-			maxToBeDonated = provider.getMaxCapacityToSupply();
+		if(dynamic){
+			double fairness = getFairness(interaction.getConsumed(), interaction.getDonated());
+			
+			if(newComer || fairness<=0 || !pairwise) 
+				maxToBeDonated = provider.getMaxCapacityToSupply();
+			else
+				maxToBeDonated = interaction.getMaxCapacitySupplied();	
+		}
 		else
-			maxToBeDonated = interaction.getMaxCapacitySupplied();	
+			maxToBeDonated = provider.getInitialCapacity();
 		
 			
 		double consumerDemand = consumer.getDemand()-consumer.getInitialCapacity();
