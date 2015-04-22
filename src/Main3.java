@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import simulator.Simulator;
 
 
-public class Main2 {
+public class Main3 {
 		
 	public static void main(String [] args){
 		
@@ -29,7 +29,7 @@ public class Main2 {
 		int [] numberOfCollaborators = new int [] {8, 9, 8};
 		int [] numberOfFreeRiders = new int [] {25, 25, 25};
 		double [] capacitySupplied = new double []{1, 1, 1};
-		boolean dynamic = true, pairwise = true, nofWithLog = false;
+		boolean dynamic = false, pairwise = false, nofWithLog = false;
 		double fairnessLowerThreshold = 0.95;
 		double changingValue = 0.05;
 		long seed = 1;
@@ -39,7 +39,7 @@ public class Main2 {
 		DecimalFormat formatter = new DecimalFormat("0.00"); 
 		formatter.setRoundingMode(RoundingMode.DOWN);
 		
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 2/SoCC2015/newSoccDesign/pairwise/different needs/pi-fixo/";
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 2/SoCC2015/newSoccDesign/sd-nof/different needs/pi-fixo/";
 		String kappa05 = "kappa05";
 		String kappa1 = "kappa1";
 		String kappa2 = "kappa2";

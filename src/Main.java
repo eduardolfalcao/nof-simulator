@@ -42,7 +42,7 @@ public class Main {
 		
 		for(boolean pairwise : pairwiseArray){
 			
-			String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 2/SoCC2015/newSoccDesign/pairwise/";
+			String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 2/SoCC2015/sameDistancefromModerate/";
 			
 			String kappa05 = "kappa05";
 			String kappa1 = "kappa1";

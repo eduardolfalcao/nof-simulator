@@ -34,6 +34,11 @@ public class Simulator {
 	private int [] numberOfCollaborators;		//[FACTOR]: number of collaborators, formed in groups
 	private int [] numberOfFreeRiders;		//[FACTOR]: number of free riders, formed in groups
 	
+	private int [] index;
+	
+	private double kappa;
+	private String design;
+	
 	private int numCollaborators;
 	private int numFreeRiders;
 		
@@ -89,7 +94,8 @@ public class Simulator {
 	 * @param seed value used to calculate probability of being consumer or donor
 	 */
 	public Simulator(int numPeers, int numSteps, double [] consumingStateProbability, int [] numberOfCollaborators, int [] numberOfFreeRiders, boolean dynamic, boolean nofWithLog,
-			double fairnessLowerThreshold, double [] peersDemand, double [] capacitySupplied, double changingValue, long seed, Level level, String outputFile, boolean pairwise) {
+			double fairnessLowerThreshold, double [] peersDemand, double [] capacitySupplied, double changingValue, long seed, Level level, String outputFile, boolean pairwise,
+			double kappa, String design, int [] index) {
 		super();
 		this.numPeers = numPeers;
 		this.numSteps = numSteps;
@@ -122,6 +128,9 @@ public class Simulator {
 	    logger.addHandler(handler);
 	    
 	    this.pairwise = pairwise;
+	    this.kappa = kappa;
+	    this.design = design;
+	    this.index = index;
 	}
 
 	/**
@@ -142,7 +151,8 @@ public class Simulator {
 				else
 					providersList.add(id);
 				
-				Simulator.peers[id] = collab;				
+				Simulator.peers[id] = collab;
+				Simulator.peers[id].setIndex(this.index[group]);
 				id++;
 			}						
 		}
@@ -153,6 +163,7 @@ public class Simulator {
 				Peer p = new FreeRider(this.peersCapacity[group], this.peersDemand[group], id, this.numSteps);
 				freeRidersList.add(id);
 				Simulator.peers[id] = p;
+				Simulator.peers[id].setIndex(this.index[group]);
 				id++;
 			}
 		}	
@@ -501,7 +512,7 @@ public class Simulator {
 							Simulator.logger.fine("CurrentConsumed: "+interaction.getConsumed()+"; CurrentDonated: "+interaction.getDonated());
 							
 							boolean change = false;
-							
+							if(this.currentStep>1000){
 							if(currentFairness>=0){
 								/** If my fairness is decreasing or equal to last fairness, then:
 								 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
@@ -517,6 +528,25 @@ public class Simulator {
 									}
 								}
 								change = true;
+							}
+							}
+							else{
+								if(currentFairness>=0){
+									/** If my fairness is decreasing or equal to last fairness, then:
+									 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
+									 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
+									 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
+									 *  		have a nice fairness value. **/
+									if(currentFairness <= lastFairness){
+										if(!interaction.isIncreasingCapacity())
+											interaction.setIncreasingCapacity(true);
+										else{
+											if(currentFairness < this.fairnessLowerThreshold)
+												interaction.setIncreasingCapacity(false);
+										}
+									}
+									change = true;
+								}
 							}
 							
 								
@@ -555,7 +585,8 @@ public class Simulator {
 					double lastDonated = collaborator.getCurrentDonated(this.currentStep-1);
 					double lastFairness = Simulator.getFairness(lastConsumed, lastDonated);
 					
-					boolean change = false;					
+					boolean change = false;	
+					if(this.currentStep>1000){
 					if(currentFairness>=0){
 						/** If my fairness is decreasing or equal to last fairness, then:
 						 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
@@ -573,6 +604,27 @@ public class Simulator {
 							}
 						}
 						change = true;
+					}
+					}
+					else{
+						if(currentFairness>=0){
+							/** If my fairness is decreasing or equal to last fairness, then:
+							 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
+							 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
+							 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
+							 *  		have a nice fairness value. **/
+							if(currentFairness <= lastFairness){
+								if(!collaborator.isIncreasingCapacitySupplied()){
+									collaborator.setIncreasingCapacitySupplied(true);
+								}
+								else{
+									if(currentFairness < this.fairnessLowerThreshold){
+										collaborator.setIncreasingCapacitySupplied(false);
+									}
+								}
+							}
+							change = true;
+						}
 					}
 					
 					if(change){
@@ -666,7 +718,7 @@ public class Simulator {
 	 */
 	private void exportData(){		
 		
-		GenerateCsv csvGen = new GenerateCsv(this.outputFile, this.numSteps);
+		GenerateCsv csvGen = new GenerateCsv(this.outputFile, this.numSteps, this);
 		csvGen.outputCollaborators();
 //		csvGen.outputCapacitySupplied();
 		csvGen.outputFreeRiders();
@@ -775,5 +827,23 @@ public class Simulator {
 		if(!(consumer instanceof FreeRider))
 			Collections.sort(consumer.getPeersReputations());
     }
+
+	/**
+	 * @return the kappa
+	 */
+	public double getKappa() {
+		return kappa;
+	}
+	
+	public String getDesign() {
+		return design;
+	}
+
+	/**
+	 * @return the pairwise
+	 */
+	public boolean isPairwise() {
+		return pairwise;
+	}
     
 }

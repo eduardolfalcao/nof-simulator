@@ -11,10 +11,12 @@ public class GenerateCsv{
 	
 	private String outputFile;
 	private int numSteps;
+	private Simulator sim;
 	
-	public GenerateCsv(String outputFile, int numSteps){
+	public GenerateCsv(String outputFile, int numSteps, Simulator sim){
 		this.outputFile = outputFile;
 		this.numSteps = numSteps;
+		this.sim = sim; 
 	}
 	
 	public void outputCollaborators(){
@@ -41,12 +43,20 @@ public class GenerateCsv{
 		}
 		
 		try {
-			writer.append("demand");
-			writer.append(',');
-		    writer.append("fairness");
-		    writer.append(',');
-		    writer.append("satisfaction");
-		    writer.append('\n');
+			 writer.append("fairness");
+			 writer.append(',');
+			 writer.append("satisfaction");
+			 writer.append(',');
+			 writer.append("index");
+			 writer.append(',');
+			 writer.append("demand");
+			 writer.append(',');
+			 writer.append("kappa");
+			 writer.append(',');
+			 writer.append("design");
+			 writer.append(',');
+			 writer.append("NoF");
+			 writer.append('\n');
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -87,12 +97,9 @@ public class GenerateCsv{
 			if(Simulator.peers[i] instanceof Collaborator){				
 							
 				try {
-					double demandRatio = (Simulator.peers[i].getInitialDemand()-Simulator.peers[i].getInitialCapacity())/Simulator.peers[i].getInitialCapacity();	
-					writer.append(demandRatio+"C");					
-					writer.append(',');
 					
+					//fairness
 					Collaborator collab = (Collaborator) Simulator.peers[i];
-					
 					double currentConsumed, currentDonated, fairness;
 					currentConsumed = collab.getCurrentConsumed(numSteps-1);			
 					currentDonated = collab.getCurrentDonated(numSteps-1);
@@ -100,14 +107,26 @@ public class GenerateCsv{
 					writer.append(fairness+"");
 					writer.append(',');
 					
-					if(fairness < 0.5){
-						System.out.println("Id: "+collab.getPeerId());
-						System.out.println("Fairness: "+fairness);
-					}
-					
+					//satisfaction
 					double currentRequested = Simulator.peers[i].getCurrentRequested(numSteps-1);
 					double satisfaction = Simulator.getFairness(currentConsumed, currentRequested);
 					writer.append(satisfaction+"");
+					writer.append(',');
+					
+					//index
+					writer.append(Simulator.peers[i].getIndex()+"");
+					writer.append(',');
+					
+					//kappa
+					writer.append(this.sim.getKappa()+"");
+					writer.append(',');
+					
+					//design
+					writer.append(this.sim.getDesign()+"");
+					writer.append(',');
+					
+					//nof
+					writer.append((this.sim.isPairwise()?"FD-NoF":"SD-NoF")+"");
 					writer.append('\n');
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -172,10 +191,18 @@ public class GenerateCsv{
 		}
 		
 		try {
-			writer.append("demand");
-			writer.append(',');
-		    writer.append("satisfaction");
-		    writer.append('\n');
+			 writer.append("satisfaction");
+			 writer.append(',');
+			 writer.append("index");
+			 writer.append(',');
+			 writer.append("demand");
+			 writer.append(',');
+			 writer.append("kappa");
+			 writer.append(',');
+			 writer.append("design");
+			 writer.append(',');
+			 writer.append("NoF");
+			 writer.append('\n');
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -187,22 +214,37 @@ public class GenerateCsv{
    
 	private FileWriter writeFreeRiders(FileWriter writer){
 		for (int i = 0; i < Simulator.peers.length; i++) {
-			if(Simulator.peers[i] instanceof FreeRider){				
-							
+			if(Simulator.peers[i] instanceof FreeRider){		
+				
 				try {
-					double demandRatio = (Simulator.peers[i].getInitialDemand()-Simulator.peers[i].getInitialCapacity())/Simulator.peers[i].getInitialCapacity();	
-					writer.append(demandRatio+"C");					
-					writer.append(',');
 					
-					double currentConsumed = Simulator.peers[i].getCurrentConsumed(numSteps-1);			
+					//satisfaction
+					FreeRider freeRider = (FreeRider) Simulator.peers[i];
+					double currentConsumed = freeRider.getCurrentConsumed(numSteps-1);		
 					double currentRequested = Simulator.peers[i].getCurrentRequested(numSteps-1);
 					double satisfaction = Simulator.getFairness(currentConsumed, currentRequested);
 					writer.append(satisfaction+"");
+					writer.append(',');
+					
+					//index
+					writer.append(Simulator.peers[i].getIndex()+"");
+					writer.append(',');
+					
+					//kappa
+					writer.append(this.sim.getKappa()+"");
+					writer.append(',');
+					
+					//design
+					writer.append(this.sim.getDesign()+"");
+					writer.append(',');
+					
+					//nof
+					writer.append((this.sim.isPairwise()?"FD-NoF":"SD-NoF")+"");
 					writer.append('\n');
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}	
+				}
 			}
 		}
 		
