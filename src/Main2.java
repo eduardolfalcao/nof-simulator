@@ -29,159 +29,111 @@ public class Main2 {
 		int [] numberOfCollaborators = new int [] {8, 9, 8};
 		int [] numberOfFreeRiders = new int [] {25, 25, 25};
 		double [] capacitySupplied = new double []{1, 1, 1};
-		boolean dynamic = true, pairwise = true, nofWithLog = false;
+		boolean nofWithLog = false;
+		boolean dynamic = true;
+		boolean pairwise = dynamic;
 		double fairnessLowerThreshold = 0.95;
 		double changingValue = 0.05;
 		long seed = 1;
 		Level level = Level.SEVERE;
 		
 		
-		DecimalFormat formatter = new DecimalFormat("0.00"); 
-		formatter.setRoundingMode(RoundingMode.DOWN);
 		
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 2/SoCC2015/newSoccDesign/pairwise/different needs/pi-fixo/";
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 2/SoCC2015/sameDistancefromModerate/difPeers/";
+		
 		String kappa05 = "kappa05";
 		String kappa1 = "kappa1";
 		String kappa2 = "kappa2";
-		String kappa4 = "kappa4";
+		String kappa4 = "kappa4";		
 		
-		double [][] demands = new double [][] {{2.25, 3, 3.75},
-												 {3.75, 5, 6.25},
-												 {6.75, 9, 11.25},
-												 {12.75, 17, 21.25},
-												 {1.919117647, 2.558823529, 3.198529412},
-												 {3.088235294, 4.117647059, 5.147058824},
-												 {5.426470588, 7.235294118, 9.044117647},
-												 {10.10294118, 13.47058824, 16.83823529},
-												 {1.6875, 2.25, 2.8125},
-												 {2.625, 3.5, 4.375},
-												 {4.5, 6, 7.5},
-												 {8.25, 11, 13.75},
-												 {1.516304348, 2.02173913, 2.527173913},
-												 {2.282608696, 3.043478261, 3.804347826},
-												 {3.815217391, 5.086956522, 6.358695652},
-												 {6.880434783, 9.173913043, 11.4673913},
-												 {1.384615385, 1.846153846, 2.307692308},
-												 {2.019230769, 2.692307692, 3.365384615},
-												 {3.288461538, 4.384615385, 5.480769231},
-												 {5.826923077, 7.769230769, 9.711538462},
-												 {1.280172414, 1.706896552, 2.13362069},
-												 {1.810344828, 2.413793103, 3.017241379},
-												 {2.870689655, 3.827586207, 4.784482759},
-												 {4.99137931, 6.655172414, 8.318965517},
-												 {1.1953125, 1.59375, 1.9921875},
-												 {1.640625, 2.1875, 2.734375},
-												 {2.53125, 3.375, 4.21875},
-												 {4.3125, 5.75, 7.1875},
-												 {1.125, 1.5, 1.875},	
-												 {1.5, 2, 2.5},
-												 {2.25, 3, 3.75},
-												 {3.75, 5, 6.25},
-												 {1.065789474, 1.421052632, 1.776315789},
-												 {1.381578947, 1.842105263, 2.302631579},
-												 {2.013157895, 2.684210526, 3.355263158},
-												 {3.276315789, 4.368421053, 5.460526316},
-												 {1.015243902, 1.353658537, 1.692073171},
-												 {1.280487805, 1.707317073, 2.134146341},
-												 {1.81097561, 2.414634146, 3.018292683},
-												 {2.87195122, 3.829268293, 4.786585366},
-												 {1.193181818, 1.590909091, 1.988636364},
-												 {1.636363636, 2.181818182, 2.727272727},
-												 {2.522727273, 3.363636364, 4.204545455},
-												 {1.117021277, 1.489361702, 1.861702128},
-												 {1.484042553, 1.978723404, 2.473404255},
-												 {2.218085106, 2.957446809, 3.696808511},
-												 {1.05, 1.4, 1.75},
-												 {1.35, 1.8, 2.25},
-												 {1.95, 2.6, 3.25},
-												 {1.231132075, 1.641509434, 2.051886792},
-												 {1.712264151, 2.283018868, 2.853773585},
-												 {1.125, 1.5, 1.875},
-												 {1.5, 2, 2.5}
-												 };
 		
-		double [][] pis = new double [][] {{0.2, 0.3333333333, 0.5, 0.6666666667},
-											 {0.1111111111, 0.2, 0.3333333333, 0.5},
-											 {0.05882352941, 0.1111111111, 0.2, 0.3333333333}, 
-											 {0.0303030303, 0.05882352941, 0.1111111111, 0.2}, 
-											 {0.2428571429, 0.3908045977, 0.5619834711, 0.7195767196}, 
-											 {0.1382113821, 0.2428571429, 0.3908045977, 0.5619834711},
-											 {0.07423580786, 0.1382113821, 0.2428571429, 0.3908045977},
-											 {0.03854875283, 0.07423580786, 0.1382113821, 0.2428571429},
-											 {0.2857142857, 0.4444444444, 0.6153846154, 0.7619047619},
-											 {0.1666666667, 0.2857142857, 0.4444444444, 0.6153846154},
-											 {0.09090909091, 0.1666666667, 0.2857142857, 0.4444444444},
-											 {0.04761904762, 0.09090909091, 0.1666666667, 0.2857142857},
-											 {0.3285714286, 0.4946236559, 0.6618705036, 0.7965367965},
-											 {0.1965811966, 0.3285714286, 0.4946236559, 0.6618705036},
-											 {0.1090047393, 0.1965811966, 0.3285714286, 0.4946236559},
-											 {0.05764411028, 0.1090047393, 0.1965811966, 0.3285714286},
-											 {0.3714285714, 0.5416666667, 0.7027027027, 0.8253968254},
-											 {0.2280701754, 0.3714285714, 0.5416666667, 0.7027027027},
-											 {0.1287128713, 0.2280701754, 0.3714285714, 0.5416666667},
-											 {0.06878306878, 0.1287128713, 0.2280701754, 0.3714285714},
-											 {0.4142857143, 0.5858585859, 0.7388535032, 0.8498168498},
-											 {0.2612612613, 0.4142857143, 0.5858585859, 0.7388535032},
-											 {0.1502590674, 0.2612612613, 0.4142857143, 0.5858585859},
-											 {0.081232493, 0.1502590674, 0.2612612613, 0.4142857143},
-											 {0.4571428571, 0.6274509804, 0.7710843373, 0.8707482993},
-											 {0.2962962963, 0.4571428571, 0.6274509804, 0.7710843373}, 
-											 {0.1739130435, 0.2962962963, 0.4571428571, 0.6274509804}, 
-											 {0.09523809524, 0.1739130435, 0.2962962963, 0.4571428571}, 
-											 {0.5, 0.6666666667, 0.8, 0.8888888889}, 
-											 {0.3333333333, 0.5, 0.6666666667, 0.8}, 
-											 {0.2, 0.3333333333, 0.5, 0.6666666667}, 
-											 {0.1111111111, 0.2, 0.3333333333, 0.5}, 
-											 {0.5428571429, 0.7037037037, 0.8260869565, 0.9047619048}, 
-											 {0.3725490196, 0.5428571429, 0.7037037037, 0.8260869565}, 
-											 {0.2289156627, 0.3725490196, 0.5428571429, 0.7037037037}, 
-											 {0.1292517007, 0.2289156627, 0.3725490196, 0.5428571429}, 
-											 {0.5857142857, 0.7387387387, 0.8497409326, 0.918767507}, 
-											 {0.4141414141, 0.5857142857, 0.7387387387, 0.8497409326}, 
-											 {0.2611464968, 0.4141414141, 0.5857142857, 0.7387387387}, 
-											 {0.1501831502, 0.2611464968, 0.4141414141, 0.5857142857}, 
-											 {0.4583333333, 0.6285714286, 0.7719298246, 0.8712871287}, 
-											 {0.2972972973, 0.4583333333, 0.6285714286, 0.7719298246}, 
-											 {0.1746031746, 0.2972972973, 0.4583333333, 0.6285714286}, 
-											 {0.5053763441, 0.6714285714, 0.8034188034, 0.8909952607}, 
-											 {0.3381294964, 0.5053763441, 0.6714285714, 0.8034188034}, 
-											 {0.2034632035, 0.3381294964, 0.5053763441, 0.6714285714}, 
-											 {0.5555555556, 0.7142857143, 0.8333333333, 0.9090909091}, 
-											 {0.3846153846, 0.5555555556, 0.7142857143, 0.8333333333}, 
-											 {0.2380952381, 0.3846153846, 0.5555555556, 0.7142857143}, 
-											 {0.4380165289, 0.6091954023, 0.7571428571, 0.8617886179}, 
-											 {0.2804232804, 0.4380165289, 0.6091954023, 0.7571428571}, 
-											 {0.5, 0.6666666667, 0.8, 0.8888888889}, 
-											 {0.3333333333, 0.5, 0.6666666667, 0.8}
-											 };
+		// D FIXO e PI VARIAVEL ==> design simples do CCGRID
 		
-		for(int i = 0; i < demands.length; i++){
-			
-			double [] demand = demands[i]; 
-			String file = "D("+(formatter.format(demand[0])).replace(",", ".")+","+(formatter.format(demand[1])).replace(",", ".")+","+(formatter.format(demand[2])).replace(",", ".")+")-";
-			
-			double [] pi = new double [] {pis[i][0], pis[i][0], pis[i][0]};			
-			
-			Simulator sim = new Simulator(numPeers, numSteps, pi, numberOfCollaborators, numberOfFreeRiders,
-					dynamic, nofWithLog, fairnessLowerThreshold, demand, capacitySupplied, changingValue, seed, level, outputDir+file+kappa05,pairwise);
-			sim.startSimulation();
-			
-			pi = new double [] {pis[i][1], pis[i][1], pis[i][1]};
-			sim = new Simulator(numPeers, numSteps, pi, numberOfCollaborators, numberOfFreeRiders,
-					dynamic, nofWithLog, fairnessLowerThreshold, demand, capacitySupplied, changingValue, seed, level, outputDir+file+kappa1,pairwise);
-			sim.startSimulation();
-			
-			pi = new double [] {pis[i][2], pis[i][2], pis[i][2]};
-			sim = new Simulator(numPeers, numSteps, pi, numberOfCollaborators, numberOfFreeRiders,
-					dynamic, nofWithLog, fairnessLowerThreshold, demand, capacitySupplied, changingValue, seed, level, outputDir+file+kappa2,pairwise);
-			sim.startSimulation();
-			
-			pi = new double [] {pis[i][3], pis[i][3], pis[i][3]};
-			sim = new Simulator(numPeers, numSteps, pi, numberOfCollaborators, numberOfFreeRiders,
-					dynamic, nofWithLog, fairnessLowerThreshold, demand, capacitySupplied, changingValue, seed, level, outputDir+file+kappa4,pairwise);
-			sim.startSimulation();
-			
+		double [] fixedDemand = {2, 2.142857143, 2.285714286, 2.428571429, 	2.571428571, 2.714285714, 2.857142857,
+								3, 3.142857143, 3.285714286, 3.428571429, 3.571428571, 3.714285714, 3.857142857, 4};
+				
+		double [] variablePIK05 = {	0.3333333333, 0.3043478261, 0.28, 0.2592592593, 0.2413793103, 
+									0.2258064516, 0.2121212121, 0.2, 0.1891891892, 0.1794871795, 
+									0.1707317073, 0.1627906977, 0.1555555556, 0.1489361702, 0.1428571429};
+		double [] variablePIK1 = {	0.5, 0.4666666667, 0.4375, 0.4117647059, 0.3888888889, 
+				  				   0.3684210526, 0.35, 0.3333333333, 0.3181818182, 0.3043478261,
+				  				   0.2916666667, 0.28, 0.2692307692, 0.2592592593, 0.25};
+		double [] variablePIK2 = { 0.6666666667, 0.6363636364, 0.6086956522, 0.5833333333, 0.56, 
+				  					0.5384615385, 0.5185185185, 0.5, 0.4827586207, 0.4666666667, 
+				  					0.4516129032, 0.4375, 0.4242424242, 0.4117647059, 0.4};
+		double [] variablePIK4 = { 0.8, 0.7777777778, 0.7567567568, 0.7368421053, 0.7179487179,
+				  					0.7, 0.6829268293, 0.6666666667, 0.6511627907, 0.6363636364,
+				  					0.6222222222, 0.6086956522, 0.5957446809, 0.5833333333, 0.5714285714};
+		
+		DecimalFormat formatter = new DecimalFormat("0.0"); 
+		formatter.setRoundingMode(RoundingMode.DOWN); 
+		
+		
+		
+		//double kappa, String design, int [] index
+		
+		String design = "different peers";
+		
+		for(int i = 0; i < fixedDemand.length; i++){
+			for(int window = 0; window < 7;window++){
+				
+				if((i+window+1)>14 || (i+(2*window)+2)>14)
+					continue;
+				
+				int [] index = {i, i+window+1, i+(2*window)+2};
+				double [] d = {fixedDemand[index[0]], fixedDemand[index[1]], fixedDemand[index[2]]};
+				System.out.println("D ["+index[0]+"] = "+d[0]+"; D ["+index[1]+"] = "+d[1]+"; D ["+index[2]+"] = "+d[2]+".");
+				double [] pi ={variablePIK05[index[0]], variablePIK05[index[1]], variablePIK05[index[2]]};
+				System.out.println("PI ["+index[0]+"] = "+pi[0]+"; PI ["+index[1]+"] = "+pi[1]+"; PI ["+index[2]+"] = "+pi[2]+".");
+				double kappa = 0.5;
+				
+				Simulator sim = new Simulator(numPeers, numSteps, pi, numberOfCollaborators, numberOfFreeRiders,
+						dynamic, nofWithLog, fairnessLowerThreshold, d, capacitySupplied, changingValue, seed, level, 
+						outputDir+(dynamic?"fdnof-":"sdnof-")+design+"D("+(formatter.format(d[0])).replace(",", ".")+" "+
+						(formatter.format(d[1])).replace(",", ".")+" "+(formatter.format(d[2])).replace(",", ".")+")"+
+						kappa05, pairwise, kappa, design, index);
+				sim.startSimulation();
+				
+				pi = new double [] {variablePIK1[index[0]], variablePIK1[index[1]], variablePIK1[index[2]]};
+				System.out.println("PI ["+index[0]+"] = "+pi[0]+"; PI ["+index[1]+"] = "+pi[1]+"; PI ["+index[2]+"] = "+pi[2]+".");
+				kappa = 1;
+				
+				sim = new Simulator(numPeers, numSteps, pi, numberOfCollaborators, numberOfFreeRiders,
+						dynamic, nofWithLog, fairnessLowerThreshold, d, capacitySupplied, changingValue, seed, level, 
+						outputDir+(dynamic?"fdnof-":"sdnof-")+design+"D("+(formatter.format(d[0])).replace(",", ".")+" "+
+						(formatter.format(d[1])).replace(",", ".")+" "+(formatter.format(d[2])).replace(",", ".")+")"+
+						kappa1, pairwise, kappa, design, index);
+				sim.startSimulation();
+				
+				pi = new double [] {variablePIK2[index[0]], variablePIK2[index[1]], variablePIK2[index[2]]};
+				System.out.println("PI ["+index[0]+"] = "+pi[0]+"; PI ["+index[1]+"] = "+pi[1]+"; PI ["+index[2]+"] = "+pi[2]+".");
+				kappa = 2;
+				
+				sim = new Simulator(numPeers, numSteps, pi, numberOfCollaborators, numberOfFreeRiders,
+						dynamic, nofWithLog, fairnessLowerThreshold, d, capacitySupplied, changingValue, seed, level, 
+						outputDir+(dynamic?"fdnof-":"sdnof-")+design+"D("+(formatter.format(d[0])).replace(",", ".")+" "+
+						(formatter.format(d[1])).replace(",", ".")+" "+(formatter.format(d[2])).replace(",", ".")+")"+
+						kappa2, pairwise, kappa, design, index);
+				sim.startSimulation();
+				
+				pi = new double [] {variablePIK4[index[0]], variablePIK4[index[1]], variablePIK4[index[2]]};
+				System.out.println("PI ["+index[0]+"] = "+pi[0]+"; PI ["+index[1]+"] = "+pi[1]+"; PI ["+index[2]+"] = "+pi[2]+".");
+				kappa = 4;
+				
+				sim = new Simulator(numPeers, numSteps, pi, numberOfCollaborators, numberOfFreeRiders,
+						dynamic, nofWithLog, fairnessLowerThreshold, d, capacitySupplied, changingValue, seed, level, 
+						outputDir+(dynamic?"fdnof-":"sdnof-")+design+"D("+(formatter.format(d[0])).replace(",", ".")+" "+
+						(formatter.format(d[1])).replace(",", ".")+" "+(formatter.format(d[2])).replace(",", ".")+")"+
+						kappa4, pairwise, kappa, design, index);
+				sim.startSimulation();
+				
+			}
 		}
+		
+		
+		
+		
+		
 		
 		
 		

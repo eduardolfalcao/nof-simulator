@@ -117,6 +117,10 @@ public class GenerateCsv{
 					writer.append(Simulator.peers[i].getIndex()+"");
 					writer.append(',');
 					
+					//demand
+					writer.append(Simulator.peers[i].getInitialDemand()+"");
+					writer.append(',');
+					
 					//kappa
 					writer.append(this.sim.getKappa()+"");
 					writer.append(',');
@@ -228,6 +232,10 @@ public class GenerateCsv{
 					
 					//index
 					writer.append(Simulator.peers[i].getIndex()+"");
+					writer.append(',');
+					
+					//demand
+					writer.append(Simulator.peers[i].getInitialDemand()+"");
 					writer.append(',');
 					
 					//kappa
