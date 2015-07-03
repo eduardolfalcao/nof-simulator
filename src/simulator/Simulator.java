@@ -48,6 +48,8 @@ public class Simulator {
 	private boolean dynamic;						//[FACTOR]: if the capacity supply changes dynamicly or not
 	private boolean nofWithLog;					//if the reputations will be calculated with log or with sqrt
 	private double fairnessLowerThreshold;			//the threshold in which fairness must have in order to prioritize satisfaction
+	
+
 	private boolean pairwise;
 	
 	/**
@@ -77,6 +79,7 @@ public class Simulator {
 	
 	
 	private String outputFile;						//file to export Data
+	private String f;
 	
 	public final static Logger logger = Logger.getLogger(Simulator.class.getName());
 
@@ -95,7 +98,7 @@ public class Simulator {
 	 */
 	public Simulator(int numPeers, int numSteps, double [] consumingStateProbability, int [] numberOfCollaborators, int [] numberOfFreeRiders, boolean dynamic, boolean nofWithLog,
 			double fairnessLowerThreshold, double [] peersDemand, double [] capacitySupplied, double changingValue, long seed, Level level, String outputFile, boolean pairwise,
-			double kappa, String design, int [] index) {
+			double kappa, String design, int [] index, String f) {
 		super();
 		this.numPeers = numPeers;
 		this.numSteps = numSteps;
@@ -131,6 +134,7 @@ public class Simulator {
 	    this.kappa = kappa;
 	    this.design = design;
 	    this.index = index;
+	    this.f = f;
 	}
 
 	/**
@@ -719,9 +723,10 @@ public class Simulator {
 	private void exportData(){		
 		
 		GenerateCsv csvGen = new GenerateCsv(this.outputFile, this.numSteps, this);
-		csvGen.outputCollaborators();
+		csvGen.outputPeers();
+		//csvGen.outputCollaborators();
 //		csvGen.outputCapacitySupplied();
-		csvGen.outputFreeRiders();
+		//csvGen.outputFreeRiders();
 		
 //		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
 //		we.setupFile();
@@ -845,5 +850,18 @@ public class Simulator {
 	public boolean isPairwise() {
 		return pairwise;
 	}
+
+	/**
+	 * @return the f
+	 */
+	public String getF() {
+		return f;
+	}
     
+	/**
+	 * @return the fairnessLowerThreshold
+	 */
+	public double getFairnessLowerThreshold() {
+		return fairnessLowerThreshold;
+	}
 }

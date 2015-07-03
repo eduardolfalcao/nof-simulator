@@ -2,6 +2,8 @@ package utils;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import peer.Collaborator;
 import peer.FreeRider;
@@ -19,6 +21,12 @@ public class GenerateCsv{
 		this.sim = sim; 
 	}
 	
+	public void outputPeers(){
+		FileWriter writer = this.createHeaderForPeer();
+		writer = this.writePeers(writer);
+		this.flushFile(writer);
+	}
+	
 	public void outputCollaborators(){
 		FileWriter writer = this.createHeaderForCollaborator();
 		writer = this.writeCollaborators(writer);
@@ -31,6 +39,141 @@ public class GenerateCsv{
 		this.flushFile(writer);
 	}	
 	
+	private FileWriter createHeaderForPeer(){
+		
+		FileWriter writer = null;
+		try {
+			writer = new FileWriter(this.outputFile+".csv");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			 writer.append("peer");
+			 writer.append(',');
+			 writer.append("fairness");
+			 writer.append(',');
+			 writer.append("satisfaction");
+			 writer.append(',');
+			 writer.append("kappa");
+			 writer.append(',');
+			 writer.append("f");
+			 writer.append(',');
+			 writer.append("NoF");
+			 writer.append(',');
+			 writer.append("tau");
+			 writer.append('\n');
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return writer;
+	    
+	}
+	
+	private FileWriter writePeers(FileWriter writer){
+		
+		List<Collaborator> collabs = new ArrayList<Collaborator>();
+		List<FreeRider> frs = new ArrayList<FreeRider>();
+		
+		for (int i = 0; i < Simulator.peers.length; i++) {
+			if(Simulator.peers[i] instanceof Collaborator)
+				collabs.add((Collaborator) Simulator.peers[i]);
+			else if(Simulator.peers[i] instanceof FreeRider)
+				frs.add((FreeRider)Simulator.peers[i]);
+		}
+		
+		//peer, fairness, satisfaction, kappa, f, NoF, tau
+		
+		//collaborators
+		for(Collaborator c : collabs){
+			try {
+				writer.append("colaborador");
+				writer.append(',');
+				
+				//fairness
+				double currentConsumed, currentDonated, fairness;
+				currentConsumed = c.getCurrentConsumed(numSteps-1);			
+				currentDonated = c.getCurrentDonated(numSteps-1);
+				fairness = Simulator.getFairness(currentConsumed, currentDonated);				
+				writer.append(fairness+"");
+				writer.append(',');
+				
+				//satisfaction
+				double currentRequested = c.getCurrentRequested(numSteps-1);
+				double satisfaction = Simulator.getFairness(currentConsumed, currentRequested);
+				writer.append(satisfaction+"");
+				writer.append(',');
+				
+				//kappa
+				writer.append(this.sim.getKappa()+"");
+				writer.append(',');
+				
+				//f
+				writer.append(this.sim.getF());
+				writer.append(',');
+				
+				//nof
+				writer.append((this.sim.isPairwise()?"FD-NoF":"SD-NoF")+"");
+				writer.append(',');
+				
+				//tau
+				writer.append(this.sim.getFairnessLowerThreshold()+"");
+				writer.append('\n');
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				System.out.println("Exception while writing collaboratos...");
+			}	
+		}
+		
+		//collaborators
+		for(FreeRider fr : frs){
+			try {
+				writer.append("free rider");
+				writer.append(',');
+						
+				//fairness
+				writer.append(-1+"");
+				writer.append(',');
+							
+				//satisfaction
+				double currentConsumed = fr.getCurrentConsumed(numSteps-1);
+				double currentRequested = fr.getCurrentRequested(numSteps-1);
+				double satisfaction = Simulator.getFairness(currentConsumed, currentRequested);
+				writer.append(satisfaction+"");
+				writer.append(',');
+						
+				//kappa
+				writer.append(this.sim.getKappa()+"");
+				writer.append(',');
+						
+				//f
+				writer.append(this.sim.getF());
+				writer.append(',');
+						
+				//nof
+				writer.append((this.sim.isPairwise()?"FD-NoF":"SD-NoF")+"");
+				writer.append(',');
+						
+				//tau
+				writer.append(this.sim.getFairnessLowerThreshold()+"");
+				writer.append('\n');
+						
+			} catch (IOException e) {
+			// TODO Auto-generated catch block
+				e.printStackTrace();
+				System.out.println("Exception while writing free riders...");
+			}	
+		}
+		
+		
+		
+		return writer;
+	}
 	
 	private FileWriter createHeaderForCollaborator(){
 		
