@@ -1,6 +1,8 @@
 package simulator;
 
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -80,6 +82,9 @@ public class Simulator {
 	
 	private String outputFile;						//file to export Data
 	private String f;
+	private double [] suppliedHistory;
+	
+	private DecimalFormat df;
 	
 	public final static Logger logger = Logger.getLogger(Simulator.class.getName());
 
@@ -135,6 +140,8 @@ public class Simulator {
 	    this.design = design;
 	    this.index = index;
 	    this.f = f;
+	    this.suppliedHistory = new double[numSteps];
+	    this.df = new DecimalFormat("#.0000"); //df.format(0.912385); // Imprime 0,91238
 	}
 
 	/**
@@ -164,7 +171,7 @@ public class Simulator {
 		for(int group = 0; group < numberOfFreeRiders.length; group++){
 			for(int j = 0; j < numberOfFreeRiders[group]; j++){
 				//freeRiders never donates, they are always in consuming state. At least, they are always trying to consume.
-				Peer p = new FreeRider(this.peersCapacity[group], this.peersDemand[group], id, this.numSteps);
+				Peer p = new FreeRider(this.peersCapacity[group], Double.MAX_VALUE, id, this.numSteps);	//demanda infinita pra consumir os recursos excedentes
 				freeRidersList.add(id);
 				Simulator.peers[id] = p;
 				Simulator.peers[id].setIndex(this.index[group]);
@@ -177,6 +184,9 @@ public class Simulator {
 		
 		for(int n : numberOfFreeRiders)
 			this.numFreeRiders += n;
+		
+		for(int idProvider : providersList)
+			this.suppliedHistory[0] += ((Collaborator)Simulator.peers[idProvider]).getMaxCapacityToSupply();
 		
 		Simulator.logger.info("Created: "+this.numCollaborators+" collaborators and "+this.numFreeRiders+" free riders.");
 
@@ -214,37 +224,30 @@ public class Simulator {
 		 * While there is any collaborator willing to donate, try to choose one.
 		 */
 		while(!this.providersList.isEmpty()){			
-			/**
-			 * If all peers who wanted to consume already consumed the quantity of resources
-			 * he wanted, then there is not another possible match.
-			 */
-			if(!this.consumersCollabList.isEmpty() || !this.freeRidersList.isEmpty())
-				collab = this.choosesCollaboratorToDonate();	//randomly chooses who will donate
-			else
-				break;											//there is not any more consumer
+			
+			// There will always be a consumer: the eager free rider.
+			collab = this.choosesCollaboratorToDonate();	//randomly chooses who will donate
 			
 			/**
 			 * Keeps choosing consumer and donating until supply all his capacity.
 			 */
 			List alreadyConsumed = new ArrayList<Integer>();
 			while(collab.getCapacityDonatedInThisStep() < collab.getMaxCapacityToSupply()){
-				/** If a provider finishes the consumers list here, there's no further consumer... 
-				 * Further, if the provider already tried to donate to everyone, but the local NoF didn't allow
-				 * then, he won't donate to any peer.
-				 **/
-				if((this.consumersCollabList.isEmpty() && this.freeRidersList.isEmpty()))
-					break;
-								
+				
+				//First, we try to donate to peers with credit, providing all that they ask, if the collaborator is able.
 				Peer consumer = choosesConsumer(collab, alreadyConsumed);
 				
 				/**
-				 * If the provider already tried to donate to everyone, but the local NoF didn't allow
-				 * then, he won't donate to any peer. Then, the method choosesConsumer returns null.
+				 * If the provider already tried to donate to everyone with credit, but it still has some spare
+				 * resources, divide it equally between the ZeroCreditPeers and the unique free rider. If there is still
+				 * any resources, donate it to the free rider: it is eager.
 				 */
-				if(consumer == null)
+				if(consumer == null){
+					performDonationToPeersWithoutCredit(collab);
 					break;
+				}
 				
-				performDonation(collab, consumer);
+				performDonation(collab, consumer, -1);
 				removePeerIfFullyConsumed(consumer);
 				
 				//update alreadyConsumed
@@ -255,6 +258,8 @@ public class Simulator {
 		nextStep();
 	}
 	
+	
+
 	
 
 	/**
@@ -292,7 +297,7 @@ public class Simulator {
 		consumersCollabList.clear();
 		
 		
-		/** Fulfilling consumersCollabList and providersList with collaborators with their new consuming status. **/
+		/** Fulfilling consumersCollaalreadyConsumedbList and providersList with collaborators with their new consuming status. **/
 		for(int collabId : allCollaborators){
 			/** Based in consumingStateProbability, we decide if the collaborator will consume or not in the next step. **/
 			peers[collabId].setConsuming((this.randomGenerator.nextInt(100)+1 <= (((Collaborator)peers[collabId]).getConsumingStateProbability()*100)));
@@ -323,7 +328,8 @@ public class Simulator {
 				//peers[fId].setDemand(peers[fId].getInitialDemand());			
 				peers[fId].getRequestedHistory()[this.currentStep+1] = peers[fId].getInitialDemand()-peers[fId].getInitialCapacity();
 				peers[fId].getConsumedHistory()[this.currentStep+1] = 0;
-				peers[fId].setDemand(peers[fId].getInitialDemand());
+				//peers[fId].setDemand(peers[fId].getInitialDemand());
+				peers[fId].setDemand(Double.MAX_VALUE);
 			}
 		}
 			
@@ -332,15 +338,27 @@ public class Simulator {
 			this.updateCapacitySupplied();
 
 		/** Set next step.**/
-		this.currentStep++;
-//		if(this.currentStep<this.numSteps){
-//			performCurrentStepDonations();
+		System.out.println("passo: "+this.currentStep);
+//		if(this.currentStep==1000){
+//			for(Peer peer : Simulator.peers){
+//				
+//				double currentGranted = peer.getCurrentConsumed(this.currentStep);
+//				double currentRequested = peer.getCurrentRequested(this.currentStep);
+//				double currentSatisfaction = Simulator.getFairness(currentGranted, currentRequested);
+//				
+//				if(peer instanceof Collaborator){
+//					Collaborator collaborator = (Collaborator) peer;
+//					System.out.println("Collaborator ID=["+collaborator.getPeerId()+"] ==> Satisfatcion: "+currentSatisfaction+"; Granted: "+currentGranted+"; Requested: "+currentRequested+"; Provided:"+collaborator.getCurrentDonated(this.currentStep-1));
+//				}
+//				else{
+//					FreeRider freeRider = (FreeRider) peer;
+//					System.out.println("FreeRider ID=["+freeRider.getPeerId()+"] ==> Satisfatcion: "+currentSatisfaction+"; Granted: "+currentGranted+"; Requested: "+currentRequested);
+//				}
+//			}			
+//			System.exit(0);			
 //		}
-//		else{
-//			if(Simulator.logger.isLoggable(Level.INFO))
-//				printSummary();			
-//			exportData();
-//		}			
+		
+		this.currentStep++;			
 	}
 
 	
@@ -360,6 +378,7 @@ public class Simulator {
 		int id = this.providersList.get(anyPeer(this.providersList));
 		return peers[id] instanceof Collaborator?(Collaborator)peers[id]:null;
 	}
+	
 	
 	/**
 	 * Chooses a peer to consume the resources of next donation. Based on reputations or randomly. 
@@ -396,21 +415,29 @@ public class Simulator {
 		
 		/**
 		 * If we got here, there is no collaborator willing to consume with reputation > 0.
-		 * Then, we have to choose randomly between collaborators and free riders that want to consume. 
+		 * Then, we will provide the exceeding resources among the consumers equally, and the free riders will consume the
+		 *  
 		 * Solution: choose randomly from consumersCollabList + freeRidersList.
 		 */
-		consumingPeers.addAll(this.freeRidersList);		
-		for (int i = 0; i < alreadyConsumed.size(); i++) {
-			if(consumingPeers.contains(alreadyConsumed.get(i)))
-				consumingPeers.remove((Integer)alreadyConsumed.get(i));
-		}			
+		return null;
 		
-		if(consumingPeers.size()==0)
-			return null;
-		else{
-			int index = anyPeer(consumingPeers);
-			return peers[consumingPeers.get(index)];
-		}
+//		/**
+//		 * If we got here, there is no collaborator willing to consume with reputation > 0.
+//		 * Then, we have to choose randomly between collaborators and free riders that want to consume. 
+//		 * Solution: choose randomly from consumersCollabList + freeRidersList.
+//		 */
+//		consumingPeers.addAll(this.freeRidersList);		
+//		for (int i = 0; i < alreadyConsumed.size(); i++) {
+//			if(consumingPeers.contains(alreadyConsumed.get(i)))
+//				consumingPeers.remove((Integer)alreadyConsumed.get(i));
+//		}			
+//		
+//		if(consumingPeers.size()==0)
+//			return null;
+//		else{
+//			int index = anyPeer(consumingPeers);
+//			return peers[consumingPeers.get(index)];
+//		}
 		
 	}
 	
@@ -421,7 +448,7 @@ public class Simulator {
 	 * @param provider the collaborator peer who will donate his spare resources
 	 * @param consumer the peer who will consume the resources
 	 */
-	private void performDonation(Collaborator provider, Peer consumer){	
+	private void performDonation(Collaborator provider, Peer consumer, double resources){	
 		
 		if(!provider.getInteractions().contains(new Interaction(consumer, 0, 0))){	//just to retrieve the real interaction by comparison			
 			//creates an interaction for the provider and for the consumer
@@ -435,8 +462,8 @@ public class Simulator {
 			}
 		}			
 		
-		double donated = updateProvidersInteraction(provider, consumer);			//update the value donated in providers interaction
-		updateConsumersInteraction(provider, consumer, donated);				//now we update the interaction values of consumer
+		double donated = updateProvidersInteraction(provider, consumer, resources);		//update the value donated in providers interaction
+		updateConsumersInteraction(provider, consumer, donated);						//now we update the interaction values of consumer
 		
 			
 		//since the interactions already exist, simply update them
@@ -448,6 +475,46 @@ public class Simulator {
 		
 		provider.getDonatedHistory()[this.currentStep] += donated;					//update the donated amount (from provider) in this step
 		consumer.getConsumedHistory()[this.currentStep] += donated;					//update the consumed amount (from consumer) in this step
+	}	
+	
+	private void performDonationToPeersWithoutCredit(Collaborator collaborator) {
+				
+		List <Integer> consumingPeers = new ArrayList<Integer>();			//consuming peers that didn't consume
+		consumingPeers.addAll(this.consumersCollabList);					//free riders arenot needed here, since they never have reputation > 0
+		
+		List <Integer> peersWithZeroCredit = new ArrayList<Integer>();	//peers with reputation>0 relative to the collaborator
+		Collections.sort(collaborator.getPeersReputations());				//assure the reputation order
+		for(int i = collaborator.getPeersReputations().size()-1; i >= 0 ; i--){
+			if(collaborator.getPeersReputations().get(i).getReputation()<=0)
+				if(!(peers[collaborator.getPeersReputations().get(i).getId()] instanceof FreeRider)
+						&& consumingPeers.contains(peers[collaborator.getPeersReputations().get(i).getId()]))
+					peersWithZeroCredit.add(collaborator.getPeersReputations().get(i).getId());
+		}
+		
+		//add the peers who want to consume but which I didnt interact before
+		for(int idConsumer : consumingPeers){
+			if(!peersWithZeroCredit.contains(idConsumer))
+				peersWithZeroCredit.add(idConsumer);
+		}
+
+		double resourcesForPeersWithZeroCredit = collaborator.getMaxCapacityToSupply() - collaborator.getCapacityDonatedInThisStep();
+		df.setRoundingMode(RoundingMode.DOWN);
+		//+1 means the unique free rider
+		double howMuchShallEachPeerReceive = Double.parseDouble((df.format(resourcesForPeersWithZeroCredit/(peersWithZeroCredit.size() + 1))).replace(",", "."));	
+		
+		for(int idConsumer : peersWithZeroCredit){
+			performDonation(collaborator, peers[idConsumer], howMuchShallEachPeerReceive);
+			removePeerIfFullyConsumed(peers[idConsumer]);		
+		}
+		
+		//now, donate the surplus to free riders
+		df.setRoundingMode(RoundingMode.UP);
+		double surplusResources = Double.parseDouble((df.format(collaborator.getMaxCapacityToSupply() - collaborator.getCapacityDonatedInThisStep())).replace(",", "."));
+		
+		performDonation(collaborator, peers[freeRidersList.get(0)], surplusResources);
+		//the free rider is never satisfied, it is eager, so, it does not worth trying to remove it from consumers list
+			
+		
 	}
 				
 		
@@ -461,6 +528,8 @@ public class Simulator {
 	 * @param consumer
 	 */
 	private void removePeerIfFullyConsumed(Peer consumer){
+		if(consumer.getPeerId()==21)
+			System.out.println("rm");
 		if(consumer.getDemand()==consumer.getInitialCapacity()){
 			if(consumer instanceof FreeRider)
 				this.freeRidersList.remove((Integer)consumer.getPeerId());
@@ -516,13 +585,12 @@ public class Simulator {
 							Simulator.logger.fine("CurrentConsumed: "+interaction.getConsumed()+"; CurrentDonated: "+interaction.getDonated());
 							
 							boolean change = false;
-							if(this.currentStep>1000){
 							if(currentFairness>=0){
-								/** If my fairness is decreasing or equal to last fairness, then:
-								 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
-								 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
-								 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
-								 *  		have a nice fairness value. **/
+									/** If my fairness is decreasing or equal to last fairness, then:
+									 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
+									 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
+									 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
+									 *  		have a nice fairness value. **/
 								if(currentFairness <= lastFairness){
 									if(!interaction.isIncreasingCapacity())
 										interaction.setIncreasingCapacity(true);
@@ -533,33 +601,13 @@ public class Simulator {
 								}
 								change = true;
 							}
-							}
-							else{
-								if(currentFairness>=0){
-									/** If my fairness is decreasing or equal to last fairness, then:
-									 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
-									 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
-									 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
-									 *  		have a nice fairness value. **/
-									if(currentFairness <= lastFairness){
-										if(!interaction.isIncreasingCapacity())
-											interaction.setIncreasingCapacity(true);
-										else{
-											if(currentFairness < this.fairnessLowerThreshold)
-												interaction.setIncreasingCapacity(false);
-										}
-									}
-									change = true;
-								}
-							}
 							
 								
 							Simulator.logger.fine("LastMaxCapacitySupplied: "+interaction.getMaxCapacitySupplied());
 							
 							
 							if(change){
-								/** Change it's capacity in order to achiever a greater fairness. **/							
-//								double maxLim = Math.min(collaborator.getInitialDemand()-collaborator.getInitialCapacity(), collaborator.getInitialCapacity()); 
+								/** Change it's capacity in order to achiever a greater fairness. **/ 
 								double maxLim = collaborator.getInitialCapacity();
 									
 								if(interaction.isIncreasingCapacity())		//try to increase the current maxCapacitySupplied
@@ -582,36 +630,15 @@ public class Simulator {
 					double currentConsumed = collaborator.getCurrentConsumed(this.currentStep);
 					double currentDonated = collaborator.getCurrentDonated(this.currentStep);
 					double currentFairness = Simulator.getFairness(currentConsumed, currentDonated);
-						
+							
 					collaborator.getFairnessHistory()[this.currentStep] = currentFairness;
-						
+							
 					double lastConsumed = collaborator.getCurrentConsumed(this.currentStep-1);
 					double lastDonated = collaborator.getCurrentDonated(this.currentStep-1);
 					double lastFairness = Simulator.getFairness(lastConsumed, lastDonated);
-					
+						
 					boolean change = false;	
-					if(this.currentStep>1000){
 					if(currentFairness>=0){
-						/** If my fairness is decreasing or equal to last fairness, then:
-						 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
-						 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
-						 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
-						 *  		have a nice fairness value. **/
-						if(currentFairness <= lastFairness){
-							if(!collaborator.isIncreasingCapacitySupplied()){
-								collaborator.setIncreasingCapacitySupplied(true);
-							}
-							else{
-								if(currentFairness < this.fairnessLowerThreshold){
-									collaborator.setIncreasingCapacitySupplied(false);
-								}
-							}
-						}
-						change = true;
-					}
-					}
-					else{
-						if(currentFairness>=0){
 							/** If my fairness is decreasing or equal to last fairness, then:
 							 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
 							 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
@@ -628,26 +655,29 @@ public class Simulator {
 								}
 							}
 							change = true;
-						}
 					}
+				
+				
 					
 					if(change){
-//						double maxLim = Math.min(collaborator.getInitialCapacity(), collaborator.getInitialDemand()-collaborator.getInitialCapacity());
+	//					double maxLim = Math.min(collaborator.getInitialCapacity(), collaborator.getInitialDemand()-collaborator.getInitialCapacity());
 						double maxLim = collaborator.getInitialCapacity();
-							
+								
 						/** Change it's capacity in order to achieve a greater fairness. **/
 						if(collaborator.isIncreasingCapacitySupplied())				
 							collaborator.setMaxCapacityToSupply(Math.min(maxLim, collaborator.getMaxCapacityToSupply()+(this.changingValue*collaborator.getInitialCapacity())));	//try to increase the current capacitySuppliedReferenceValue
 						else
 							collaborator.setMaxCapacityToSupply(Math.max(0, Math.min(maxLim,collaborator.getMaxCapacityToSupply()-(this.changingValue*collaborator.getInitialCapacity()))));	//try to decrease the current capacitySuppliedReferenceValue
 					}
-					
+						
 					if((this.currentStep+1)<this.numSteps)
 						collaborator.getCapacitySuppliedHistory()[this.currentStep+1] = collaborator.getMaxCapacityToSupply();
 				}
 			}
 		}	
 		
+		for(int idProvider : providersList)
+			this.suppliedHistory[this.currentStep+1] += ((Collaborator)Simulator.peers[idProvider]).getMaxCapacityToSupply();
 		
 		
 		Simulator.logger.fine("FIM Update capacity supplied");
@@ -751,33 +781,50 @@ public class Simulator {
 	
 	int global = 0;
 	
-	private double updateProvidersInteraction(Collaborator provider, Peer consumer){
+	private double updateProvidersInteraction(Collaborator provider, Peer consumer, double resources){
 		
 		int index = provider.getInteractions().indexOf(new Interaction(consumer, 0, 0));
 		Interaction interaction = provider.getInteractions().get(index);		//retrieve the interaction object with its history		
 		
-		double maxToBeDonated = 0;
-		
-		boolean newComer = true;
-		if(interaction.getDonated()>0 || interaction.getConsumed()>0)
-			newComer = false;
-		
-		if(dynamic){
-			double fairness = getFairness(interaction.getConsumed(), interaction.getDonated());
+		double valueToBeDonated = 0;
+		if(resources==-1){			
+			double maxToBeDonated = 0;
 			
-			if(newComer || fairness<=0 || !pairwise) 
-				maxToBeDonated = provider.getMaxCapacityToSupply();
+			boolean newComer = true;
+			if(interaction.getDonated()>0 || interaction.getConsumed()>0)
+				newComer = false;
+			
+			if(dynamic){
+				double fairness = getFairness(interaction.getConsumed(), interaction.getDonated());
+				
+				if(newComer || fairness<=0 || !pairwise) 
+					maxToBeDonated = provider.getMaxCapacityToSupply();
+				else
+					maxToBeDonated = interaction.getMaxCapacitySupplied();	
+			}
 			else
-				maxToBeDonated = interaction.getMaxCapacitySupplied();	
-		}
-		else
-			maxToBeDonated = provider.getInitialCapacity();
-		
+				maxToBeDonated = provider.getInitialCapacity();
 			
-		double consumerDemand = consumer.getDemand()-consumer.getInitialCapacity();
-		double amountThatCouldBeDonated = Math.min(consumerDemand, maxToBeDonated);
-		double spareResources = maxToBeDonated - provider.getCapacityDonatedInThisStep();
-		double valueToBeDonated = Math.max(0,Math.min(spareResources, amountThatCouldBeDonated));	
+			double consumerDemand = consumer.getDemand()-consumer.getInitialCapacity();
+			double amountThatCouldBeDonated = Math.min(consumerDemand, maxToBeDonated);
+			double spareResources = maxToBeDonated - provider.getCapacityDonatedInThisStep();
+			valueToBeDonated = Math.max(0,Math.min(spareResources, amountThatCouldBeDonated));	
+		}
+		else{
+			if(!(consumer instanceof FreeRider)){
+				double consumerDemand = consumer.getDemand()-consumer.getInitialCapacity();
+				valueToBeDonated = Math.min(consumerDemand, resources);
+				if(valueToBeDonated<0)
+					System.out.println("Colab");
+			}
+			else{
+				valueToBeDonated = resources;
+				if(valueToBeDonated<0)
+					System.out.println("FR");
+			}
+		}	
+			
+		
 		interaction.donate(valueToBeDonated);
 		
 		//update the capacity donated 
@@ -802,7 +849,10 @@ public class Simulator {
 			Interaction interaction = consumer.getInteractions().get(index);		//retrieve the interaction object with its history		
 			interaction.consume(consumed);
 		}
+		
 		consumer.setDemand(Math.max(0,consumer.getDemand()-consumed));
+		if(consumer.getPeerId()==21)
+			System.out.println(3);
 	}
 	
 	private void updateReputation(Collaborator provider, Peer consumer, Interaction interaction){	//we have to call it twice: each for the interaction of a peer		

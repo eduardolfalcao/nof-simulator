@@ -25,12 +25,12 @@ public class Main {
 		 */
 		
 		int numPeers = 100;
-		int numSteps = 5000;
+		int numSteps = 5000;	//5000
 		int [] numberOfCollaborators = new int [] {25};
-		int [] numberOfFreeRiders = new int [] {75};
+		int [] numberOfFreeRiders = new int [] {1};
 		double [] capacitySupplied = new double []{1};
 		boolean nofWithLog = false;
-		boolean dynamic = true;
+		boolean dynamic = false;
 		boolean pairwise = dynamic;
 		double fairnessLowerThreshold = 0.8;	//0.95
 		double changingValue = 0.05;
@@ -38,10 +38,9 @@ public class Main {
 		Level level = Level.SEVERE;
 		
 		
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 3/journal cc elsevier/simulations/group-i/exp-ii/";
 		
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 3/journal cc elsevier/simulations/goup-i/exp-i/D-ranging-2-4/";
-		
-		String f = "tight";
+		String f = "One-Eager-FreeRider";
 		
 		String kappa05 = "kappa05";
 		String kappa1 = "kappa1";
@@ -67,9 +66,6 @@ public class Main {
 				  					0.7, 0.6829268293, 0.6666666667, 0.6511627907, 0.6363636364,
 				  					0.6222222222, 0.6086956522, 0.5957446809, 0.5833333333, 0.5714285714};
 		
-		int [] numberOfFreeRidersFixedDemandK05 = new int [] {25, 23, 21, 20, 19, 18, 17, 16, 15, 15, 14, 14, 13, 12, 12};
-		int [] numberOfCollaboratorsDemandK05 = new int [] {75, 77, 79, 80, 81, 82, 83, 84, 85, 85, 86, 86, 87, 88, 88};
-		
 		DecimalFormat formatter = new DecimalFormat("0.0"); 
 		formatter.setRoundingMode(RoundingMode.DOWN); 
 		
@@ -90,15 +86,16 @@ public class Main {
 			double [] pi = new double [1];
 			pi[0] = variablePIK05[i];
 			
-			Simulator sim = new Simulator(numPeers, numSteps, pi, new int [] {numberOfCollaboratorsDemandK05[i]}, new int [] {numberOfFreeRidersFixedDemandK05[i]},
+			Simulator sim = new Simulator(numPeers, numSteps, pi, numberOfCollaborators, numberOfFreeRiders,
 					dynamic, nofWithLog, fairnessLowerThreshold, d, capacitySupplied, changingValue, seed, level, 
 					outputDir+(dynamic?"fdnof-":"sdnof-")+design+"D"+(formatter.format(fixedDemand[i])).replace(",", ".")+kappa05+"FR"+f+"tau"+fairnessLowerThreshold, pairwise,
 					kappa, design, index,f);
 			sim.startSimulation();
+			System.exit(0);
 			
 			kappa = 1;
 			pi[0] = variablePIK1[i];
-			sim = new Simulator(numPeers, numSteps, pi, new int []{99}, new int [] {1},
+			sim = new Simulator(numPeers, numSteps, pi, numberOfCollaborators, numberOfFreeRiders,
 					dynamic, nofWithLog, fairnessLowerThreshold, d, capacitySupplied, changingValue, seed, level, 
 					outputDir+(dynamic?"fdnof-":"sdnof-")+design+"D"+(formatter.format(fixedDemand[i])).replace(",", ".")+kappa1+"FR"+f+"tau"+fairnessLowerThreshold, pairwise,
 					kappa, design, index,f);
@@ -106,7 +103,7 @@ public class Main {
 			
 			kappa = 2;
 			pi[0] = variablePIK2[i];
-			sim = new Simulator(numPeers, numSteps, pi, new int []{99}, new int [] {1},
+			sim = new Simulator(numPeers, numSteps, pi, numberOfCollaborators, numberOfFreeRiders,
 					dynamic, nofWithLog, fairnessLowerThreshold, d, capacitySupplied, changingValue, seed, level, 
 					outputDir+(dynamic?"fdnof-":"sdnof-")+design+"D"+(formatter.format(fixedDemand[i])).replace(",", ".")+kappa2+"FR"+f+"tau"+fairnessLowerThreshold, pairwise,
 					kappa, design, index,f);
@@ -114,7 +111,7 @@ public class Main {
 			
 			kappa = 4;
 			pi[0] = variablePIK4[i];
-			sim = new Simulator(numPeers, numSteps, pi, new int []{99}, new int [] {1},
+			sim = new Simulator(numPeers, numSteps, pi, numberOfCollaborators, numberOfFreeRiders,
 					dynamic, nofWithLog, fairnessLowerThreshold, d, capacitySupplied, changingValue, seed, level, 
 					outputDir+(dynamic?"fdnof-":"sdnof-")+design+"D"+(formatter.format(fixedDemand[i])).replace(",", ".")+kappa4+"FR"+f+"tau"+fairnessLowerThreshold, pairwise,
 					kappa, design, index,f);
