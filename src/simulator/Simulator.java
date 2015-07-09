@@ -4,15 +4,12 @@ package simulator;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import nof.Interaction;
 import nof.NetworkOfFavors;
@@ -21,7 +18,6 @@ import peer.FreeRider;
 import peer.Peer;
 import peer.reputation.PeerReputation;
 import utils.GenerateCsv;
-import utils.WriteExcel2010;
 
 public class Simulator {
 	
@@ -84,7 +80,6 @@ public class Simulator {
 	private String f;
 	private double [] suppliedHistory;
 	
-	private DecimalFormat df;
 	
 	public final static Logger logger = Logger.getLogger(Simulator.class.getName());
 
@@ -141,7 +136,7 @@ public class Simulator {
 	    this.index = index;
 	    this.f = f;
 	    this.suppliedHistory = new double[numSteps];
-	    this.df = new DecimalFormat("#.0000"); //df.format(0.912385); // Imprime 0,91238
+	    //this.df = new DecimalFormat("#.00000"); //df.format(0.912385); // Imprime 0,91238
 	}
 
 	/**
@@ -305,7 +300,7 @@ public class Simulator {
 				if((this.currentStep+1)<this.numSteps){
 					peers[collabId].getRequestedHistory()[this.currentStep+1] = peers[collabId].getInitialDemand()-peers[collabId].getInitialCapacity();
 					peers[collabId].getConsumedHistory()[this.currentStep+1] = 0;
-					peers[collabId].setDemand(peers[collabId].getInitialDemand());
+					peers[collabId].setDemand(peers[collabId].getInitialDemand()-peers[collabId].getInitialCapacity());
 					((Collaborator)peers[collabId]).setCapacityDonatedInThisStep(0);
 					
 					consumersCollabList.add(collabId);
@@ -326,7 +321,7 @@ public class Simulator {
 		for(Integer fId : freeRidersList){
 			if((this.currentStep+1)<this.numSteps){
 				//peers[fId].setDemand(peers[fId].getInitialDemand());			
-				peers[fId].getRequestedHistory()[this.currentStep+1] = peers[fId].getInitialDemand()-peers[fId].getInitialCapacity();
+				peers[fId].getRequestedHistory()[this.currentStep+1] = Double.MAX_VALUE;
 				peers[fId].getConsumedHistory()[this.currentStep+1] = 0;
 				//peers[fId].setDemand(peers[fId].getInitialDemand());
 				peers[fId].setDemand(Double.MAX_VALUE);
@@ -336,10 +331,9 @@ public class Simulator {
 		/** If in dynamic context update capacity supplied by collaborators. **/
 		if(this.dynamic)
 			this.updateCapacitySupplied();
-
-		/** Set next step.**/
-		System.out.println("passo: "+this.currentStep);
-//		if(this.currentStep==1000){
+		
+//		System.out.println("passo: "+this.currentStep);
+//		if(this.currentStep==32){
 //			for(Peer peer : Simulator.peers){
 //				
 //				double currentGranted = peer.getCurrentConsumed(this.currentStep);
@@ -348,16 +342,17 @@ public class Simulator {
 //				
 //				if(peer instanceof Collaborator){
 //					Collaborator collaborator = (Collaborator) peer;
-//					System.out.println("Collaborator ID=["+collaborator.getPeerId()+"] ==> Satisfatcion: "+currentSatisfaction+"; Granted: "+currentGranted+"; Requested: "+currentRequested+"; Provided:"+collaborator.getCurrentDonated(this.currentStep-1));
+//					System.out.println("Collaborator ID=["+collaborator.getPeerId()+"] ==> Satisfatcion: "+currentSatisfaction+"; Granted in this step: "+collaborator.getConsumedHistory()[currentStep]+"; Requested in this step: "+collaborator.getRequestedHistory()[currentStep]+"; Provided in this step:"+collaborator.getDonatedHistory()[this.currentStep]);
 //				}
 //				else{
 //					FreeRider freeRider = (FreeRider) peer;
-//					System.out.println("FreeRider ID=["+freeRider.getPeerId()+"] ==> Satisfatcion: "+currentSatisfaction+"; Granted: "+currentGranted+"; Requested: "+currentRequested);
+//					System.out.println("FreeRider ID=["+freeRider.getPeerId()+"] ==> Granted in this step: "+freeRider.getConsumedHistory()[currentStep]+"; Requested: "+currentRequested);
 //				}
 //			}			
 //			System.exit(0);			
 //		}
 		
+		/** Set next step.**/
 		this.currentStep++;			
 	}
 
@@ -414,30 +409,9 @@ public class Simulator {
 		}
 		
 		/**
-		 * If we got here, there is no collaborator willing to consume with reputation > 0.
-		 * Then, we will provide the exceeding resources among the consumers equally, and the free riders will consume the
-		 *  
-		 * Solution: choose randomly from consumersCollabList + freeRidersList.
+		 * If we got here, there is no collaborator willing to consume with reputation > 0, then return null.
 		 */
 		return null;
-		
-//		/**
-//		 * If we got here, there is no collaborator willing to consume with reputation > 0.
-//		 * Then, we have to choose randomly between collaborators and free riders that want to consume. 
-//		 * Solution: choose randomly from consumersCollabList + freeRidersList.
-//		 */
-//		consumingPeers.addAll(this.freeRidersList);		
-//		for (int i = 0; i < alreadyConsumed.size(); i++) {
-//			if(consumingPeers.contains(alreadyConsumed.get(i)))
-//				consumingPeers.remove((Integer)alreadyConsumed.get(i));
-//		}			
-//		
-//		if(consumingPeers.size()==0)
-//			return null;
-//		else{
-//			int index = anyPeer(consumingPeers);
-//			return peers[consumingPeers.get(index)];
-//		}
 		
 	}
 	
@@ -496,29 +470,40 @@ public class Simulator {
 			if(!peersWithZeroCredit.contains(idConsumer))
 				peersWithZeroCredit.add(idConsumer);
 		}
-
-		double resourcesForPeersWithZeroCredit = collaborator.getMaxCapacityToSupply() - collaborator.getCapacityDonatedInThisStep();
-		df.setRoundingMode(RoundingMode.DOWN);
-		//+1 means the unique free rider
-		double howMuchShallEachPeerReceive = Double.parseDouble((df.format(resourcesForPeersWithZeroCredit/(peersWithZeroCredit.size() + 1))).replace(",", "."));	
 		
-		for(int idConsumer : peersWithZeroCredit){
-			performDonation(collaborator, peers[idConsumer], howMuchShallEachPeerReceive);
-			removePeerIfFullyConsumed(peers[idConsumer]);		
+		/**
+		 * ADAPTAR
+		 */
+		
+		while(peersWithZeroCredit.size()>0 && collaborator.getCapacityDonatedInThisStep()<0.9999999999){
+			double smallestDemand = Double.MAX_VALUE;
+			for(int idConsumer : peersWithZeroCredit)
+				smallestDemand = smallestDemand < peers[idConsumer].getDemand()? smallestDemand : peers[idConsumer].getDemand();
+			
+			double resourcesForPeersWithZeroCredit = collaborator.getMaxCapacityToSupply() - collaborator.getCapacityDonatedInThisStep();
+			double howMuchShouldEachPeerReceive = resourcesForPeersWithZeroCredit/(peersWithZeroCredit.size() + freeRidersList.size());
+			
+			double howMuchWillEachPeerReceiveInThisRound = Math.min(smallestDemand, howMuchShouldEachPeerReceive);
+			for(int idConsumer : peersWithZeroCredit){
+				performDonation(collaborator, peers[idConsumer], howMuchWillEachPeerReceiveInThisRound);
+				removePeerIfFullyConsumed(peers[idConsumer]);
+				if(peers[idConsumer].getDemand()<=0)
+					peersWithZeroCredit.remove(idConsumer);
+			}
+			
+			for(int idConsumer : freeRidersList)
+				performDonation(collaborator, peers[idConsumer], howMuchWillEachPeerReceiveInThisRound);
 		}
 		
-		//now, donate the surplus to free riders
-		df.setRoundingMode(RoundingMode.UP);
-		double surplusResources = Double.parseDouble((df.format(collaborator.getMaxCapacityToSupply() - collaborator.getCapacityDonatedInThisStep())).replace(",", "."));
-		
-		performDonation(collaborator, peers[freeRidersList.get(0)], surplusResources);
-		//the free rider is never satisfied, it is eager, so, it does not worth trying to remove it from consumers list
-			
+		if(collaborator.getCapacityDonatedInThisStep()<collaborator.getMaxCapacityToSupply()){
+			double surplusResources = collaborator.getMaxCapacityToSupply() - collaborator.getCapacityDonatedInThisStep();
+			double howMuchWillEachFreeRiderReceive = surplusResources/freeRidersList.size();
+			for(int idConsumer : freeRidersList)
+				performDonation(collaborator, peers[idConsumer], howMuchWillEachFreeRiderReceive);
+		}
 		
 	}
 				
-		
-		
 
 	
 	/**
@@ -528,16 +513,14 @@ public class Simulator {
 	 * @param consumer
 	 */
 	private void removePeerIfFullyConsumed(Peer consumer){
-		if(consumer.getPeerId()==21)
-			System.out.println("rm");
-		if(consumer.getDemand()==consumer.getInitialCapacity()){
+		if(consumer.getDemand()==0){
 			if(consumer instanceof FreeRider)
 				this.freeRidersList.remove((Integer)consumer.getPeerId());
 			else
 				this.consumersCollabList.remove((Integer)consumer.getPeerId());
 			this.consumedPeersList.add(consumer.getPeerId());
 		}
-		else if(consumer.getDemand()<consumer.getInitialCapacity()){
+		else if(consumer.getDemand()<0){
 			Simulator.logger.severe("Consumer demand should never be smaller than consumer.getInitialCapacity(). Some sheet happened here. "
 					+ "We should find the origin of this bug!");
 			System.out.println(consumer.getDemand());
@@ -754,29 +737,8 @@ public class Simulator {
 		
 		GenerateCsv csvGen = new GenerateCsv(this.outputFile, this.numSteps, this);
 		csvGen.outputPeers();
-		//csvGen.outputCollaborators();
-//		csvGen.outputCapacitySupplied();
-		//csvGen.outputFreeRiders();
+		csvGen.outputFreeRiders();
 		
-//		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
-//		we.setupFile();
-//		we.fulfillFairnessPerSteps(peers);
-//		we.fulfillSatisfactionPerSteps(peers);
-//		we.fulfillfreeRiderSatisfactionsData(peers);
-//		we.setupFileLastStep();		
-//		we.fulfillFairnessLastStep(peers);
-//		we.fulfillSatisfactionLastStep(peers);
-//		we.fulfillfreeRiderSatisfactionsLastStep(peers);
-	
-		
-//		we.writeFile();
-//		
-//		if(this.dynamic){
-//			WriteExcel2010 we2 = new WriteExcel2010(this.outputFile.replace(".xlsx","-Contention.xlsx"), this.numSteps);
-//			we2.setupFile2();	
-//			we2.fulfillContentionData(peers);		
-//			we2.writeFile();
-//		}
 	}
 	
 	int global = 0;
@@ -805,15 +767,13 @@ public class Simulator {
 			else
 				maxToBeDonated = provider.getInitialCapacity();
 			
-			double consumerDemand = consumer.getDemand()-consumer.getInitialCapacity();
-			double amountThatCouldBeDonated = Math.min(consumerDemand, maxToBeDonated);
+			double amountThatCouldBeDonated = Math.min(consumer.getDemand(), maxToBeDonated);
 			double spareResources = maxToBeDonated - provider.getCapacityDonatedInThisStep();
 			valueToBeDonated = Math.max(0,Math.min(spareResources, amountThatCouldBeDonated));	
 		}
 		else{
 			if(!(consumer instanceof FreeRider)){
-				double consumerDemand = consumer.getDemand()-consumer.getInitialCapacity();
-				valueToBeDonated = Math.min(consumerDemand, resources);
+				valueToBeDonated = Math.min(consumer.getDemand(), resources);
 				if(valueToBeDonated<0)
 					System.out.println("Colab");
 			}
@@ -851,8 +811,6 @@ public class Simulator {
 		}
 		
 		consumer.setDemand(Math.max(0,consumer.getDemand()-consumed));
-		if(consumer.getPeerId()==21)
-			System.out.println(3);
 	}
 	
 	private void updateReputation(Collaborator provider, Peer consumer, Interaction interaction){	//we have to call it twice: each for the interaction of a peer		

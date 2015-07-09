@@ -32,7 +32,7 @@ public class Collaborator extends Peer{
 		this.capacitySuppliedHistory = new double[numSteps];
 		this.setMaxCapacityToSupply(capacitySupplied);
 		if(consuming){
-			this.setDemand(demand);
+			this.setDemand(demand-capacitySupplied);
 			this.getRequestedHistory()[0] = demand-capacitySupplied;
 			this.getConsumedHistory()[0] = 0;
 		}
