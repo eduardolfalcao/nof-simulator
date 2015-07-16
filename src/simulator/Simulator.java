@@ -168,6 +168,8 @@ public class Simulator {
 				//freeRiders never donates, they are always in consuming state. At least, they are always trying to consume.
 				Peer p = new FreeRider(this.peersCapacity[group], Double.MAX_VALUE, id, this.numSteps);	//demanda infinita pra consumir os recursos excedentes
 				freeRidersList.add(id);
+				if(id==100)
+					System.out.println();
 				Simulator.peers[id] = p;
 				Simulator.peers[id].setIndex(this.index[group]);
 				id++;
@@ -475,7 +477,7 @@ public class Simulator {
 		 * ADAPTAR
 		 */
 		
-		while(peersWithZeroCredit.size()>0 && collaborator.getCapacityDonatedInThisStep()<0.9999999999){
+		while(peersWithZeroCredit.size()>0 && collaborator.getCapacityDonatedInThisStep()<(collaborator.getMaxCapacityToSupply()-0.0000000001)){
 			double smallestDemand = Double.MAX_VALUE;
 			for(int idConsumer : peersWithZeroCredit)
 				smallestDemand = smallestDemand < peers[idConsumer].getDemand()? smallestDemand : peers[idConsumer].getDemand();
@@ -484,11 +486,13 @@ public class Simulator {
 			double howMuchShouldEachPeerReceive = resourcesForPeersWithZeroCredit/(peersWithZeroCredit.size() + freeRidersList.size());
 			
 			double howMuchWillEachPeerReceiveInThisRound = Math.min(smallestDemand, howMuchShouldEachPeerReceive);
-			for(int idConsumer : peersWithZeroCredit){
+			List <Integer> peersWithZeroCreditAux = new ArrayList<Integer>();
+			peersWithZeroCreditAux.addAll(peersWithZeroCredit);
+			for(int idConsumer : peersWithZeroCreditAux){
 				performDonation(collaborator, peers[idConsumer], howMuchWillEachPeerReceiveInThisRound);
 				removePeerIfFullyConsumed(peers[idConsumer]);
 				if(peers[idConsumer].getDemand()<=0)
-					peersWithZeroCredit.remove(idConsumer);
+					peersWithZeroCredit.remove((Integer)idConsumer);
 			}
 			
 			for(int idConsumer : freeRidersList)

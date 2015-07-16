@@ -89,11 +89,14 @@ public class Main {
 				6.655172414, 5.75, 5, 4.368421053, 3.829268293, 3.363636364,
 				2.957446809, 2.6, 2.283018868, 2 };
 
-		for (boolean dynamic : new boolean[] { false, true }) { // SD-NoF and
-																// FD-NoF
+		for (boolean dynamic : new boolean[] { true }) { // SD-NoF and FD-NoF
+			System.out.println("NoF: "+(dynamic?"FD-NoF":"SD-NoF"));
+			
 			boolean pairwise = dynamic;
 			for (double fairnessLowerThreshold : new double[] { 0.95, 0.8 }) {
+				System.out.println("TAU: "+fairnessLowerThreshold);
 				for (int freeRiders : new int[] { 75, 25 }) {
+					System.out.println("FR: "+((double)freeRiders)/100);
 
 					int[] numberOfFreeRiders = new int[] { freeRiders };
 					int[] numberOfCollaborators = new int[] { numPeers
@@ -128,6 +131,8 @@ public class Main {
 										+ fairnessLowerThreshold, pairwise,
 								kappa, design, index, f);
 						sim.startSimulation();
+						
+//						System.exit(0);
 
 						kappa = 1;
 						pi[0] = variablePIK1[i];
@@ -200,8 +205,7 @@ public class Main {
 								numPeers,
 								numSteps,
 								pi,
-								numberOfCollaborators,
-								new int[] { numberOfFreeRidersFixedDemandK05[i] },
+								numberOfCollaborators, numberOfFreeRiders,
 								dynamic, nofWithLog, fairnessLowerThreshold, d,
 								capacitySupplied, changingValue, seed, level,
 								outputDir
@@ -218,7 +222,7 @@ public class Main {
 						kappa = 1;
 						d[0] = variableDK1[i];
 						sim = new Simulator(numPeers, numSteps, pi,
-								numberOfCollaborators, new int[] { 1 },
+								numberOfCollaborators, numberOfFreeRiders,
 								dynamic, nofWithLog, fairnessLowerThreshold, d,
 								capacitySupplied, changingValue, seed, level,
 								outputDir
@@ -235,7 +239,7 @@ public class Main {
 						kappa = 2;
 						d[0] = variableDK2[i];
 						sim = new Simulator(numPeers, numSteps, pi,
-								numberOfCollaborators, new int[] { 1 },
+								numberOfCollaborators, numberOfFreeRiders,
 								dynamic, nofWithLog, fairnessLowerThreshold, d,
 								capacitySupplied, changingValue, seed, level,
 								outputDir
@@ -252,7 +256,7 @@ public class Main {
 						kappa = 4;
 						d[0] = variableDK4[i];
 						sim = new Simulator(numPeers, numSteps, pi,
-								numberOfCollaborators, new int[] { 1 },
+								numberOfCollaborators, numberOfFreeRiders,
 								dynamic, nofWithLog, fairnessLowerThreshold, d,
 								capacitySupplied, changingValue, seed, level,
 								outputDir
