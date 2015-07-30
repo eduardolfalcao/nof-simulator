@@ -10,10 +10,14 @@ public class NetworkOfFavors {
 	 * @return the reputation
 	 */
 	public static double calculateLocalReputation(double consumedValue, double donatedValue, boolean withLog){
+//		if(withLog)
+//			return Math.max(0, consumedValue - donatedValue + Math.log(consumedValue));
+//		else
+//			return Math.max(0, consumedValue - donatedValue + Math.sqrt(consumedValue));
 		if(withLog)
-			return Math.max(0, consumedValue - donatedValue + Math.log(consumedValue));
+			return Math.max(0, consumedValue - donatedValue);
 		else
-			return Math.max(0, consumedValue - donatedValue + Math.sqrt(consumedValue));
+			return Math.max(0, consumedValue - donatedValue);
 	}
 
 }

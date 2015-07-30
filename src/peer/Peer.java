@@ -115,6 +115,13 @@ public class Peer{
 		return currrentConsumed;
 	}
 	
+	public double getCurrentConsumed(int beginning, int end) {
+		double currrentConsumed = 0;
+		for(int i = beginning; i <= end; i++)
+			currrentConsumed += this.consumedHistory[i];
+		return currrentConsumed;
+	}
+	
 	/**
 	 * peerId is unique
 	 */

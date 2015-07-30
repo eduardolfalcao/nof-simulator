@@ -39,6 +39,7 @@ public class Collaborator extends Peer{
 		else{
 			this.setDemand(0);
 			this.getRequestedHistory()[0] = 0;
+			this.capacitySuppliedHistory[0] = capacitySupplied;
 		}
 	}
 	
@@ -49,6 +50,13 @@ public class Collaborator extends Peer{
 	public double getCurrentDonated(int step) {
 		double currrentDonated = 0;
 		for(int i = 0; i <= step; i++)
+			currrentDonated += this.donatedHistory[i];
+		return currrentDonated;
+	}
+	
+	public double getCurrentDonated(int beginning, int end) {
+		double currrentDonated = 0;
+		for(int i = beginning; i <= end; i++)
 			currrentDonated += this.donatedHistory[i];
 		return currrentDonated;
 	}

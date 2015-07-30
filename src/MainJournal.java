@@ -4,7 +4,7 @@ import java.util.logging.Level;
 
 import simulator.Simulator;
 
-public class Main {
+public class MainJournal {
 
 	public static void main(String[] args) {
 
@@ -30,7 +30,7 @@ public class Main {
 		long seed = 1;
 		Level level = Level.SEVERE;
 
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 3/journal cc elsevier/simulations/group-i/exp-v/";
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 3/journal cc elsevier/simulations/group-i/exp-iv/";
 		String kappa05 = "kappa05";
 		String kappa1 = "kappa1";
 		String kappa2 = "kappa2";
@@ -98,7 +98,7 @@ public class Main {
 				boolean pairwise = dynamic;
 				for (double fairnessLowerThreshold : new double[] { 0.95 }) {	//0.95, 0.8
 					System.out.println("TAU: "+fairnessLowerThreshold);
-					for (int freeRiders : new int[] { 100}) {						//75, 25
+					for (int freeRiders : new int[] { 50}) {						//75, 25
 						System.out.println("FR: "+((double)freeRiders)/100);
 	
 						int[] numberOfFreeRiders = new int[] { freeRiders };
