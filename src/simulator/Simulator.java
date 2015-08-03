@@ -30,7 +30,6 @@ public class Simulator {
 	private int [] numberOfCollaborators;		//[FACTOR]: number of collaborators, formed in groups
 	private int [] numberOfFreeRiders;		//[FACTOR]: number of free riders, formed in groups
 	
-	private int [] index;
 	
 	private double kappa;
 	private String design;
@@ -98,7 +97,7 @@ public class Simulator {
 	 */
 	public Simulator(int numPeers, int numSteps, double [] consumingStateProbability, int [] numberOfCollaborators, int [] numberOfFreeRiders, boolean dynamic, boolean nofWithLog,
 			double fairnessLowerThreshold, double [] peersDemand, double [] capacitySupplied, double changingValue, long seed, Level level, String outputFile, boolean pairwise,
-			double kappa, String design, int [] index, String f) {
+			double kappa, String design, String f) {
 		super();
 		this.numPeers = numPeers;
 		this.numSteps = numSteps;
@@ -133,7 +132,6 @@ public class Simulator {
 	    this.pairwise = pairwise;
 	    this.kappa = kappa;
 	    this.design = design;
-	    this.index = index;
 	    this.f = f;
 	    this.suppliedHistory = new double[numSteps];
 	    //this.df = new DecimalFormat("#.00000"); //df.format(0.912385); // Imprime 0,91238
@@ -158,7 +156,6 @@ public class Simulator {
 					providersList.add(id);
 				
 				Simulator.peers[id] = collab;
-				Simulator.peers[id].setIndex(this.index[group]);
 				id++;
 			}						
 		}
@@ -169,7 +166,6 @@ public class Simulator {
 				Peer p = new FreeRider(this.peersCapacity[group], Double.MAX_VALUE, id, this.numSteps);	//demanda infinita pra consumir os recursos excedentes
 				freeRidersList.add(id);
 				Simulator.peers[id] = p;
-				Simulator.peers[id].setIndex(this.index[group]);
 				id++;
 			}
 		}

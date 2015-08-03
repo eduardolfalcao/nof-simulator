@@ -54,6 +54,8 @@ public class GenerateCsv{
 		
 		for(int turn = 0; turn < numSteps; turn++){
 			for(Collaborator c : collabs){
+				if(c.getConsumingStateProbability()>=0.8)
+					continue;
 				consumedByCollaborators[turn] += c.getCurrentConsumed(turn);
 				donatedToEveryone[turn] += c.getCurrentDonated(turn);
 			}
@@ -177,7 +179,7 @@ public class GenerateCsv{
 		}
 		
 		try {
-			 writer.append("peer");
+			 writer.append("pi");
 			 writer.append(',');
 			 writer.append("fairness");
 			 writer.append(',');
@@ -257,7 +259,7 @@ public class GenerateCsv{
 		//collaborators
 		for(Collaborator c : collabs){
 			try {
-				writer.append("collaborator");
+				writer.append(c.getConsumingStateProbability()+"");
 				writer.append(',');
 				
 				//fairness
@@ -427,9 +429,9 @@ public class GenerateCsv{
 					writer.append(satisfaction+"");
 					writer.append(',');
 					
-					//index
-					writer.append(Simulator.peers[i].getIndex()+"");
-					writer.append(',');
+//					//index
+//					writer.append(Simulator.peers[i].getIndex()+"");
+//					writer.append(',');
 					
 					//demand
 					writer.append(Simulator.peers[i].getInitialDemand()+"");
@@ -599,6 +601,8 @@ private FileWriter writeFreeRiders(FileWriter writer){
 		
 		for(int turn = 0; turn < numSteps; turn++){
 			for(Collaborator c : collabs){
+				if(c.getConsumingStateProbability()>=0.8)
+					continue;
 				consumedByCollaborators[turn] += c.getCurrentConsumed(turn);
 				donatedToEveryone[turn] += c.getCurrentDonated(turn);
 			}
