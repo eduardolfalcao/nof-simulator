@@ -54,8 +54,6 @@ public class GenerateCsv{
 		
 		for(int turn = 0; turn < numSteps; turn++){
 			for(Collaborator c : collabs){
-				if(c.getConsumingStateProbability()>=0.8)
-					continue;
 				consumedByCollaborators[turn] += c.getCurrentConsumed(turn);
 				donatedToEveryone[turn] += c.getCurrentDonated(turn);
 			}
@@ -71,10 +69,10 @@ public class GenerateCsv{
 				
 				//welfareRA ==> welfareRunningAverage
 				double welfareRunningAverage = 0;
-				for(int i = turn; i>=Math.max(turn-49, 0);i--){
+				for(int i = turn; i>=Math.max(turn-499, 0);i--){
 					welfareRunningAverage += welfare[i];
 				}
-				welfareRunningAverage = welfareRunningAverage/Math.min(turn+1,50);		
+				welfareRunningAverage = welfareRunningAverage/Math.min(turn+1,500);		
 			
 				writer.append((welfareRunningAverage)+"");
 				writer.append(',');
@@ -181,6 +179,8 @@ public class GenerateCsv{
 		try {
 			 writer.append("pi");
 			 writer.append(',');
+			 writer.append("d");
+			 writer.append(',');
 			 writer.append("fairness");
 			 writer.append(',');
 			 writer.append("satisfaction");
@@ -260,6 +260,9 @@ public class GenerateCsv{
 		for(Collaborator c : collabs){
 			try {
 				writer.append(c.getConsumingStateProbability()+"");
+				writer.append(',');
+				
+				writer.append(c.getInitialDemand()+"");
 				writer.append(',');
 				
 				//fairness
@@ -590,19 +593,9 @@ private FileWriter writeFreeRiders(FileWriter writer){
 		double [] consumedByCollaborators = new double [numSteps];
 		double [] donatedToEveryone = new double [numSteps];
 		double [] welfare = new double [numSteps];
-//		for(int turn = 0; turn < numSteps; turn++){
-//			for(FreeRider fr : frs)
-//				consumedByFreeRiders[turn] += fr.getConsumedHistory()[turn];
-//			for(Collaborator c : collabs)
-//				donatedToEveryone[turn] += c.getDonatedHistory()[turn];
-//			//welfare = sum(consumedByFreeRiders)/sum(donatedToEveryone)
-//			welfare[turn] = consumedByFreeRiders[turn]/donatedToEveryone[turn];
-//		}
 		
 		for(int turn = 0; turn < numSteps; turn++){
 			for(Collaborator c : collabs){
-				if(c.getConsumingStateProbability()>=0.8)
-					continue;
 				consumedByCollaborators[turn] += c.getCurrentConsumed(turn);
 				donatedToEveryone[turn] += c.getCurrentDonated(turn);
 			}
@@ -618,10 +611,10 @@ private FileWriter writeFreeRiders(FileWriter writer){
 				
 				//welfareRA ==> welfareRunningAverage
 				double welfareRunningAverage = 0;
-				for(int i = turn; i>=Math.max(turn-49, 0);i--){
+				for(int i = turn; i>=Math.max(turn-499, 0);i--){
 					welfareRunningAverage += welfare[i];
 				}
-				welfareRunningAverage = welfareRunningAverage/Math.min(turn+1,50);		
+				welfareRunningAverage = welfareRunningAverage/Math.min(turn+1,500);		
 			
 				writer.append((welfareRunningAverage)+"");
 				writer.append(',');
@@ -636,13 +629,13 @@ private FileWriter writeFreeRiders(FileWriter writer){
 				//kappaRA	== requested/supplied
 				double kappaRunningAverage = 0;
 				double requested = 0, supplied = 0;
-				for(int i = turn; i>=Math.max(turn-49, 0);i--){
+				for(int i = turn; i>=Math.max(turn-499, 0);i--){
 					for(Collaborator c : collabs){
 						requested += c.getRequestedHistory()[i];
 						supplied += c.getDonatedHistory()[i];		//now collaborators donate everything, then, supplied == donated
 					}
 				}
-				kappaRunningAverage = (requested/(Math.min(turn+1,50)))/(supplied/(Math.min(turn+1,50)));
+				kappaRunningAverage = (requested/(Math.min(turn+1,500)))/(supplied/(Math.min(turn+1,500)));
 				writer.append(kappaRunningAverage+"");
 				writer.append(',');
 				

@@ -16,6 +16,7 @@ import peer.FreeRider;
 import peer.Peer;
 import peer.reputation.PeerReputation;
 import utils.GenerateCsv;
+import utils.WriteExcel2010;
 
 public class Simulator {
 	
@@ -41,8 +42,9 @@ public class Simulator {
 	 * NoF characteristics.
 	 */
 	private boolean dynamic;						//[FACTOR]: if the capacity supply changes dynamicly or not
-	private boolean nofWithLog;					//if the reputations will be calculated with log or with sqrt
-	private double fairnessLowerThreshold;			//the threshold in which fairness must have in order to prioritize satisfaction
+	private boolean nofWithLog;						//if the reputations will be calculated with log or with sqrt
+	private double tauMin, tauMax;				//the threshold in which fairness must have in order to prioritize satisfaction
+	
 	
 
 	private boolean pairwise;
@@ -96,7 +98,7 @@ public class Simulator {
 	 * @param seed value used to calculate probability of being consumer or donor
 	 */
 	public Simulator(int numPeers, int numSteps, double [] consumingStateProbability, int [] numberOfCollaborators, int [] numberOfFreeRiders, boolean dynamic, boolean nofWithLog,
-			double fairnessLowerThreshold, double [] peersDemand, double [] capacitySupplied, double changingValue, long seed, Level level, String outputFile, boolean pairwise,
+			double tauMin, double tauMax, double [] peersDemand, double [] capacitySupplied, double changingValue, long seed, Level level, String outputFile, boolean pairwise,
 			double kappa, String design, String f) {
 		super();
 		this.numPeers = numPeers;
@@ -106,7 +108,8 @@ public class Simulator {
 		this.numberOfFreeRiders = numberOfFreeRiders;
 		this.dynamic = dynamic;
 		this.nofWithLog = nofWithLog;
-		this.fairnessLowerThreshold = fairnessLowerThreshold;
+		this.tauMin = tauMin;
+		this.tauMax = tauMax;
 		this.peersDemand = peersDemand;
 		//this.capacitySupplied = capacitySupplied;
 		this.changingValue = changingValue;
@@ -527,9 +530,12 @@ public class Simulator {
 		
 		for(int i : allCollaborators){		
 			
+			
+			
 			if(Simulator.peers[i] instanceof Collaborator){		
-				Collaborator collaborator = (Collaborator) Simulator.peers[i];
-
+				Collaborator collaborator = (Collaborator) Simulator.peers[i];	
+				
+				
 				if(this.currentStep>0){
 					
 					if(pairwise){
@@ -539,35 +545,23 @@ public class Simulator {
 							double lastFairness = getFairness(interaction.getLastConsumed(), interaction.getLastDonated());	
 							double currentFairness = getFairness(interaction.getConsumed(), interaction.getDonated());
 							
-							Simulator.logger.fine("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-							Simulator.logger.fine("LastFairness: "+lastFairness+"; CurrentFairness: "+currentFairness);
-							Simulator.logger.fine("LastConsumed: "+interaction.getLastConsumed()+"; LastDonated: "+interaction.getLastDonated());
-							Simulator.logger.fine("CurrentConsumed: "+interaction.getConsumed()+"; CurrentDonated: "+interaction.getDonated());
-							
 							boolean change = false;
 							if(currentFairness>=0){
-									/** If my fairness is decreasing or equal to last fairness, then:
-									 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
-									 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
-									 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
-									 *  		have a nice fairness value. **/
-								if(currentFairness <= lastFairness){
-									if(!interaction.isIncreasingCapacity())
-										interaction.setIncreasingCapacity(true);
-									else{
-										if(currentFairness < this.fairnessLowerThreshold)
-											interaction.setIncreasingCapacity(false);
-									}
+								if(currentFairness < tauMin)
+									interaction.setIncreasingCapacity(false);
+								else if(currentFairness > tauMax)
+									interaction.setIncreasingCapacity(true);
+								else{
+									if(currentFairness <= lastFairness)
+										interaction.setIncreasingCapacity(!interaction.isIncreasingCapacity());
 								}
 								change = true;
-							}
-							
-								
-							Simulator.logger.fine("LastMaxCapacitySupplied: "+interaction.getMaxCapacitySupplied());
+							}	
 							
 							
+														
 							if(change){
-								/** Change it's capacity in order to achiever a greater fairness. **/ 
+								/** Change it's capacity in order to achieve a greater fairness. **/ 
 								double maxLim = collaborator.getInitialCapacity();
 									
 								if(interaction.isIncreasingCapacity())		//try to increase the current maxCapacitySupplied
@@ -596,27 +590,19 @@ public class Simulator {
 					double lastConsumed = collaborator.getCurrentConsumed(this.currentStep-1);
 					double lastDonated = collaborator.getCurrentDonated(this.currentStep-1);
 					double lastFairness = Simulator.getFairness(lastConsumed, lastDonated);
-						
-					boolean change = false;	
+					
+					boolean change = false;
 					if(currentFairness>=0){
-							/** If my fairness is decreasing or equal to last fairness, then:
-							 *  	1 - if I was diminishing the capacity supplied and it did not work, then try something different, try increasing it;
-							 *  	2 - if I was increasing the capacity supplied, and it did not work, then try something different, try decreasing it, 
-							 *  		but only if my fairness is lower than a certain threshold, otherwise, I will prioritize satisfaction, once I already
-							 *  		have a nice fairness value. **/
-							if(currentFairness <= lastFairness){
-								if(!collaborator.isIncreasingCapacitySupplied()){
-									collaborator.setIncreasingCapacitySupplied(true);
-								}
-								else{
-									if(currentFairness < this.fairnessLowerThreshold){
-										collaborator.setIncreasingCapacitySupplied(false);
-									}
-								}
-							}
-							change = true;
+						if(currentFairness < tauMin)
+							collaborator.setIncreasingCapacitySupplied(false);
+						else if(currentFairness > tauMax)
+							collaborator.setIncreasingCapacitySupplied(true);
+						else{
+							if(currentFairness <= lastFairness)
+								collaborator.setIncreasingCapacitySupplied(!collaborator.isIncreasingCapacitySupplied());
+						}
+						change = true;
 					}
-				
 				
 					
 					if(change){
@@ -638,6 +624,7 @@ public class Simulator {
 		
 		for(int idProvider : providersList)
 			this.suppliedHistory[this.currentStep+1] += ((Collaborator)Simulator.peers[idProvider]).getMaxCapacityToSupply();
+	
 		
 		
 		Simulator.logger.fine("FIM Update capacity supplied");
@@ -679,6 +666,11 @@ public class Simulator {
 		csvGen.outputWelfareCollaborators();
 		csvGen.outputFreeRiders();
 		
+//		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
+//		we.setupFile();		
+//		we.fulfillCapacitySuppliedData(peers);
+//		we.fulfillFairnessPerSteps(peers);
+//		we.writeFile();
 	}
 	
 	int global = 0;
@@ -699,10 +691,15 @@ public class Simulator {
 			if(dynamic){
 				double fairness = getFairness(interaction.getConsumed(), interaction.getDonated());
 				
-				if(newComer || fairness<=0 || !pairwise) 
-					maxToBeDonated = provider.getMaxCapacityToSupply();
+				if(newComer || fairness<=0) 
+					maxToBeDonated = provider.getMaxCapacityToSupply();		//global
 				else
-					maxToBeDonated = interaction.getMaxCapacitySupplied();	
+					maxToBeDonated = interaction.getMaxCapacitySupplied();	//pairwise
+				
+				PeerReputation peerRep = new PeerReputation(consumer.getPeerId(), 0);
+				peerRep = provider.getPeersReputations().get(provider.getPeersReputations().indexOf(peerRep));
+				maxToBeDonated = Math.max(maxToBeDonated, peerRep.getReputation());
+				maxToBeDonated = Math.min(provider.getInitialCapacity(), maxToBeDonated);
 			}
 			else
 				maxToBeDonated = provider.getInitialCapacity();
@@ -714,13 +711,9 @@ public class Simulator {
 		else{
 			if(!(consumer instanceof FreeRider)){
 				valueToBeDonated = Math.min(consumer.getDemand(), resources);
-				if(valueToBeDonated<0)
-					System.out.println("Colab");
 			}
 			else{
 				valueToBeDonated = resources;
-				if(valueToBeDonated<0)
-					System.out.println("FR");
 			}
 		}	
 			
@@ -810,10 +803,14 @@ public class Simulator {
 	 * @return the fairnessLowerThreshold
 	 */
 	public double getFairnessLowerThreshold() {
-		return fairnessLowerThreshold;
+		return tauMin;
 	}
 	
 	public double getChangingValue() {
 		return changingValue;
+	}
+	
+	public boolean isDynamic(){
+		return this.dynamic;
 	}
 }

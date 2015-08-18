@@ -66,10 +66,10 @@ public class WriteExcel2010 {
 		fairnessPerStepSheet = workbook.createSheet("Fairness per steps");
 //		consumedSheet = workbook.createSheet("Consumed");
 //		requestedSheet = workbook.createSheet("Requested");
-		satisfactionPerStepSheet = workbook.createSheet("Satisfaction");
+//		satisfactionPerStepSheet = workbook.createSheet("Satisfaction");
 //		donatedSheet = workbook.createSheet("Donated");
-		freeRidersSatisfactionSheet = workbook.createSheet("Free riders satisfactions");
-//		capacitySuppliedPerStepSheet = workbook.createSheet("Capacity supplied per steps");
+//		freeRidersSatisfactionSheet = workbook.createSheet("Free riders satisfactions");
+		capacitySuppliedPerStepSheet = workbook.createSheet("Capacity supplied per steps");
 //		kPerStepSheet = workbook.createSheet("Contention per steps");
 		
 
@@ -77,10 +77,10 @@ public class WriteExcel2010 {
 		createLabel(fairnessPerStepSheet);
 //		createLabel(consumedSheet);
 //		createLabel(requestedSheet);
-		createLabel(satisfactionPerStepSheet);
+//		createLabel(satisfactionPerStepSheet);
 //		createLabel(donatedSheet);
-		createLabel(freeRidersSatisfactionSheet);
-//		createLabel(capacitySuppliedPerStepSheet);
+//		createLabel(freeRidersSatisfactionSheet);
+		createLabel(capacitySuppliedPerStepSheet);
 //		createLabel(kPerStepSheet);
 		
 	}
@@ -127,9 +127,9 @@ public class WriteExcel2010 {
 				|| sheet.getSheetName().equals("Fairness per steps")
 				|| sheet.getSheetName().equals("Capacity supplied per steps")
 				|| sheet.getSheetName().equals("Free riders satisfactions")) {
-//			for (int i = 0; i < this.numSteps; i++)
-//				this.addLabel(sheet, i + 2, 0, "Step " + (i + 1));
-			this.addLabel(sheet, 2, 0, "Fairness");
+			for (int i = 0; i < this.numSteps; i++)
+				this.addLabel(sheet, i + 2, 0, "Step " + (i + 1));
+//			this.addLabel(sheet, 2, 0, "Fairness");
 		}
 		else if(sheet.getSheetName().equals("Contention per steps")){
 			addLabel(sheet, 0, 1, "Free Riders Demand");

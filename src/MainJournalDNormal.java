@@ -1,11 +1,12 @@
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.logging.Level;
 
 import simulator.Simulator;
 import utils.CsvReader;
 
-public class MainJournal {
+public class MainJournalDNormal {
 
 	public static void main(String[] args) {
 
@@ -17,7 +18,7 @@ public class MainJournal {
 		Level level = Level.SEVERE;
 
 //		String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 3/journal cc elsevier/simulations/group-i/exp-vii/";
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/12-08/pi-normal/";
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/12-08/d-normal/";
 		String kappa05 = "kappa05";
 		String kappa1 = "kappa1";
 		String kappa2 = "kappa2";
@@ -26,14 +27,32 @@ public class MainJournal {
 		DecimalFormat formatter = new DecimalFormat("0.0");
 		formatter.setRoundingMode(RoundingMode.DOWN);
 		
-		
+		int n = 15;
 
 		CsvReader csv = new CsvReader();
-		double[][] allPis = new double[15][150];
+		double[][] allPis = new double[n][150];
 		for (int i = 16; i <= 30; i++) {
 			String fileName = "/home/eduardolfalcao/Área de Trabalho/experimentos/two-thresholds/pi-normal/pi-distribution/pi"
 					+ i + ".csv";
 			allPis[i-16] = csv.readDistribution(fileName);
+		}
+		
+		double [][] dsK05 = new double[n][150];
+		double [][] dsK1 = new double[n][150];
+		double [][] dsK2 = new double[n][150];
+		double [][] dsK4 = new double[n][150];
+		
+		double piD = 0.5;	//k=0.5
+		
+		int count = 0;
+		for(double [] piSet : allPis){
+			for (int i = 0; i < piSet.length; i++) {
+				dsK05[count][i] = piSet[i]*0.5/piD;
+				dsK1[count][i] = piSet[i]*1/piD;
+				dsK2[count][i] = piSet[i]*2/piD;
+				dsK4[count][i] = piSet[i]*4/piD;
+			}
+			count++;
 		}
 		
 		int[] numberOfFreeRiders = new int[] { 50 };
@@ -42,10 +61,9 @@ public class MainJournal {
 		for(int i = 0; i < numberOfCollaborators.length; i++)
 			capacitySupplied[i] = numberOfCollaborators[i] = 1;
 
-		int distribution = 15;
-		for (double[] pi : allPis) {
-			distribution++;
-			System.out.println("Normal distribution: "+distribution);
+		
+		for (int i = 0; i<15; i++) {
+			System.out.println("Normal distribution: "+(i+16));
 			
 			for (double changingValue : new double[] { 0.05 }) { // 0.05
 				System.out.println("ChangingValue: " + changingValue);
@@ -57,7 +75,7 @@ public class MainJournal {
 					
 					for (double fairnessLowerThreshold : new double[] { 0.75 }) { 
 						
-						for (double maxTau : new double[] { 0.95 }) {
+						for (double maxTau : new double[] { 1 }) {
 						
 						System.out.println("TAU: " + fairnessLowerThreshold);
 
@@ -65,11 +83,15 @@ public class MainJournal {
 						
 						String f = "25";
 
-						// double[] d = new double[]{1.5, 2, 3, 5};
+						double[] kappa = new double[]{0.5, 1, 2, 4};
 						double[] d = new double[150];
-						for(int i = 0; i < d.length; i++)
-							d[i] = 1.5;
-						double[] kappa = { 0.5, 1, 2, 4 };
+						double[] pi = new double[150];
+						for(int j = 0; j < d.length; j++){
+							pi[j] = piD;
+							d[j] = (dsK05[i][j])+1;							
+						}
+						
+						
 
 
 						Simulator sim = new Simulator(numPeers, numSteps, pi,
@@ -77,23 +99,22 @@ public class MainJournal {
 								dynamic, nofWithLog, fairnessLowerThreshold, maxTau, d,
 								capacitySupplied, changingValue, seed, level,
 								outputDir 
-										+ "Dist" + distribution+"-"
+										+ "Dist" + (i+16)+"-"
 										+ (dynamic ? "fdnof-" : "sdnof-")
 										+ kappa05 + "tau"
 										+ fairnessLowerThreshold + "delta"
 										+ changingValue, pairwise, kappa[0],
 								design, f);
 						sim.startSimulation();
-//						System.exit(0);
 
-						for(int i = 0; i < d.length; i++)
-							d[i] = 2;
+						for(int j = 0; j < d.length; j++)
+							d[j] = (dsK1[i][j])+1;
 						sim = new Simulator(numPeers, numSteps, pi,
 								numberOfCollaborators, numberOfFreeRiders,
 								dynamic, nofWithLog, fairnessLowerThreshold, maxTau, d,
 								capacitySupplied, changingValue, seed, level,
 								outputDir 
-										+ "Dist" + distribution + "-"
+										+ "Dist" + (i+16) + "-"
 										+ (dynamic ? "fdnof-" : "sdnof-")
 										+ kappa1 + "tau"
 										+ fairnessLowerThreshold + "delta"
@@ -101,14 +122,14 @@ public class MainJournal {
 								design, f);
 						sim.startSimulation();
 
-						for(int i = 0; i < d.length; i++)
-							d[i] = 3;
+						for(int j = 0; j < d.length; j++)
+							d[j] = (dsK2[i][j])+1;
 						sim = new Simulator(numPeers, numSteps, pi,
 								numberOfCollaborators, numberOfFreeRiders,
 								dynamic, nofWithLog, fairnessLowerThreshold, maxTau, d,
 								capacitySupplied, changingValue, seed, level,
 								outputDir
-										+ "Dist" + distribution+"-"
+										+ "Dist" + (i+16)+"-"
 										+ (dynamic ? "fdnof-" : "sdnof-")
 										+ kappa2 + "tau"
 										+ fairnessLowerThreshold + "delta"
@@ -116,14 +137,14 @@ public class MainJournal {
 								design, f);
 						sim.startSimulation();
 
-						for(int i = 0; i < d.length; i++)
-							d[i] = 5;
+						for(int j = 0; j < d.length; j++)
+							d[j] = (dsK4[i][j])+1;
 						sim = new Simulator(numPeers, numSteps, pi,
 								numberOfCollaborators, numberOfFreeRiders,
 								dynamic, nofWithLog, fairnessLowerThreshold, maxTau, d,
 								capacitySupplied, changingValue, seed, level,
 								outputDir
-										+ "Dist" + distribution+"-"
+										+ "Dist" + (i+16)+"-"
 										+ (dynamic ? "fdnof-" : "sdnof-")
 										+ kappa4 + "tau"
 										+ fairnessLowerThreshold + "delta"
