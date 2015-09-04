@@ -55,7 +55,7 @@ public class Interaction {
 	         return false;
 	    else{
 	 	   Interaction i = (Interaction) obj;
-	 	   if(this.peerB.getPeerId() == i.getPeerB().getPeerId())
+	 	   if(this.peerB.getId() == i.getPeerB().getId())
 	 		   return true;
 	 	   else 
 	 		   return false;

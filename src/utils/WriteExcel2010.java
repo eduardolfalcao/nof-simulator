@@ -180,7 +180,7 @@ public class WriteExcel2010 {
 				numCollaborators++;
 				
 				this.addLabel(this.fairnessSheet, 0, i+1, peer);
-				this.addLabel(this.fairnessSheet, 1, i+1, ""+peers[i].getPeerId());
+				this.addLabel(this.fairnessSheet, 1, i+1, ""+peers[i].getId());
 				
 				double currentConsumed, currentDonated, fairness;
 				
@@ -215,7 +215,7 @@ public class WriteExcel2010 {
 				numCollaborators++;
 				
 				this.addLabel(this.fairnessPerStepSheet, 0, i+1, peer);
-				this.addLabel(this.fairnessPerStepSheet, 1, i+1, ""+peers[i].getPeerId());
+				this.addLabel(this.fairnessPerStepSheet, 1, i+1, ""+peers[i].getId());
 				
 				double currentConsumed, currentDonated, fairness;
 				
@@ -270,7 +270,7 @@ public class WriteExcel2010 {
 				String peer = "Collaborator";
 				
 				this.addLabel(this.fairnessPerStepSheet, 0, i+1, peer);
-				this.addLabel(this.fairnessPerStepSheet, 1, i+1, ""+peers[i].getPeerId());
+				this.addLabel(this.fairnessPerStepSheet, 1, i+1, ""+peers[i].getId());
 				
 				double currentConsumed, currentDonated, fairness;
 				
@@ -304,7 +304,7 @@ public class WriteExcel2010 {
 				numCollaborators++;
 			
 				this.addLabel(this.consumedSheet, 0, i + 1, peer);
-				this.addLabel(this.consumedSheet, 1, i + 1, ""+peers[i].getPeerId());
+				this.addLabel(this.consumedSheet, 1, i + 1, ""+peers[i].getId());
 				
 				for(int j = 0; j < this.numSteps; j++)
 					this.addNumber(this.consumedSheet, j+2, i + 1, peers[i].getConsumedHistory()[j]);
@@ -340,7 +340,7 @@ public class WriteExcel2010 {
 		for (int i = 0; i < peers.length; i++) {
 			String peer = (peers[i] instanceof Collaborator) ? "Collaborator": "Free Rider";
 			this.addLabel(this.requestedSheet, 0, i + 1, peer);
-			this.addLabel(this.requestedSheet, 1, i + 1, ""+peers[i].getPeerId());
+			this.addLabel(this.requestedSheet, 1, i + 1, ""+peers[i].getId());
 			
 			for(int j = 0; j < this.numSteps; j++)
 				this.addNumber(this.requestedSheet, j+2, i + 1, peers[i].getRequestedHistory()[j]);
@@ -364,7 +364,7 @@ public class WriteExcel2010 {
 				numCollaborators++;
 				
 				this.addLabel(this.satisfactionPerStepSheet, 0, i+1, peer);
-				this.addLabel(this.satisfactionPerStepSheet, 1, i+1, ""+peers[i].getPeerId());
+				this.addLabel(this.satisfactionPerStepSheet, 1, i+1, ""+peers[i].getId());
 				
 				double currentConsumed, currentRequested, satisfaction;
 				
@@ -420,7 +420,7 @@ public class WriteExcel2010 {
 				String peer = "Collaborator";
 				
 				this.addLabel(this.satisfactionPerStepSheet, 0, i+1, peer);
-				this.addLabel(this.satisfactionPerStepSheet, 1, i+1, ""+peers[i].getPeerId());
+				this.addLabel(this.satisfactionPerStepSheet, 1, i+1, ""+peers[i].getId());
 				
 				double currentConsumed, currentRequested, satisfaction;
 				
@@ -451,7 +451,7 @@ public class WriteExcel2010 {
 				numCollaborators++;
 				
 				this.addLabel(this.donatedSheet, 0, i + 1, peer);
-				this.addLabel(this.donatedSheet, 1, i + 1, ""+peers[i].getPeerId());
+				this.addLabel(this.donatedSheet, 1, i + 1, ""+peers[i].getId());
 				
 				for (int j = 0; j < this.numSteps; j++)
 					this.addNumber(this.donatedSheet, j + 2, i + 1, ((Collaborator)peers[i]).getDonatedHistory()[j]);
@@ -485,7 +485,7 @@ public class WriteExcel2010 {
 			if(peers[i] instanceof Collaborator){
 				String peer = "Collaborator";
 				this.addLabel(this.capacitySuppliedPerStepSheet, 0, i + 1, peer);
-				this.addLabel(this.capacitySuppliedPerStepSheet, 1, i + 1, ""+peers[i].getPeerId());
+				this.addLabel(this.capacitySuppliedPerStepSheet, 1, i + 1, ""+peers[i].getId());
 
 				Collaborator collab = (Collaborator) peers[i];
 				for (int j = 0; j < this.numSteps; j++)
@@ -549,7 +549,7 @@ public class WriteExcel2010 {
 				String peer = "Free Rider";
 				
 				this.addLabel(this.freeRidersSatisfactionSheet, 0, numFreeRiders+1, peer);
-				this.addLabel(this.freeRidersSatisfactionSheet, 1, numFreeRiders+1, ""+peers[i].getPeerId());
+				this.addLabel(this.freeRidersSatisfactionSheet, 1, numFreeRiders+1, ""+peers[i].getId());
 				
 				double currentConsumed, currentRequested, satisfaction;
 				
@@ -608,7 +608,7 @@ public class WriteExcel2010 {
 				String peer = "Free Rider";
 				
 				this.addLabel(this.freeRidersSatisfactionSheet, 0, numFreeRiders+1, peer);
-				this.addLabel(this.freeRidersSatisfactionSheet, 1, numFreeRiders+1, ""+peers[i].getPeerId());
+				this.addLabel(this.freeRidersSatisfactionSheet, 1, numFreeRiders+1, ""+peers[i].getId());
 				
 				double currentConsumed, currentRequested, satisfaction;
 				

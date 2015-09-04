@@ -9,65 +9,111 @@ import peer.reputation.PeerReputation;
 public class Peer{
 	
 	
-	protected final double INITIAL_CAPACITY;
-	protected double initialDemand;
+	protected final double INITIAL_CAPACITY, INITIAL_DEMAND;
+	
 	protected double demand;
-	protected boolean consuming; 
+	protected int id;
+	
+	protected State state;
+	private double consumingStateProbability, providingStateProbability, idleStateProbability;
+	
+	
 	protected ArrayList<PeerReputation> peersReputations;
 	protected ArrayList <Interaction> interactions;
-	protected int peerId;
-	
-	
 	protected double consumedHistory[];
 	protected double requestedHistory[];
 	
-	
-
-	/**
-	 * 
-	 * Constructor for Collaborators.
-	 * 
-	 * @param demand
-	 * @param peerId
-	 * @param consuming
-	 * @param numSteps
-	 */
-	public Peer(double initialCapacity, double demand, int peerId, boolean consuming, int numSteps) {
+		
+	public Peer(int id, double initialCapacity, double initialDemand, double consumingStateProbability, double idleStateProbability, double providingStateProbability, int numSteps) {
 		super();
 		this.INITIAL_CAPACITY = initialCapacity;
-		this.initialDemand = demand;
-		this.setDemand(demand);
-		this.setPeerId(peerId);
-		this.setConsuming(consuming);	
-		this.setPeersReputations(new ArrayList<PeerReputation>());
-		this.setInteractions(new ArrayList<Interaction>());
-		this.setConsumedHistory(new double[numSteps]);
-		this.setRequestedHistory(new double[numSteps]);
+		this.INITIAL_DEMAND = initialDemand;
+		
+		this.id = id;
+		this.demand = initialDemand;
+		
+		this.state = null;
+		this.consumingStateProbability = consumingStateProbability;
+		this.idleStateProbability = idleStateProbability;
+		this.providingStateProbability = providingStateProbability;
+		
+		this.peersReputations = new ArrayList<PeerReputation>();
+		this.interactions = new ArrayList<Interaction>();
+		this.consumedHistory = new double[numSteps];
+		this.requestedHistory = new double[numSteps];
 	}
-
+	
 	/**
-	 * Constructor for Free Riders.
-	 * 
-	 * @param demand
-	 * @param peerId 
-	 * @param consuming
-	 * @param numSteps
-	 * @param isFreeRider (force Free Riders to use this constructor)
+	 * id is unique
 	 */
-	public Peer(double initialCapacity, double demand, int peerId, boolean consuming, int numSteps, boolean isFreeRider) {
-		super();
-		this.INITIAL_CAPACITY = initialCapacity;
-		this.initialDemand = demand;
-		this.setDemand(demand);
-		this.setPeerId(peerId);
-		this.setConsuming(consuming);		
-		this.setConsumedHistory(new double[numSteps]);
-		this.setRequestedHistory(new double[numSteps]);
+	public int hashCode() {
+        return this.id;
+    }
+	
+	/**
+	 * @return true if they have the same id, false otherwise
+	 */
+	public boolean equals(Object obj) {
+	       if (obj == null || !(obj instanceof Peer))
+	            return false;
+	       else{
+	    	   Peer p = (Peer) obj;
+	    	   if(this.id == p.getId())
+	    		   return true;
+	    	   else
+	    		   return false;
+	       }
 	}
 	
 	
+	public double getInitialDemand() {
+		return this.INITIAL_DEMAND;
+	}
 	
+	public double getInitialCapacity() {
+		return INITIAL_CAPACITY;
+	}
+	
+	public int getId(){
+		return this.id;
+	}
+	
+	public double getDemand() {
+		return demand;
+	}
+	
+	public void setDemand(double demand) {
+		this.demand = demand;
+	}	
+	
+	public State getState(){
+		return this.state;
+	}
+	
+	public void setState(State state){
+		this.state = state;
+	}
+	
+	public double getConsumingStateProbability() {
+		return consumingStateProbability;
+	}
+	
+	public double getIdleStateProbability(){
+		return idleStateProbability;
+	}
+	
+	public double getProvidingStateProbability(){
+		return providingStateProbability;
+	}	
+	
+	public ArrayList<PeerReputation> getPeersReputations() {
+		return peersReputations;
+	}
 
+	public void setPeersReputations(ArrayList<PeerReputation> peersReputations) {
+		this.peersReputations = peersReputations;
+	}
+	
 	/**
 	 * The peer with highest reputation might already been used. Therefore, we will seek
 	 * the higher value before this. Where attempt = 2, means the second higher value in
@@ -89,23 +135,18 @@ public class Peer{
 		return -1;
 	}	
 	
-	/**
-	 * @param step current step
-	 * @return currrentDonated the amount donated until this step
-	 */
-	public double getCurrentRequested(int step) {
-		double currrentRequested = 0;
-		for(int i = 0; i <= step; i++)
-			currrentRequested += this.requestedHistory[i];
-		return currrentRequested;
+	public List<Interaction> getInteractions() {
+		return interactions;
+	}
+
+	private void setInteractions(ArrayList<Interaction> interactions) {
+		this.interactions = interactions;
 	}
 	
+	public double[] getConsumedHistory() {
+		return consumedHistory;
+	}
 	
-	
-	/**
-	 * @param step current step
-	 * @return currrentConsumed the amount consumed until this step
-	 */
 	public double getCurrentConsumed(int step) {
 		double currrentConsumed = 0;
 		for(int i = 0; i <= step; i++)
@@ -120,138 +161,15 @@ public class Peer{
 		return currrentConsumed;
 	}
 	
-	/**
-	 * peerId is unique
-	 */
-	public int hashCode() {
-        return this.peerId;
-    }
-	
-	/**
-	 * @return true if they have the same peerId, false otherwise
-	 */
-	public boolean equals(Object obj) {
-	       if (obj == null || !(obj instanceof Peer))
-	            return false;
-	       else{
-	    	   Peer p = (Peer) obj;
-	    	   if(this.peerId == p.getPeerId())
-	    		   return true;
-	    	   else
-	    		   return false;
-	       }
-	}
-	
-	/**
-	 * @return true if the peer is consuming another peer's resources, false otherwise
-	 */
-	public boolean isConsuming() {
-		return consuming;
-	}
-
-	/**
-	 * @param consuming the state of the peer
-	 */
-	public void setConsuming(boolean consuming) {
-		this.consuming = consuming;
-	}
-
-	/**
-	 * @return the list of all interactions
-	 */
-	public List<Interaction> getInteractions() {
-		return interactions;
-	}
-
-	/**
-	 * @param interactions
-	 */
-	private void setInteractions(ArrayList<Interaction> interactions) {
-		this.interactions = interactions;
-	}
-
-	/**
-	 * @return the peerId
-	 */
-	public int getPeerId(){
-		return this.peerId;
-	}
-	
-	/**
-	 * @param the peerId
-	 */
-	public void setPeerId(int peerId){
-		this.peerId = peerId;
-	}
-	
-	/**
-	 * @return the demand of the peer
-	 */
-	public double getDemand() {
-		return demand;
-	}
-	
-	/**
-	 * @return the initial demand of the peer
-	 */
-	public double getInitialDemand() {
-		return this.initialDemand;
-	}
-	
-	/**
-	 * @param demand the new demand of the peer
-	 */
-	public void setDemand(double demand) {
-		this.demand = demand;
-	}
-	
-	/**
-	 * @return the peersReputations
-	 */
-	public ArrayList<PeerReputation> getPeersReputations() {
-		return peersReputations;
-	}
-
-	/**
-	 * @param peersReputations the SortedList with peers reputations
-	 */
-	public void setPeersReputations(ArrayList<PeerReputation> peersReputations) {
-		this.peersReputations = peersReputations;
-	}
-	
-	/**
-	 * @return the consumedHistory
-	 */
-	public double[] getConsumedHistory() {
-		return consumedHistory;
-	}
-
-	/**
-	 * @param consumedHistory the consumedHistory to set
-	 */
-	public void setConsumedHistory(double[] consumedHistory) {
-		this.consumedHistory = consumedHistory;
-	}
-
-	/**
-	 * @return the requested
-	 */
 	public double [] getRequestedHistory() {
 		return requestedHistory;
 	}
-
-	/**
-	 * @param requested the requested to set
-	 */
-	public void setRequestedHistory(double [] requestedHistory) {
-		this.requestedHistory = requestedHistory;
-	}
-
-	/**
-	 * @return the initialCapacity
-	 */
-	public double getInitialCapacity() {
-		return INITIAL_CAPACITY;
+	
+	public double getCurrentRequested(int step) {
+		double currrentRequested = 0;
+		for(int i = 0; i <= step; i++)
+			currrentRequested += this.requestedHistory[i];
+		return currrentRequested;
 	}
 	
 }

@@ -14,22 +14,24 @@ import nof.NetworkOfFavors;
 import peer.Collaborator;
 import peer.FreeRider;
 import peer.Peer;
+import peer.PeerGroup;
+import peer.State;
 import peer.reputation.PeerReputation;
 import utils.GenerateCsv;
 import utils.WriteExcel2010;
 
 public class Simulator {
 	
+	private ArrayList<PeerGroup> groupsOfPeers;
+	
 	/**
 	 * Simulation characteristics.
 	 */
-	private int numPeers;							//[FACTOR]: (collaborators + freeRiders)	
 	private int numSteps;							//[FACTOR]: number of steps of the simulation
 	
-	//each array item is a group of collaborators with the same characteristics
-	private double [] consumingStateProbability;	//[FACTOR]: probability of being in consuming state. Ranges (0,1).
-	private int [] numberOfCollaborators;		//[FACTOR]: number of collaborators, formed in groups
-	private int [] numberOfFreeRiders;		//[FACTOR]: number of free riders, formed in groups
+	private List <Integer> consumersList;		
+	private List <Integer> idlePeersList;		
+	private List <Integer> providersList;		
 	
 	
 	private double kappa;
@@ -71,15 +73,15 @@ public class Simulator {
 	private int currentStep;						//current step of simulation
 	private List <Integer> consumedPeersList;		//list of all peers that have already consumed (collaborators + free riders)
 	private List <Integer> donatedPeersList;		//list of all peers (collaborators + free riders)
-	private List <Integer> consumersCollabList;		//list of consumers collaborators
-	private List <Integer> providersList;				//list of donors
-	private List <Integer> freeRidersList;			//list of free-riders	
+		
 	private Random randomGenerator;					//to randomly define who is donor or consumer (besides collaborator or free rider) 
 	
 	
 	private String outputFile;						//file to export Data
 	private String f;
 	private double [] suppliedHistory;
+	
+	private StateGenerator stateGenerator;
 	
 	
 	public final static Logger logger = Logger.getLogger(Simulator.class.getName());
@@ -97,33 +99,38 @@ public class Simulator {
 	 * @param changingValue value added or subtracted to/from capacitySupplied
 	 * @param seed value used to calculate probability of being consumer or donor
 	 */
-	public Simulator(int numPeers, int numSteps, double [] consumingStateProbability, int [] numberOfCollaborators, int [] numberOfFreeRiders, boolean dynamic, boolean nofWithLog,
-			double tauMin, double tauMax, double [] peersDemand, double [] capacitySupplied, double changingValue, long seed, Level level, String outputFile, boolean pairwise,
-			double kappa, String design, String f) {
+	public Simulator(ArrayList<PeerGroup> groupsOfPeers, int numSteps, boolean dynamic,	double tauMin, double tauMax, double changingValue, 
+			int seed, Level level, String outputFile) {
 		super();
-		this.numPeers = numPeers;
+		
+		this.groupsOfPeers = groupsOfPeers;
+		
+		int numPeers = 0;
+		for(PeerGroup pg : groupsOfPeers)
+			numPeers += pg.getNumPeers();
+		
+		Simulator.peers = new Peer[numPeers];
+		
+		this.consumersList = new ArrayList<Integer> ();		
+		this.idlePeersList = new ArrayList<Integer> ();		
+		this.providersList = new ArrayList<Integer> ();
+		
+		this.stateGenerator = new StateGenerator(seed);
+		
+		
 		this.numSteps = numSteps;
-		this.consumingStateProbability = consumingStateProbability;
-		this.numberOfCollaborators = numberOfCollaborators;
-		this.numberOfFreeRiders = numberOfFreeRiders;
 		this.dynamic = dynamic;
-		this.nofWithLog = nofWithLog;
 		this.tauMin = tauMin;
 		this.tauMax = tauMax;
-		this.peersDemand = peersDemand;
-		//this.capacitySupplied = capacitySupplied;
 		this.changingValue = changingValue;
 		this.currentStep = 0;
-		Simulator.peers = new Peer[numPeers];
+		
 		this.consumedPeersList = new ArrayList<Integer> ();
-		this.donatedPeersList = new ArrayList<Integer> ();
-		this.consumersCollabList = new ArrayList<Integer> ();
-		this.providersList = new ArrayList<Integer> ();
-		this.freeRidersList = new ArrayList<Integer> ();		
-		this.randomGenerator = new Random(seed);
+		this.donatedPeersList = new ArrayList<Integer> ();		
 		this.outputFile = outputFile;
 		
-		this.peersCapacity = capacitySupplied;
+		
+		
 		
 		/* Logger setup */
 		Simulator.logger.setLevel(level);
@@ -132,74 +139,86 @@ public class Simulator {
 	    handler.setLevel(level);
 	    logger.addHandler(handler);
 	    
-	    this.pairwise = pairwise;
-	    this.kappa = kappa;
-	    this.design = design;
-	    this.f = f;
 	    this.suppliedHistory = new double[numSteps];
 	    //this.df = new DecimalFormat("#.00000"); //df.format(0.912385); // Imprime 0,91238
 	}
-
-	/**
-	 * Create the peers. When they're collaborators we decide (calculate) if the peer will begin consuming or not
-	 * based in consumingStateProbability. The free riders are always in consuming state, despite they achieve
-	 * or not success.
-	 */
-	private void setupSimulation(){
-		//creating the peers (collaborators + freeRiders)
-		int id = 0;
-		for(int group = 0; group < numberOfCollaborators.length; group++){
-			for(int j = 0; j < numberOfCollaborators[group]; j++){				
-				//based in consumingStateProbability, we decide if the peer will begin consuming or not
-				boolean beginsConsuming = (this.randomGenerator.nextInt(100)+1 <= (this.consumingStateProbability[group]*100));
-				Collaborator collab = new Collaborator(this.peersDemand[group], id, beginsConsuming, this.consumingStateProbability[group], this.peersCapacity[group], this.numSteps);
-				if(beginsConsuming)
-					consumersCollabList.add(id);
-				else
-					providersList.add(id);
-				
-				Simulator.peers[id] = collab;
-				id++;
-			}						
+	
+	public void startSimulation(){		
+		this.createPeers();		
+		for(int i = 0; i < this.numSteps; i++){
+			this.setupPeersState();
+			this.performCurrentStepDonations();
 		}
+		exportData();
+	}
+	
+	private void createPeers(){
 		
-		for(int group = 0; group < numberOfFreeRiders.length; group++){
-			for(int j = 0; j < numberOfFreeRiders[group]; j++){
-				//freeRiders never donates, they are always in consuming state. At least, they are always trying to consume.
-				Peer p = new FreeRider(this.peersCapacity[group], Double.MAX_VALUE, id, this.numSteps);	//demanda infinita pra consumir os recursos excedentes
-				freeRidersList.add(id);
+		int id = 0;
+		
+		//here we create the peers
+		for(PeerGroup group : groupsOfPeers){
+			for(int i = 0; i < group.getNumPeers(); i++, id++){
+				Peer p = null;
+				if(!group.isFreeRider())
+					p = new Collaborator(id, group.getCapacity(), group.getDemand(),
+							group.getConsumingStateProbability(), group.getIdleStateProbability(), group.getProvidingStateProbability(), this.numSteps);
+				else
+					p = new FreeRider(id, group.getCapacity(), group.getDemand(),
+							group.getConsumingStateProbability(), group.getIdleStateProbability(), group.getProvidingStateProbability(), this.numSteps);
+				
 				Simulator.peers[id] = p;
-				id++;
+			}
+		}
+	}	
+	
+	private void setupPeersState(){
+		
+		//now se set the state of each peer
+		for(Peer p : Simulator.peers){
+			State currentState = stateGenerator.generateState(State.CONSUMING, p.getConsumingStateProbability(), State.IDLE, p.getIdleStateProbability(), State.PROVIDING, p.getProvidingStateProbability());
+			p.setState(currentState);
+					
+			if(p.getState()==State.CONSUMING){
+				consumersList.add(p.getId());
+				Simulator.peers[p.getId()].setDemand(Simulator.peers[p.getId()].getInitialDemand());
+				Simulator.peers[p.getId()].getRequestedHistory()[this.currentStep] = Simulator.peers[p.getId()].getInitialDemand();
+				
+				if(Simulator.peers[p.getId()] instanceof Collaborator){
+					Collaborator c = (Collaborator)Simulator.peers[p.getId()];
+					c.setCapacityDonatedInThisStep(0);
+					c.getCapacitySuppliedHistory()[this.currentStep] = 0;				
+				}				
+			}
+			else if(p.getState()==State.IDLE){
+				idlePeersList.add(p.getId());
+				Simulator.peers[p.getId()].setDemand(0);
+				Simulator.peers[p.getId()].getRequestedHistory()[this.currentStep] = 0;
+				
+				if(Simulator.peers[p.getId()] instanceof Collaborator){
+					Collaborator c = (Collaborator)Simulator.peers[p.getId()];
+					c.setCapacityDonatedInThisStep(0);
+					c.getCapacitySuppliedHistory()[this.currentStep] = 0;				
+				}			
+			}
+			else{
+				providersList.add(p.getId());
+				Simulator.peers[p.getId()].setDemand(0);
+				Simulator.peers[p.getId()].getRequestedHistory()[this.currentStep] = 0;
+				
+				if(Simulator.peers[p.getId()] instanceof Collaborator){
+					Collaborator c = (Collaborator)Simulator.peers[p.getId()];
+					c.setCapacityDonatedInThisStep(0);
+					c.getCapacitySuppliedHistory()[this.currentStep] = c.getMaxCapacityToSupply();				
+				}
 			}
 		}
 		
-		for(int n : numberOfCollaborators)
-			this.numCollaborators += n;
-		
-		for(int n : numberOfFreeRiders)
-			this.numFreeRiders += n;
-		
-		for(int idProvider : providersList)
-			this.suppliedHistory[0] += ((Collaborator)Simulator.peers[idProvider]).getMaxCapacityToSupply();
-		
-		Simulator.logger.info("Created: "+this.numCollaborators+" collaborators and "+this.numFreeRiders+" free riders.");
+		//TODO
+		//depois de update tem que contabilizar o donated e o consumed! ;)
+	}		
 
-	}
 	
-	/**
-	 * Starts the simulation.
-	 */
-	public void startSimulation(){
-		Simulator.logger.info("Setting up simulation...");
-		this.setupSimulation();
-		Simulator.logger.info("Starting simulation...");
-		
-		for(int i = 0; i < this.numSteps; i++){
-			this.performCurrentStepDonations();
-		}
-			
-		exportData();
-	}
 	
 	/**
 	 * Performs all donations of the current step.
@@ -243,7 +262,7 @@ public class Simulator {
 				removePeerIfFullyConsumed(consumer);
 				
 				//update alreadyConsumed
-				alreadyConsumed.add(consumer.getPeerId());
+				alreadyConsumed.add(consumer.getId());
 			}			
 			removePeerThatDonated(collab);	
 		}
@@ -406,11 +425,11 @@ public class Simulator {
 			//creates an interaction for the provider and for the consumer
 			Interaction providersInteraction = new Interaction(consumer, provider.getInitialCapacity(), numSteps);
 			provider.getInteractions().add(providersInteraction);
-			provider.getPeersReputations().add(new PeerReputation(consumer.getPeerId(), 0));
+			provider.getPeersReputations().add(new PeerReputation(consumer.getId(), 0));
 			if(!(consumer instanceof FreeRider)){
 				Interaction consumersInteraction = new Interaction(provider, consumer.getInitialCapacity(), numSteps);
 				consumer.getInteractions().add(consumersInteraction);
-				consumer.getPeersReputations().add(new PeerReputation(provider.getPeerId(), 0));
+				consumer.getPeersReputations().add(new PeerReputation(provider.getId(), 0));
 			}
 		}			
 		
@@ -495,10 +514,10 @@ public class Simulator {
 	private void removePeerIfFullyConsumed(Peer consumer){
 		if(consumer.getDemand()==0){
 			if(consumer instanceof FreeRider)
-				this.freeRidersList.remove((Integer)consumer.getPeerId());
+				this.freeRidersList.remove((Integer)consumer.getId());
 			else
-				this.consumersCollabList.remove((Integer)consumer.getPeerId());
-			this.consumedPeersList.add(consumer.getPeerId());
+				this.consumersCollabList.remove((Integer)consumer.getId());
+			this.consumedPeersList.add(consumer.getId());
 		}
 		else if(consumer.getDemand()<0){
 			Simulator.logger.severe("Consumer demand should never be smaller than consumer.getInitialCapacity(). Some sheet happened here. "
@@ -515,8 +534,8 @@ public class Simulator {
 	 * @param provider
 	 */
 	private void removePeerThatDonated(Collaborator provider){
-		this.providersList.remove((Integer)provider.getPeerId());
-		this.donatedPeersList.add(provider.getPeerId());		
+		this.providersList.remove((Integer)provider.getId());
+		this.donatedPeersList.add(provider.getId());		
 	}
 	
 	/**
@@ -696,7 +715,7 @@ public class Simulator {
 				else
 					maxToBeDonated = interaction.getMaxCapacitySupplied();	//pairwise
 				
-				PeerReputation peerRep = new PeerReputation(consumer.getPeerId(), 0);
+				PeerReputation peerRep = new PeerReputation(consumer.getId(), 0);
 				peerRep = provider.getPeersReputations().get(provider.getPeersReputations().indexOf(peerRep));
 				maxToBeDonated = Math.max(maxToBeDonated, peerRep.getReputation());
 				maxToBeDonated = Math.min(provider.getInitialCapacity(), maxToBeDonated);
@@ -749,11 +768,11 @@ public class Simulator {
 	private void updateReputation(Collaborator provider, Peer consumer, Interaction interaction){	//we have to call it twice: each for the interaction of a peer		
 		double reputation = NetworkOfFavors.calculateLocalReputation(interaction.getConsumed(), interaction.getDonated(), nofWithLog);
 		if(interaction.getPeerB() == consumer){
-			int consumerIndex = provider.getPeersReputations().indexOf(new PeerReputation(consumer.getPeerId(), 0));
+			int consumerIndex = provider.getPeersReputations().indexOf(new PeerReputation(consumer.getId(), 0));
 			provider.getPeersReputations().get(consumerIndex).setReputation(reputation);
 		}
 		else{
-			int providerIndex = consumer.getPeersReputations().indexOf(new PeerReputation(provider.getPeerId(), 0));
+			int providerIndex = consumer.getPeersReputations().indexOf(new PeerReputation(provider.getId(), 0));
 			consumer.getPeersReputations().get(providerIndex).setReputation(reputation);
 		}
 	}
