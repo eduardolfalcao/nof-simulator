@@ -9,7 +9,7 @@ public class MainJournal {
 
 	public static void main(String[] args) {
 
-		int numPeers = 200;
+		int numPeers = 150;
 		int numSteps = 5000; // 5000
 		
 		boolean nofWithLog = false;
@@ -17,7 +17,7 @@ public class MainJournal {
 		Level level = Level.SEVERE;
 
 //		String outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 3/journal cc elsevier/simulations/group-i/exp-vii/";
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/12-08/pi-normal/";
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/12-08/pi-normal-0f/";
 		String kappa05 = "kappa05";
 		String kappa1 = "kappa1";
 		String kappa2 = "kappa2";
@@ -29,20 +29,20 @@ public class MainJournal {
 		
 
 		CsvReader csv = new CsvReader();
-		double[][] allPis = new double[15][150];
-		for (int i = 16; i <= 30; i++) {
+		double[][] allPis = new double[10][150];
+		for (int i = 1; i <= 10; i++) {
 			String fileName = "/home/eduardolfalcao/Área de Trabalho/experimentos/two-thresholds/pi-normal/pi-distribution/pi"
 					+ i + ".csv";
-			allPis[i-16] = csv.readDistribution(fileName);
+			allPis[i-1] = csv.readDistribution(fileName);
 		}
 		
-		int[] numberOfFreeRiders = new int[] { 50 };
+		int[] numberOfFreeRiders = new int[] { 0 };
 		int[] numberOfCollaborators = new int[150];
 		double[] capacitySupplied = new double[150];
 		for(int i = 0; i < numberOfCollaborators.length; i++)
 			capacitySupplied[i] = numberOfCollaborators[i] = 1;
 
-		int distribution = 15;
+		int distribution = 0;
 		for (double[] pi : allPis) {
 			distribution++;
 			System.out.println("Normal distribution: "+distribution);
@@ -61,9 +61,9 @@ public class MainJournal {
 						
 						System.out.println("TAU: " + fairnessLowerThreshold);
 
-						 System.out.println("FR: "+((double)numberOfFreeRiders[0])/numberOfCollaborators[0]);
+						 System.out.println("FR: "+((double)numberOfFreeRiders[0])/numberOfCollaborators.length);
 						
-						String f = "25";
+						String f = "0";
 
 						// double[] d = new double[]{1.5, 2, 3, 5};
 						double[] d = new double[150];

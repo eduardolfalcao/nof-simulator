@@ -666,11 +666,11 @@ public class Simulator {
 		csvGen.outputWelfareCollaborators();
 		csvGen.outputFreeRiders();
 		
-//		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
-//		we.setupFile();		
-//		we.fulfillCapacitySuppliedData(peers);
-//		we.fulfillFairnessPerSteps(peers);
-//		we.writeFile();
+		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
+		we.setupFile();		
+		we.fulfillCapacitySuppliedData(peers);
+		we.fulfillFairnessPerSteps(peers);
+		we.writeFile();
 	}
 	
 	int global = 0;
