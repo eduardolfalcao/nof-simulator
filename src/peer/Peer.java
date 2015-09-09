@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nof.Interaction;
-import peer.reputation.PeerReputation;
+import peer.reputation.PeerInfo;
 
 public class Peer{
 	
@@ -18,7 +18,7 @@ public class Peer{
 	private double consumingStateProbability, providingStateProbability, idleStateProbability;
 	
 	
-	protected ArrayList<PeerReputation> peersReputations;
+	protected ArrayList<PeerInfo> balances;
 	protected ArrayList <Interaction> interactions;
 	protected double consumedHistory[];
 	protected double requestedHistory[];
@@ -37,7 +37,7 @@ public class Peer{
 		this.idleStateProbability = idleStateProbability;
 		this.providingStateProbability = providingStateProbability;
 		
-		this.peersReputations = new ArrayList<PeerReputation>();
+		this.balances = new ArrayList<PeerInfo>();
 		this.interactions = new ArrayList<Interaction>();
 		this.consumedHistory = new double[numSteps];
 		this.requestedHistory = new double[numSteps];
@@ -106,29 +106,29 @@ public class Peer{
 		return providingStateProbability;
 	}	
 	
-	public ArrayList<PeerReputation> getPeersReputations() {
-		return peersReputations;
+	public ArrayList<PeerInfo> getBalances() {
+		return balances;
 	}
 
-	public void setPeersReputations(ArrayList<PeerReputation> peersReputations) {
-		this.peersReputations = peersReputations;
+	public void setPeersReputations(ArrayList<PeerInfo> peersReputations) {
+		this.balances = peersReputations;
 	}
 	
 	/**
-	 * The peer with highest reputation might already been used. Therefore, we will seek
+	 * The peer with highest balance might already been used. Therefore, we will seek
 	 * the higher value before this. Where attempt = 2, means the second higher value in
 	 * the SortedList, and so on.
 	 * 
-	 * @param nth the nth best reputation
-	 * @return the peer id with the nth best reputation
+	 * @param nth the nth highest balance
+	 * @return the peer id with the nth highest balance
 	 */
 	public int getThePeerIdWithNthBestReputation(int nth){
 		if(nth<=0)
 			return -1;
 			
-		for(int i = this.peersReputations.size()-1; i>=0 ;i--){
+		for(int i = this.balances.size()-1; i>=0 ;i--){
 			if(nth==1)
-				return this.peersReputations.get(i).getId();
+				return this.balances.get(i).getId();
 			nth--;
 		}
 		

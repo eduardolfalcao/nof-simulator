@@ -14,6 +14,18 @@ import simulator.Simulator;
 
 public class SimulatorTest {
 
+	
+	@Test
+	public void testCreatePeers(){
+		
+	}
+	
+	@Test
+	public void testSetupPeersState(){
+		
+	}
+	
+	
 //	/**
 //	 * Test method for {@link simulator.Simulator#setupSimulation()}.
 //	 */

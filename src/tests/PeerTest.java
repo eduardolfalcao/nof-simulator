@@ -14,7 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import peer.Peer;
-import peer.reputation.PeerReputation;
+import peer.reputation.PeerInfo;
 
 /**
  * @author eduardolfalcao
@@ -65,8 +65,8 @@ public class PeerTest {
 		Peer p2 = new Peer(100, 2, false, 0);
 		Interaction interactionP1P2 = new Interaction(p1, p2);
 		interactionP1P2.peerADonatesValue(50);
-		p1.getPeersReputations().add(new PeerReputation(p2.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P2.getConsumedValueByPeerA(), interactionP1P2.getDonatedValueByPeerA(), true)));
-		p2.getPeersReputations().add(new PeerReputation(p1.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P2.getConsumedValueByPeerB(), interactionP1P2.getDonatedValueByPeerB(), true)));
+		p1.getBalances().add(new PeerInfo(p2.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P2.getConsumedValueByPeerA(), interactionP1P2.getDonatedValueByPeerA(), true)));
+		p2.getBalances().add(new PeerInfo(p1.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P2.getConsumedValueByPeerB(), interactionP1P2.getDonatedValueByPeerB(), true)));
 		
 		assertTrue(p1.getThePeerIdWithNthBestReputation(1)==2);	
 		assertTrue(p2.getThePeerIdWithNthBestReputation(1)==1);
@@ -87,8 +87,8 @@ public class PeerTest {
 		Peer p3 = new Peer(100, 3, false, 0);
 		Interaction interactionP1P3 = new Interaction(p1, p3);
 		interactionP1P3.peerBDonatesValue(25);
-		p1.getPeersReputations().add(new PeerReputation(p3.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P3.getConsumedValueByPeerA(), interactionP1P3.getDonatedValueByPeerA(), true)));
-		p3.getPeersReputations().add(new PeerReputation(p1.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P3.getConsumedValueByPeerB(), interactionP1P3.getDonatedValueByPeerB(), true)));
+		p1.getBalances().add(new PeerInfo(p3.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P3.getConsumedValueByPeerA(), interactionP1P3.getDonatedValueByPeerA(), true)));
+		p3.getBalances().add(new PeerInfo(p1.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P3.getConsumedValueByPeerB(), interactionP1P3.getDonatedValueByPeerB(), true)));
 		
 		assertTrue(p1.getThePeerIdWithNthBestReputation(1)==3);
 		assertTrue(p1.getThePeerIdWithNthBestReputation(2)==2);
@@ -115,20 +115,20 @@ public class PeerTest {
 		Peer p4 = new Peer(100, 4, false, 0);
 		Interaction interactionP1P4 = new Interaction(p1, p4);
 		interactionP1P4.peerBDonatesValue(10);
-		p1.getPeersReputations().add(new PeerReputation(p4.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P4.getConsumedValueByPeerA(), interactionP1P4.getDonatedValueByPeerA(), true)));
-		p4.getPeersReputations().add(new PeerReputation(p1.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P4.getConsumedValueByPeerB(), interactionP1P4.getDonatedValueByPeerB(), true)));
+		p1.getBalances().add(new PeerInfo(p4.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P4.getConsumedValueByPeerA(), interactionP1P4.getDonatedValueByPeerA(), true)));
+		p4.getBalances().add(new PeerInfo(p1.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P4.getConsumedValueByPeerB(), interactionP1P4.getDonatedValueByPeerB(), true)));
 		
 		Peer p5 = new Peer(100, 5, false, 0);
 		Interaction interactionP1P5 = new Interaction(p1, p5);
 		interactionP1P5.peerBDonatesValue(50);
-		p1.getPeersReputations().add(new PeerReputation(p5.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P5.getConsumedValueByPeerA(), interactionP1P5.getDonatedValueByPeerA(), true)));
-		p5.getPeersReputations().add(new PeerReputation(p1.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P5.getConsumedValueByPeerB(), interactionP1P5.getDonatedValueByPeerB(), true)));
+		p1.getBalances().add(new PeerInfo(p5.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P5.getConsumedValueByPeerA(), interactionP1P5.getDonatedValueByPeerA(), true)));
+		p5.getBalances().add(new PeerInfo(p1.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P5.getConsumedValueByPeerB(), interactionP1P5.getDonatedValueByPeerB(), true)));
 		
 		Peer p6 = new Peer(100, 6, false, 0);
 		Interaction interactionP1P6 = new Interaction(p1, p6);
 		interactionP1P6.peerADonatesValue(75);
-		p1.getPeersReputations().add(new PeerReputation(p6.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P6.getConsumedValueByPeerA(), interactionP1P6.getDonatedValueByPeerA(), true)));
-		p6.getPeersReputations().add(new PeerReputation(p1.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P6.getConsumedValueByPeerB(), interactionP1P6.getDonatedValueByPeerB(), true)));
+		p1.getBalances().add(new PeerInfo(p6.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P6.getConsumedValueByPeerA(), interactionP1P6.getDonatedValueByPeerA(), true)));
+		p6.getBalances().add(new PeerInfo(p1.getId(), NetworkOfFavors.calculateLocalReputation(interactionP1P6.getConsumedValueByPeerB(), interactionP1P6.getDonatedValueByPeerB(), true)));
 		
 		
 		/**
