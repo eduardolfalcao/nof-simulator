@@ -8,7 +8,7 @@ import java.util.Random;
 import peer.Collaborator;
 import peer.Peer;
 import peer.State;
-import peer.reputation.PeerInfo;
+import peer.balance.PeerInfo;
 
 public class MemberPicker {
 	

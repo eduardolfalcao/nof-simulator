@@ -15,17 +15,15 @@ public class Interaction {
 	private double donated = 0, lastDonated = 0;	//value that peer A donated to peer B
 	
 	private final double initialCapacity;
-	private double maxCapacitySupplied;
+	private double maxCapacityToSupply;
 	private double capacitySuppliedHistory[];
 	private boolean increasingCapacity;
 	
 	public Interaction(Peer peerB, double initialCapacity, int numSteps) {
 		this.peerB = peerB;
-		this.initialCapacity = initialCapacity;
-		maxCapacitySupplied = initialCapacity;
+		this.initialCapacity = maxCapacityToSupply = initialCapacity;
 		capacitySuppliedHistory = new double[numSteps];
-		if(numSteps != 0)
-			capacitySuppliedHistory[0] = initialCapacity;
+		capacitySuppliedHistory[0] = initialCapacity;
 		increasingCapacity = false;
 	}
 	
@@ -66,81 +64,47 @@ public class Interaction {
 		return peerB;
 	}
 
-	/**
-	 * @param peerB the peerB to set
-	 */
 	public void setPeerB(Peer peerB) {
 		this.peerB = peerB;
 	}
 
-	/**
-	 * @return the maxCapacitySupplied
-	 */
-	public double getMaxCapacitySupplied() {
-		return maxCapacitySupplied;
+	public double getMaxCapacityToSupply() {
+		return maxCapacityToSupply;
 	}
 
-	/**
-	 * @param maxCapacitySupplied the maxCapacitySupplied to set
-	 */
-	public void setMaxCapacitySupplied(double maxCapacitySupplied) {
-		this.maxCapacitySupplied = maxCapacitySupplied;
+	public void setMaxCapacityToSupply(double maxCapacityToSupply) {
+		this.maxCapacityToSupply = maxCapacityToSupply;
 	}
 
-	/**
-	 * @return the capacitySuppliedHistory
-	 */
 	public double[] getCapacitySuppliedHistory() {
 		return capacitySuppliedHistory;
 	}
 
-	/**
-	 * @return the increasingCapacity
-	 */
 	public boolean isIncreasingCapacity() {
 		return increasingCapacity;
 	}
 
-	/**
-	 * @param increasingCapacity the increasingCapacity to set
-	 */
 	public void setIncreasingCapacity(boolean increasingCapacity) {
 		this.increasingCapacity = increasingCapacity;
 	}
 
-	/**
-	 * @return the consumed
-	 */
 	public double getConsumed() {
 		return consumed;
 	}
 
-	/**
-	 * @return the donated
-	 */
 	public double getDonated() {
 		return donated;
 	}
 
-	/**
-	 * @return the lastConsumed
-	 */
 	public double getLastConsumed() {
 		return lastConsumed;
 	}
 
-	/**
-	 * @return the lastDonated
-	 */
 	public double getLastDonated() {
 		return lastDonated;
 	}
 
-	/**
-	 * @return the initialCapacity
-	 */
 	public double getInitialCapacity() {
 		return initialCapacity;
 	}	
-
 }

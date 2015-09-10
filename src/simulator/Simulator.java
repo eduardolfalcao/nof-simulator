@@ -2,23 +2,17 @@ package simulator;
 
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import nof.Interaction;
-import nof.NetworkOfFavors;
 import peer.Collaborator;
-import peer.FreeRider;
 import peer.Peer;
 import peer.PeerGroup;
 import peer.State;
-import peer.reputation.PeerInfo;
 import utils.GenerateCsv;
-import utils.WriteExcel2010;
 
 public class Simulator {	
 	
@@ -33,7 +27,7 @@ public class Simulator {
 	private int currentStep;
 		
 	//nof
-	private boolean fdNof;						
+	private boolean fdNof, transitivity;						
 	private double tMin, tMax;
 	private double deltaC;					
 	
@@ -41,9 +35,10 @@ public class Simulator {
 	private StateGenerator stateGenerator;
 	public final static Logger logger = Logger.getLogger(Simulator.class.getName());
 	private String outputFile;
+	private double kappa;
 	
-	public Simulator(ArrayList<PeerGroup> groupsOfPeers, int numSteps, boolean fdNoF, double tMin, double tMax, double deltaC, 
-			int seed, Level level, String outputFile) {
+	public Simulator(ArrayList<PeerGroup> groupsOfPeers, int numSteps, boolean fdNoF, boolean transitivity, double tMin, double tMax, double deltaC, 
+			int seed, Level level, String outputFile, double kappa) {
 		
 		peerComunity = new PeerComunity(groupsOfPeers, numSteps);	//the constructor also creates the peers		
 		memberPicker = new MemberPicker(seed);
@@ -59,6 +54,7 @@ public class Simulator {
 		this.currentStep = 0;
 		
 		this.fdNof = fdNoF;
+		this.transitivity = transitivity;
 		this.tMin = tMin;
 		this.tMax = tMax;
 		this.deltaC = deltaC;
@@ -73,6 +69,7 @@ public class Simulator {
 	    logger.addHandler(handler);
 			
 		this.outputFile = outputFile;
+		this.kappa = kappa;
 	}
 	
 	public void startSimulation(){	
@@ -94,35 +91,28 @@ public class Simulator {
 			if(p.getState()==State.CONSUMING){
 				consumersList.add(p.getId());
 				PeerComunity.peers[p.getId()].setDemand(PeerComunity.peers[p.getId()].getInitialDemand());
-				PeerComunity.peers[p.getId()].getRequestedHistory()[this.currentStep] = PeerComunity.peers[p.getId()].getInitialDemand();
-				
-				if(PeerComunity.peers[p.getId()] instanceof Collaborator){
-					Collaborator c = (Collaborator)PeerComunity.peers[p.getId()];
-					c.setCapacityDonatedInThisStep(0);
-					c.getCapacitySuppliedHistory()[this.currentStep] = 0;				
-				}				
+				PeerComunity.peers[p.getId()].getRequestedHistory()[currentStep] = PeerComunity.peers[p.getId()].getInitialDemand();
+				PeerComunity.peers[p.getId()].setResourcesDonatedInCurrentStep(0);
+				PeerComunity.peers[p.getId()].getCapacitySuppliedHistory()[currentStep] = 0;			
 			}
 			else if(p.getState()==State.IDLE){
 				idlePeersList.add(p.getId());
 				PeerComunity.peers[p.getId()].setDemand(0);
 				PeerComunity.peers[p.getId()].getRequestedHistory()[this.currentStep] = 0;
-				
-				if(PeerComunity.peers[p.getId()] instanceof Collaborator){
-					Collaborator c = (Collaborator)PeerComunity.peers[p.getId()];
-					c.setCapacityDonatedInThisStep(0);
-					c.getCapacitySuppliedHistory()[this.currentStep] = 0;				
-				}			
+				PeerComunity.peers[p.getId()].setResourcesDonatedInCurrentStep(0);
+				PeerComunity.peers[p.getId()].getCapacitySuppliedHistory()[currentStep] = 0;
 			}
 			else{
 				providersList.add(p.getId());
 				PeerComunity.peers[p.getId()].setDemand(0);
 				PeerComunity.peers[p.getId()].getRequestedHistory()[this.currentStep] = 0;
-				
+				PeerComunity.peers[p.getId()].setResourcesDonatedInCurrentStep(0);
 				if(PeerComunity.peers[p.getId()] instanceof Collaborator){
 					Collaborator c = (Collaborator)PeerComunity.peers[p.getId()];
-					c.setCapacityDonatedInThisStep(0);
-					c.getCapacitySuppliedHistory()[this.currentStep] = c.getMaxCapacityToSupply();				
+					c.getCapacitySuppliedHistory()[currentStep] = c.getMaxCapacityToSupply();									
 				}
+				else
+					PeerComunity.peers[p.getId()].getCapacitySuppliedHistory()[currentStep] = PeerComunity.peers[p.getId()].getInitialCapacity();
 			}
 		}		
 	}	
@@ -138,7 +128,7 @@ public class Simulator {
 			
 			//keeps choosing consumer and donating until supply all peer's capacity 
 			ArrayList<Integer> alreadyConsumed = new ArrayList<Integer>();
-			while(provider.getCapacityDonatedInThisStep() < provider.getMaxCapacityToSupply()){
+			while(provider.getResourcesDonatedInCurrentStep() < provider.getMaxCapacityToSupply()){
 				
 				//first, we try to donate to peers with balance > 0, providing all that they ask, if the provider is able
 				Peer consumer = memberPicker.choosesConsumerWithPositiveBalance(provider, consumersList, alreadyConsumed);
@@ -169,10 +159,11 @@ public class Simulator {
 		//here we update the consumed and donated values of each peer
 		for(Peer p : PeerComunity.peers){
 			p.getConsumedHistory()[this.currentStep] += p.getInitialDemand() - p.getDemand();
+			p.getDonatedHistory()[this.currentStep] += p.getResourcesDonatedInCurrentStep();
 			
 			if(p instanceof Collaborator){
 				Collaborator collab = (Collaborator) p;
-				collab.getDonatedHistory()[this.currentStep] += collab.getCapacityDonatedInThisStep();
+				
 				
 				//save last values and update status for next step
 				for (Interaction interaction : collab.getInteractions())
@@ -221,18 +212,17 @@ public class Simulator {
 						if(change){
 							double totalAmountOfResources = collab.getInitialCapacity();								
 							if(interaction.isIncreasingCapacity())		//try to increase the current maxCapacitySupplied
-								interaction.setMaxCapacitySupplied(Math.min(totalAmountOfResources, interaction.getMaxCapacitySupplied()+deltaC*totalAmountOfResources));	
+								interaction.setMaxCapacityToSupply(Math.min(totalAmountOfResources, interaction.getMaxCapacityToSupply()+deltaC*totalAmountOfResources));	
 							else										//try to decrease the current maxCapacitySupplied
-								interaction.setMaxCapacitySupplied(Math.max(0, Math.min(totalAmountOfResources, interaction.getMaxCapacitySupplied()-deltaC*totalAmountOfResources)));
-						}
-						
-						interaction.getCapacitySuppliedHistory()[currentStep] = interaction.getMaxCapacitySupplied();						
+								interaction.setMaxCapacityToSupply(Math.max(0, Math.min(totalAmountOfResources, interaction.getMaxCapacityToSupply()-deltaC*totalAmountOfResources)));
+						}						
+						interaction.getCapacitySuppliedHistory()[currentStep] = interaction.getMaxCapacityToSupply();						
 					}
 					
 					
 					//global
 					double currentFairness = Simulator.getFairness(collab.getCurrentConsumed(currentStep), collab.getCurrentDonated(currentStep));
-					collab.getFairnessHistory()[this.currentStep] = currentFairness;
+//					collab.getFairnessHistory()[this.currentStep] = currentFairness;
 					double lastFairness = Simulator.getFairness(collab.getCurrentConsumed(currentStep-1), collab.getCurrentDonated(currentStep-1));
 					boolean change = false;
 					if(currentFairness>=0){
@@ -282,16 +272,9 @@ public class Simulator {
 	 */
 	private void exportData(){		
 		
-		GenerateCsv csvGen = new GenerateCsv(this.outputFile, this.numSteps, this);
+		//TODO adjust better the output name of file 
+		GenerateCsv csvGen = new GenerateCsv(this.outputFile, this);
 		csvGen.outputPeers();
-		csvGen.outputWelfareCollaborators();
-		csvGen.outputFreeRiders();
-		
-//		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
-//		we.setupFile();		
-//		we.fulfillCapacitySuppliedData(peerComunity);
-//		we.fulfillFairnessPerSteps(peerComunity);
-//		we.writeFile();
 	}
 	
     
@@ -320,15 +303,31 @@ public class Simulator {
     	return donatedPeersList;
     }
     
-	public double getFairnessLowerThreshold() {
+	public double getTMin() {
 		return tMin;
 	}
 	
-	public double getChangingValue() {
+	public double getTMax() {
+		return tMax;
+	}
+	
+	public double getDeltaC() {
 		return deltaC;
 	}
 	
 	public boolean isFdNof(){
 		return this.fdNof;
 	}
+	
+	public boolean isTransitivity() {
+		return transitivity;
+	}
+
+	public double getKappa() {
+		return kappa;
+	}
+
+	public PeerComunity getPeerComunity() {
+		return peerComunity;
+	}	
 }

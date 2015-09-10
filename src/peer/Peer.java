@@ -1,27 +1,27 @@
 package peer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import nof.Interaction;
-import peer.reputation.PeerInfo;
+import peer.balance.PeerInfo;
 
 public class Peer{
 	
 	
 	protected final double INITIAL_CAPACITY, INITIAL_DEMAND;
 	
-	protected double demand;
+	protected double demand, resourcesDonatedInCurrentStep;
 	protected int id;
 	
 	protected State state;
-	private double consumingStateProbability, providingStateProbability, idleStateProbability;
-	
+	private double consumingStateProbability, providingStateProbability, idleStateProbability;	
 	
 	protected ArrayList<PeerInfo> balances;
 	protected ArrayList <Interaction> interactions;
-	protected double consumedHistory[];
-	protected double requestedHistory[];
+	
+	private double consumedHistory[], donatedHistory[], requestedHistory[], capacitySuppliedHistory[];
 	
 		
 	public Peer(int id, double initialCapacity, double initialDemand, double consumingStateProbability, double idleStateProbability, double providingStateProbability, int numSteps) {
@@ -31,6 +31,7 @@ public class Peer{
 		
 		this.id = id;
 		this.demand = initialDemand;
+		this.resourcesDonatedInCurrentStep = 0;
 		
 		this.state = null;
 		this.consumingStateProbability = consumingStateProbability;
@@ -39,8 +40,11 @@ public class Peer{
 		
 		this.balances = new ArrayList<PeerInfo>();
 		this.interactions = new ArrayList<Interaction>();
+		
 		this.consumedHistory = new double[numSteps];
+		this.donatedHistory = new double[numSteps];
 		this.requestedHistory = new double[numSteps];
+		this.capacitySuppliedHistory = new double[numSteps];		
 	}
 	
 	/**
@@ -86,6 +90,14 @@ public class Peer{
 		this.demand = demand;
 	}	
 	
+	public double getResourcesDonatedInCurrentStep() {
+		return resourcesDonatedInCurrentStep;
+	}
+	
+	public void setResourcesDonatedInCurrentStep(double resourcesDonatedInCurrentStep) {
+		this.resourcesDonatedInCurrentStep = resourcesDonatedInCurrentStep;
+	}
+	
 	public State getState(){
 		return this.state;
 	}
@@ -125,7 +137,9 @@ public class Peer{
 	public int getThePeerIdWithNthBestReputation(int nth){
 		if(nth<=0)
 			return -1;
-			
+		
+		//sort the balance
+		Collections.sort(balances);		
 		for(int i = this.balances.size()-1; i>=0 ;i--){
 			if(nth==1)
 				return this.balances.get(i).getId();
@@ -150,15 +164,33 @@ public class Peer{
 	public double getCurrentConsumed(int step) {
 		double currrentConsumed = 0;
 		for(int i = 0; i <= step; i++)
-			currrentConsumed += this.consumedHistory[i];
+			currrentConsumed += consumedHistory[i];
 		return currrentConsumed;
 	}
 	
 	public double getCurrentConsumed(int beginning, int end) {
 		double currrentConsumed = 0;
 		for(int i = beginning; i <= end; i++)
-			currrentConsumed += this.consumedHistory[i];
+			currrentConsumed += consumedHistory[i];
 		return currrentConsumed;
+	}
+	
+	public double[] getDonatedHistory() {
+		return donatedHistory;
+	}
+	
+	public double getCurrentDonated(int step) {
+		double currrentDonated = 0;
+		for(int i = 0; i <= step; i++)
+			currrentDonated += donatedHistory[i];
+		return currrentDonated;
+	}
+	
+	public double getCurrentDonated(int beginning, int end) {
+		double currrentDonated = 0;
+		for(int i = beginning; i <= end; i++)
+			currrentDonated += donatedHistory[i];
+		return currrentDonated;
 	}
 	
 	public double [] getRequestedHistory() {
@@ -168,8 +200,12 @@ public class Peer{
 	public double getCurrentRequested(int step) {
 		double currrentRequested = 0;
 		for(int i = 0; i <= step; i++)
-			currrentRequested += this.requestedHistory[i];
+			currrentRequested += requestedHistory[i];
 		return currrentRequested;
 	}
 	
+	public double[] getCapacitySuppliedHistory() {
+		return capacitySuppliedHistory;
+	}
+		
 }

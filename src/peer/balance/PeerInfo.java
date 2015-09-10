@@ -1,4 +1,4 @@
-package peer.reputation;
+package peer.balance;
 
 
 public class PeerInfo implements Comparable<Object>{
@@ -6,10 +6,10 @@ public class PeerInfo implements Comparable<Object>{
 	private int id;
 	private double balance;	
 	
-	public PeerInfo(int id, double balance) {
+	public PeerInfo(int id) {
 		super();
 		this.id = id;
-		this.balance = balance;
+		this.balance = 0;
 	}
 	
 	/**
@@ -47,6 +47,11 @@ public class PeerInfo implements Comparable<Object>{
 			return EQUAL;
 		else	// (myBalance >= hisBalance) 
 	    	return AFTER;
+	}
+	
+	@Override
+	public String toString(){
+		return "Id: "+id+"; balance: "+balance;
 	}
 
 	public int getId() {

@@ -2,20 +2,20 @@ package peer;
 
 public class PeerGroup {
 	
-	private double consumingStateProbability, providingStateProbability, idleStateProbability;
+	private double consumingStateProbability, idleStateProbability, providingStateProbability;
 	private double capacity, demand;
 	private boolean freeRider;
 	
 	private int numPeers;
 	
 	public PeerGroup(int numPeers, double consumingStateProbability,
-			double providingStateProbability, double idleStateProbability,
+			double idleStateProbability, double providingStateProbability,
 			double capacity, double demand, boolean freeRider) {
 		super();
 		this.numPeers = numPeers;
-		this.consumingStateProbability = consumingStateProbability;
-		this.providingStateProbability = providingStateProbability;
+		this.consumingStateProbability = consumingStateProbability;		
 		this.idleStateProbability = idleStateProbability;
+		this.providingStateProbability = providingStateProbability;
 		this.capacity = capacity;
 		this.demand = demand;
 		this.freeRider = freeRider;

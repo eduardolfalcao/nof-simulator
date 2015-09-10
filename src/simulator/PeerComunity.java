@@ -1,18 +1,11 @@
 package simulator;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
-import java.util.logging.Level;
 
-import nof.Interaction;
 import peer.Collaborator;
 import peer.FreeRider;
 import peer.Peer;
 import peer.PeerGroup;
-import peer.State;
-import peer.reputation.PeerInfo;
 
 public class PeerComunity {
 	
@@ -20,12 +13,22 @@ public class PeerComunity {
 	private ArrayList<PeerGroup> groupsOfPeers;	
 	private int numSteps;
 	
+	private int numCollaborators, numFreeRiders;
+	
 	public PeerComunity(ArrayList<PeerGroup> groupsOfPeers, int numSteps){
 		
-		this.groupsOfPeers = groupsOfPeers;		
+		this.groupsOfPeers = groupsOfPeers;	
+		
+		numCollaborators = numFreeRiders = 0;
+		
 		int numPeers = 0;
-		for(PeerGroup pg : groupsOfPeers)
-			numPeers += pg.getNumPeers();		
+		for(PeerGroup pg : groupsOfPeers){
+			numPeers += pg.getNumPeers();
+			if(pg.isFreeRider())
+				numFreeRiders += pg.getNumPeers();
+			else
+				numCollaborators += pg.getNumPeers();
+		}		
 		PeerComunity.peers = new Peer[numPeers];
 		
 		this.numSteps = numSteps;
@@ -48,5 +51,13 @@ public class PeerComunity {
 				PeerComunity.peers[id] = p;
 			}
 		}
+	}
+
+	public int getNumFreeRiders() {
+		return numFreeRiders;
+	}
+
+	public int getNumCollaborators() {
+		return numCollaborators;
 	}
 }

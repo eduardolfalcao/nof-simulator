@@ -22,5 +22,4 @@ public class StateGenerator {
 		else
 			return providingState;		
 	}
-
 }

@@ -9,7 +9,7 @@ import nof.NetworkOfFavors;
 import peer.Collaborator;
 import peer.FreeRider;
 import peer.Peer;
-import peer.reputation.PeerInfo;
+import peer.balance.PeerInfo;
 
 public class Market {
 	
@@ -40,12 +40,12 @@ public class Market {
 		}
 		
 		//here we know who is zero credit and wants to consume		
-		while(peersWithNilBalance.size()>0 && provider.getCapacityDonatedInThisStep()<(provider.getMaxCapacityToSupply()-0.0000000001)){	//TODO what should we do with this bug
+		while(peersWithNilBalance.size()>0 && provider.getResourcesDonatedInCurrentStep()<(provider.getMaxCapacityToSupply()-0.0000000001)){	//TODO what should we do with this bug
 			double smallestDemand = Double.MAX_VALUE;
 			for(int idConsumer : peersWithNilBalance)
 				smallestDemand = smallestDemand < PeerComunity.peers[idConsumer].getDemand()? smallestDemand : PeerComunity.peers[idConsumer].getDemand();
 			
-			double resourcesForPeersWithZeroCredit = provider.getMaxCapacityToSupply() - provider.getCapacityDonatedInThisStep();
+			double resourcesForPeersWithZeroCredit = provider.getMaxCapacityToSupply() - provider.getResourcesDonatedInCurrentStep();
 			double howMuchShouldEachPeerReceive = resourcesForPeersWithZeroCredit/peersWithNilBalance.size();			
 			double howMuchWillEachPeerReceiveInThisRound = Math.min(smallestDemand, howMuchShouldEachPeerReceive);
 			
@@ -72,11 +72,11 @@ public class Market {
 			//creates an interaction for the provider and for the consumer
 			Interaction providersInteraction = new Interaction(consumer, provider.getInitialCapacity(), simulator.getNumSteps());
 			provider.getInteractions().add(providersInteraction);
-			provider.getBalances().add(new PeerInfo(consumer.getId(), 0));
+			provider.getBalances().add(new PeerInfo(consumer.getId()));
 			if(!(consumer instanceof FreeRider)){
 				Interaction consumersInteraction = new Interaction(provider, consumer.getInitialCapacity(), simulator.getNumSteps());
 				consumer.getInteractions().add(consumersInteraction);
-				consumer.getBalances().add(new PeerInfo(provider.getId(), 0));
+				consumer.getBalances().add(new PeerInfo(provider.getId()));
 			}
 		}			
 		
@@ -113,9 +113,9 @@ public class Market {
 				if(newComer || fairness<=0) 
 					maxToBeDonated = provider.getMaxCapacityToSupply();		//global
 				else
-					maxToBeDonated = interaction.getMaxCapacitySupplied();	//pairwise
+					maxToBeDonated = interaction.getMaxCapacityToSupply();	//pairwise
 				
-				PeerInfo peerBalance = new PeerInfo(consumer.getId(), 0);
+				PeerInfo peerBalance = new PeerInfo(consumer.getId());
 				peerBalance = provider.getBalances().get(provider.getBalances().indexOf(peerBalance));
 				//if the peer has balance>maxToBeDonated, then the balance must be the maxToBeDonated
 				maxToBeDonated = Math.max(maxToBeDonated, peerBalance.getBalance());	 
@@ -125,7 +125,7 @@ public class Market {
 				maxToBeDonated = provider.getInitialCapacity();				//sdnof
 			
 			double amountThatCouldBeDonated = Math.min(consumer.getDemand(), maxToBeDonated);
-			double freeResources = maxToBeDonated - provider.getCapacityDonatedInThisStep();
+			double freeResources = maxToBeDonated - provider.getResourcesDonatedInCurrentStep();
 			valueToBeDonated = Math.max(0,Math.min(freeResources, amountThatCouldBeDonated));	//TODO how do we deal with this bug	
 		}
 		//this is for NilBalance peers: donate the specified in the division among all NilBalance peers
@@ -137,7 +137,7 @@ public class Market {
 		}	
 		
 		interaction.donate(valueToBeDonated);
-		provider.setCapacityDonatedInThisStep(provider.getCapacityDonatedInThisStep()+valueToBeDonated);				
+		provider.setResourcesDonatedInCurrentStep(provider.getResourcesDonatedInCurrentStep()+valueToBeDonated);				
 		return valueToBeDonated;
 	}
 	
@@ -153,11 +153,11 @@ public class Market {
 	private void updateBalance(Collaborator provider, Peer consumer, Interaction interaction){	//we have to call it twice: each for the interaction of each peer	
 		double reputation = NetworkOfFavors.calculateBalance(interaction.getConsumed(), interaction.getDonated());
 		if(interaction.getPeerB() == consumer){
-			int consumerIndex = provider.getBalances().indexOf(new PeerInfo(consumer.getId(), 0));
+			int consumerIndex = provider.getBalances().indexOf(new PeerInfo(consumer.getId()));
 			provider.getBalances().get(consumerIndex).setBalance(reputation);
 		}
 		else{
-			int providerIndex = consumer.getBalances().indexOf(new PeerInfo(provider.getId(), 0));
+			int providerIndex = consumer.getBalances().indexOf(new PeerInfo(provider.getId()));
 			consumer.getBalances().get(providerIndex).setBalance(reputation);
 		}
 	}
@@ -168,7 +168,7 @@ public class Market {
 			simulator.getConsumedPeersList().add(consumer.getId());
 		}
 		else if(consumer.getDemand()<0){
-			Simulator.logger.finest("Consumer demand should never be smaller than consumer.getInitialCapacity(). Some sheet happened here. "
+			Simulator.logger.finest("Consumer demand should never be smaller than consumer.getInitialCapacity(). Some sheet happened here."
 					+ "We should find the origin of this bug!");
 			Simulator.logger.finest("Demand: "+consumer.getDemand());
 			System.exit(0);
@@ -182,8 +182,7 @@ public class Market {
 	
 	private void sortBalances(Collaborator provider, Peer consumer){
 		Collections.sort(provider.getBalances());
-		if(!(consumer instanceof FreeRider))
-			Collections.sort(consumer.getBalances());
+		Collections.sort(consumer.getBalances());
     }
 
 }

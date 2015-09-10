@@ -5,166 +5,29 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import nof.Interaction;
+import nof.NetworkOfFavors;
 import peer.Collaborator;
 import peer.FreeRider;
+import peer.Peer;
+import simulator.PeerComunity;
 import simulator.Simulator;
  
 public class GenerateCsv{
 	
 	private String outputFile;
-	private int numSteps;
-	private Simulator sim;
-	
-	public GenerateCsv(String outputFile, int numSteps, Simulator sim){
+	private Simulator simulator;	
+		
+	public GenerateCsv(String outputFile, Simulator simulator){
 		this.outputFile = outputFile;
-		this.numSteps = numSteps;
-		this.sim = sim; 
+		this.simulator = simulator; 
 	}
 	
 	public void outputPeers(){
 		FileWriter writer = this.createHeaderForPeer();
-		writer = this.writePeers(writer);
-		this.flushFile(writer);
+		writer = writePeers(writer);
+		flushFile(writer);
 	}
-	
-	public void outputWelfareCollaborators(){
-		FileWriter writer = this.createHeaderForWelfareCollaborator();
-		writer = this.writeWelfareCollaborators(writer);
-		this.flushFile(writer);
-	}
-	
-	private FileWriter writeWelfareCollaborators(FileWriter writer) {
-		List<Collaborator> collabs = new ArrayList<Collaborator>();
-		
-		for (int i = 0; i < Simulator.peers.length; i++) {
-			if(Simulator.peers[i] instanceof Collaborator)
-				collabs.add((Collaborator) Simulator.peers[i]);
-		}
-		
-		double [] consumedByCollaborators = new double [numSteps];
-		double [] donatedToEveryone = new double [numSteps];
-		double [] welfare = new double [numSteps];
-//		for(int turn = 0; turn < numSteps; turn++){
-//			for(Collaborator c : collabs){
-//				consumedByCollaborators[turn] += c.getConsumedHistory()[turn];
-//				donatedToEveryone[turn] += c.getDonatedHistory()[turn];
-//			}
-//			welfare[turn] = consumedByCollaborators[turn]/donatedToEveryone[turn];
-//		}
-		
-		for(int turn = 0; turn < numSteps; turn++){
-			for(Collaborator c : collabs){
-				consumedByCollaborators[turn] += c.getCurrentConsumed(turn);
-				donatedToEveryone[turn] += c.getCurrentDonated(turn);
-			}
-			double fairnessOfCollaborators = consumedByCollaborators[turn]/donatedToEveryone[turn];
-			welfare[turn] = fairnessOfCollaborators;
-		}
-		
-		for(int turn = 0; turn < numSteps; turn++){
-			try {
-				//turn
-				writer.append((turn+1)+"");
-				writer.append(',');				
-				
-				//welfareRA ==> welfareRunningAverage
-				double welfareRunningAverage = 0;
-				for(int i = turn; i>=Math.max(turn-499, 0);i--){
-					welfareRunningAverage += welfare[i];
-				}
-				welfareRunningAverage = welfareRunningAverage/Math.min(turn+1,500);		
-			
-				writer.append((welfareRunningAverage)+"");
-				writer.append(',');
-				
-				
-				writer.append((welfare[turn])+"");
-				writer.append(',');
-				
-				//kappa
-				writer.append(this.sim.getKappa()+"");
-				writer.append(',');
-				
-				//f
-				writer.append(this.sim.getF());
-				writer.append(',');
-				
-				//nof
-				writer.append((this.sim.isPairwise()?"FD-NoF":"SD-NoF")+"");
-				writer.append(',');
-				
-				//tau
-				writer.append(this.sim.getFairnessLowerThreshold()+"");
-				writer.append(',');
-				
-				//delta
-				writer.append(this.sim.getChangingValue()+"");
-				writer.append('\n');
-				
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				System.out.println("Exception while writing free riders...");
-			}	
-		}
-
-		
-		
-		
-		return writer;
-	}
-
-	private FileWriter createHeaderForWelfareCollaborator() {
-		FileWriter writer = null;
-		try {
-			writer = new FileWriter(this.outputFile+"-WelfareColaborators.csv");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		try {
-			 writer.append("turn");
-			 writer.append(',');
-			 writer.append("welfareRA");
-			 writer.append(',');
-			 writer.append("welfare");
-			 writer.append(',');
-			 writer.append("kappa");
-			 writer.append(',');
-			 writer.append("f");
-			 writer.append(',');
-			 writer.append("NoF");
-			 writer.append(',');
-			 writer.append("tau");
-			 writer.append(',');
-			 writer.append("delta");
-			 writer.append('\n');
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return writer;
-	}
-
-	public void outputCollaborators(){
-		FileWriter writer = this.createHeaderForCollaborator();
-		writer = this.writeCollaborators(writer);
-		this.flushFile(writer);
-	}
-	
-	public void outputFreeRiders(){
-		FileWriter writer = this.createHeaderForFreeRider();
-		writer = this.writeFreeRiders(writer);
-		this.flushFile(writer);
-	}
-	
-	public void outputCapacitySupplied(){
-		FileWriter writer = this.createHeaderForCapacitySupplied();
-		writer = this.writeCapacitySupplied(writer);
-		this.flushFile(writer);
-	}	
 	
 	private FileWriter createHeaderForPeer(){
 		
@@ -172,501 +35,102 @@ public class GenerateCsv{
 		try {
 			writer = new FileWriter(this.outputFile+".csv");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		try {
-			 writer.append("pi");
-			 writer.append(',');
-			 writer.append("d");
-			 writer.append(',');
 			 writer.append("fairness");
 			 writer.append(',');
 			 writer.append("satisfaction");
 			 writer.append(',');
+			 writer.append("overallBalance");
+			 writer.append(',');			
+			 writer.append("consumingPI");
+			 writer.append(',');
+			 writer.append("idlePI");
+			 writer.append(',');
+			 writer.append("providingPI");
+			 writer.append(',');			 
+			 writer.append("demand");
+			 writer.append(',');
+			 writer.append("capacity");
+			 writer.append(',');			 
 			 writer.append("kappa");
 			 writer.append(',');
-			 writer.append("f");
+			 writer.append("numberOfCollaborators");
+			 writer.append(',');
+			 writer.append("numberOfFreeRiders");
 			 writer.append(',');
 			 writer.append("NoF");
 			 writer.append(',');
-			 writer.append("tau");
+			 writer.append("tMin");
+			 writer.append(',');
+			 writer.append("tMax");
 			 writer.append(',');
 			 writer.append("delta");
 			 writer.append('\n');
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		return writer;
-	    
-	}
-	
-	private FileWriter createHeaderForFreeRider(){
-		
-		FileWriter writer = null;
-		try {
-			writer = new FileWriter(this.outputFile+"-FreeRiders.csv");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		try {
-			 writer.append("turn");
-			 writer.append(',');
-			 writer.append("welfareRA");
-			 writer.append(',');
-			 writer.append("welfare");
-			 writer.append(',');
-			 writer.append("kappa");
-			 writer.append(',');
-			 writer.append("kappaRA");
-			 writer.append(',');
-			 writer.append("f");
-			 writer.append(',');
-			 writer.append("NoF");
-			 writer.append(',');
-			 writer.append("tau");
-			 writer.append(',');
-			 writer.append("delta");
-			 writer.append('\n');
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return writer;
-	    
+		return writer;	    
 	}
 	
 	private FileWriter writePeers(FileWriter writer){
 		
-		List<Collaborator> collabs = new ArrayList<Collaborator>();
-		List<FreeRider> frs = new ArrayList<FreeRider>();
+		double kappa = simulator.getKappa();
 		
-		for (int i = 0; i < Simulator.peers.length; i++) {
-			if(Simulator.peers[i] instanceof Collaborator)
-				collabs.add((Collaborator) Simulator.peers[i]);
-			else if(Simulator.peers[i] instanceof FreeRider)
-				frs.add((FreeRider)Simulator.peers[i]);
-		}
+		int numberOfCollaborators = simulator.getPeerComunity().getNumCollaborators();
+		int numberOfFreeRiders = simulator.getPeerComunity().getNumFreeRiders();
 		
-		//peer, fairness, satisfaction, kappa, f, NoF, tau
+		String nof = "";
+		if(!simulator.isFdNof())
+			nof = "SD-NoF";
+		else if(simulator.isTransitivity())
+			nof = "FD-NoTF";
+		else
+			nof = "FD-NoF";
 		
-		//collaborators
-		for(Collaborator c : collabs){
+		double tMin = simulator.getTMin();
+		double tMax = simulator.getTMax();
+		double delta = simulator.getDeltaC();
+		
+		for(Peer p : PeerComunity.peers){
+			double fairness = Simulator.getFairness(p.getCurrentConsumed(simulator.getNumSteps()-1), 
+					p.getCurrentDonated(simulator.getNumSteps()-1));
+			
+			double satisfaction = Simulator.getSatisfaction(p.getCurrentConsumed(simulator.getNumSteps()-1), 
+					p.getCurrentRequested(simulator.getNumSteps()-1));
+			
+			double overallBalance = 0;
+			for(Interaction i : p.getInteractions())
+				overallBalance += NetworkOfFavors.calculateBalance(i.getConsumed(), i.getDonated());
+			
+			double consumingPI = p.getConsumingStateProbability();
+			double idlePI = p.getIdleStateProbability();
+			double providingPI = p.getProvidingStateProbability();			
+			double demand = p.getInitialDemand();
+			double capacity = p.getInitialCapacity();			
+			
 			try {
-				writer.append(c.getConsumingStateProbability()+"");
-				writer.append(',');
-				
-				writer.append(c.getInitialDemand()+"");
-				writer.append(',');
-				
-				//fairness
-				double currentConsumed, currentDonated, fairness;
-				currentConsumed = c.getCurrentConsumed(numSteps-1);			
-				currentDonated = c.getCurrentDonated(numSteps-1);
-				fairness = Simulator.getFairness(currentConsumed, currentDonated);				
-				writer.append(fairness+"");
-				writer.append(',');
-				
-				//satisfaction
-				double currentRequested = c.getCurrentRequested(numSteps-1);
-				double satisfaction = Simulator.getFairness(currentConsumed, currentRequested);
-				writer.append(satisfaction+"");
-				writer.append(',');
-				
-				//kappa
-				writer.append(this.sim.getKappa()+"");
-				writer.append(',');
-				
-				//f
-				writer.append(this.sim.getF());
-				writer.append(',');
-				
-				//nof
-				writer.append((this.sim.isPairwise()?"FD-NoF":"SD-NoF")+"");
-				writer.append(',');
-				
-				//tau
-				writer.append(this.sim.getFairnessLowerThreshold()+"");
-				writer.append(',');
-				
-				//delta
-				writer.append(this.sim.getChangingValue()+"");
-				writer.append('\n');
-				
+				writer.append(fairness+","+satisfaction+","+overallBalance+","+consumingPI+","+idlePI+","+providingPI+","+demand+","+capacity+",");
+				writer.append(kappa+","+numberOfCollaborators+","+numberOfFreeRiders+","+nof+","+tMin+","+tMax+","+delta+"\n");
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				Simulator.logger.finest("Exception while writing to output (csv) the performance of peers.");
 				e.printStackTrace();
-				System.out.println("Exception while writing collaboratos...");
-			}	
-		}
-		
-//		//collaborators
-//		for(FreeRider fr : frs){
-//			try {
-//				writer.append("free rider");
-//				writer.append(',');
-//						
-//				//fairness
-//				writer.append(-1+"");
-//				writer.append(',');
-//							
-//				//satisfaction
-//				double currentConsumed = fr.getCurrentConsumed(numSteps-1);
-//				double currentRequested = fr.getCurrentRequested(numSteps-1);
-//				double satisfaction = Simulator.getFairness(currentConsumed, currentRequested);
-//				writer.append(satisfaction+"");
-//				writer.append(',');
-//						
-//				//kappa
-//				writer.append(this.sim.getKappa()+"");
-//				writer.append(',');
-//						
-//				//f
-//				writer.append(this.sim.getF());
-//				writer.append(',');
-//						
-//				//nof
-//				writer.append((this.sim.isPairwise()?"FD-NoF":"SD-NoF")+"");
-//				writer.append(',');
-//						
-//				//tau
-//				writer.append(this.sim.getFairnessLowerThreshold()+"");
-//				writer.append('\n');
-//						
-//			} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//				e.printStackTrace();
-//				System.out.println("Exception while writing free riders...");
-//			}	
-//		}
-		
-		
+			}			
+		}	
 		
 		return writer;
 	}
 	
-	private FileWriter createHeaderForCollaborator(){
-		
-		FileWriter writer = null;
-		try {
-			writer = new FileWriter(this.outputFile+"Collaborator.csv");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		try {
-			 writer.append("fairness");
-			 writer.append(',');
-			 writer.append("satisfaction");
-			 writer.append(',');
-			 writer.append("index");
-			 writer.append(',');
-			 writer.append("demand");
-			 writer.append(',');
-			 writer.append("kappa");
-			 writer.append(',');
-			 writer.append("design");
-			 writer.append(',');
-			 writer.append("NoF");
-			 writer.append('\n');
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return writer;
-	    
-	}
-	
-	private FileWriter createHeaderForCapacitySupplied(){
-		
-		FileWriter writer = null;
-		try {
-			writer = new FileWriter(this.outputFile+"CapacitySupplied.csv");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		try {
-			writer.append("demand");
-			for(int i = 1; i <= numSteps; i++){
-				writer.append(',');
-				writer.append(i+"");
-			}
-		    writer.append('\n');
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return writer;
-	    
-	}
-	
-	private FileWriter writeCollaborators(FileWriter writer){
-		for (int i = 0; i < Simulator.peers.length; i++) {
-			if(Simulator.peers[i] instanceof Collaborator){				
-							
-				try {
-					
-					//fairness
-					Collaborator collab = (Collaborator) Simulator.peers[i];
-					double currentConsumed, currentDonated, fairness;
-					currentConsumed = collab.getCurrentConsumed(numSteps-1);			
-					currentDonated = collab.getCurrentDonated(numSteps-1);
-					fairness = Simulator.getFairness(currentConsumed, currentDonated);				
-					writer.append(fairness+"");
-					writer.append(',');
-					
-					//satisfaction
-					double currentRequested = Simulator.peers[i].getCurrentRequested(numSteps-1);
-					double satisfaction = Simulator.getFairness(currentConsumed, currentRequested);
-					writer.append(satisfaction+"");
-					writer.append(',');
-					
-//					//index
-//					writer.append(Simulator.peers[i].getIndex()+"");
-//					writer.append(',');
-					
-					//demand
-					writer.append(Simulator.peers[i].getInitialDemand()+"");
-					writer.append(',');
-					
-					//kappa
-					writer.append(this.sim.getKappa()+"");
-					writer.append(',');
-					
-					//design
-					writer.append(this.sim.getDesign()+"");
-					writer.append(',');
-					
-					//nof
-					writer.append((this.sim.isPairwise()?"FD-NoF":"SD-NoF")+"");
-					writer.append('\n');
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}	
-			}
-		}
-		
-		return writer;
-	}
-	
-	private FileWriter writeCapacitySupplied(FileWriter writer){
-		for (int i = 0; i < Simulator.peers.length; i++) {
-			if(Simulator.peers[i] instanceof Collaborator){				
-							
-				try {
-					double demandRatio = (Simulator.peers[i].getInitialDemand()-Simulator.peers[i].getInitialCapacity())/Simulator.peers[i].getInitialCapacity();	
-					writer.append(demandRatio+"C");					
-					
-					Collaborator c = (Collaborator) Simulator.peers[i];
-					for(int j = 0; j < numSteps; j++){
-						writer.append(',');
-						writer.append(c.getCapacitySuppliedHistory()[j]+"");
-					}
-					writer.append('\n');
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}	
-			}
-		}
-		
-		return writer;
-	}
-	
-	private void flushFile(FileWriter writer){
-		
+	private void flushFile(FileWriter writer){		
 	    try {
 			writer.flush();
 			writer.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			Simulator.logger.finest("Exception while flushing data to File.");
 			e.printStackTrace();
-		}
-		
+		}		
 	}
-	
-//	public void outputFreeRiders(){
-//		FileWriter writer = this.createHeaderForFreeRider();
-//		writer = this.writeFreeRiders(writer);
-//		this.flushFile(writer);
-//	}
-	
-//	private FileWriter createHeaderForFreeRider(){
-//		
-//		FileWriter writer = null;
-//		try {
-//			writer = new FileWriter(this.outputFile+"Freerider.csv");
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		
-//		try {
-//			 writer.append("satisfaction");
-//			 writer.append(',');
-//			 writer.append("index");
-//			 writer.append(',');
-//			 writer.append("demand");
-//			 writer.append(',');
-//			 writer.append("kappa");
-//			 writer.append(',');
-//			 writer.append("design");
-//			 writer.append(',');
-//			 writer.append("NoF");
-//			 writer.append('\n');
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		
-//		return writer;
-//	    
-//	}	
-   
-//	private FileWriter writeFreeRiders(FileWriter writer){
-//		for (int i = 0; i < Simulator.peers.length; i++) {
-//			if(Simulator.peers[i] instanceof FreeRider){		
-//				
-//				try {
-//					
-//					//satisfaction
-//					FreeRider freeRider = (FreeRider) Simulator.peers[i];
-//					double currentConsumed = freeRider.getCurrentConsumed(numSteps-1);		
-//					double currentRequested = Simulator.peers[i].getCurrentRequested(numSteps-1);
-//					double satisfaction = Simulator.getFairness(currentConsumed, currentRequested);
-//					writer.append(satisfaction+"");
-//					writer.append(',');
-//					
-//					//index
-//					writer.append(Simulator.peers[i].getIndex()+"");
-//					writer.append(',');
-//					
-//					//demand
-//					writer.append(Simulator.peers[i].getInitialDemand()+"");
-//					writer.append(',');
-//					
-//					//kappa
-//					writer.append(this.sim.getKappa()+"");
-//					writer.append(',');
-//					
-//					//design
-//					writer.append(this.sim.getDesign()+"");
-//					writer.append(',');
-//					
-//					//nof
-//					writer.append((this.sim.isPairwise()?"FD-NoF":"SD-NoF")+"");
-//					writer.append('\n');
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//			}
-//		}
-//		
-//		return writer;
-//	}
-	
-private FileWriter writeFreeRiders(FileWriter writer){
-		
-		List<Collaborator> collabs = new ArrayList<Collaborator>();
-		List<FreeRider> frs = new ArrayList<FreeRider>();
-		
-		for (int i = 0; i < Simulator.peers.length; i++) {
-			if(Simulator.peers[i] instanceof Collaborator)
-				collabs.add((Collaborator) Simulator.peers[i]);
-			else if(Simulator.peers[i] instanceof FreeRider)
-				frs.add((FreeRider)Simulator.peers[i]);
-		}
-		
-		double [] consumedByCollaborators = new double [numSteps];
-		double [] donatedToEveryone = new double [numSteps];
-		double [] welfare = new double [numSteps];
-		
-		for(int turn = 0; turn < numSteps; turn++){
-			for(Collaborator c : collabs){
-				consumedByCollaborators[turn] += c.getCurrentConsumed(turn);
-				donatedToEveryone[turn] += c.getCurrentDonated(turn);
-			}
-			double fairnessOfCollaborators = consumedByCollaborators[turn]/donatedToEveryone[turn];
-			welfare[turn] = 1 - fairnessOfCollaborators;
-		}
-		
-		for(int turn = 0; turn < numSteps; turn++){
-			try {
-				//turn
-				writer.append((turn+1)+"");
-				writer.append(',');				
-				
-				//welfareRA ==> welfareRunningAverage
-				double welfareRunningAverage = 0;
-				for(int i = turn; i>=Math.max(turn-499, 0);i--){
-					welfareRunningAverage += welfare[i];
-				}
-				welfareRunningAverage = welfareRunningAverage/Math.min(turn+1,500);		
-			
-				writer.append((welfareRunningAverage)+"");
-				writer.append(',');
-				
-				writer.append((welfare[turn])+"");
-				writer.append(',');
-				
-				//kappa
-				writer.append(this.sim.getKappa()+"");
-				writer.append(',');
-				
-				//kappaRA	== requested/supplied
-				double kappaRunningAverage = 0;
-				double requested = 0, supplied = 0;
-				for(int i = turn; i>=Math.max(turn-499, 0);i--){
-					for(Collaborator c : collabs){
-						requested += c.getRequestedHistory()[i];
-						supplied += c.getDonatedHistory()[i];		//now collaborators donate everything, then, supplied == donated
-					}
-				}
-				kappaRunningAverage = (requested/(Math.min(turn+1,500)))/(supplied/(Math.min(turn+1,500)));
-				writer.append(kappaRunningAverage+"");
-				writer.append(',');
-				
-				//f
-				writer.append(this.sim.getF());
-				writer.append(',');
-				
-				//nof
-				writer.append((this.sim.isPairwise()?"FD-NoF":"SD-NoF")+"");
-				writer.append(',');
-				
-				//tau
-				writer.append(this.sim.getFairnessLowerThreshold()+"");
-				writer.append(',');
-				
-				//delta
-				writer.append(this.sim.getChangingValue()+"");
-				writer.append('\n');
-				
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				System.out.println("Exception while writing free riders...");
-			}	
-		}
-
-		
-		
-		
-		return writer;
-	}
-	
-
 }
