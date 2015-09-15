@@ -25,9 +25,9 @@ public class PeerTest {
 	@Test
 	public void testEqualsObject() {
 		
-		Peer p1 = new Peer(1, 0, 0, 0, 0, 0,0);
-		Peer p2 = new Peer(2, 0, 0, 0, 0, 0,0);
-		Peer p3 = new Peer(1, 0, 0, 0, 0, 0,0);
+		Peer p1 = new Peer(1, 0, 0, null, 0, 0, 0);
+		Peer p2 = new Peer(2, 0, 0, null, 0, 0, 0);
+		Peer p3 = new Peer(1, 0, 0, null, 0, 0, 0);
 		Peer p4 = null;
 		
 		assertFalse(p1.equals(p2));		//when they're different
@@ -43,7 +43,7 @@ public class PeerTest {
 		 * Get peer with highest reputation, when the treeMap reputation is empty.
 		 */
 		
-		Peer p1 = new Peer(1, 0, 0, 0, 0, 0,0);
+		Peer p1 = new Peer(1, 0, 0, null, 0, 0,0);
 		assertTrue(p1.getThePeerIdWithNthBestReputation(1)==-1?true:false);
 		assertTrue(p1.getThePeerIdWithNthBestReputation(2)==-1?true:false);
 		assertTrue(p1.getThePeerIdWithNthBestReputation(10)==-1?true:false);
@@ -53,7 +53,7 @@ public class PeerTest {
 		 * Get peer with highest reputation, when the treeMap reputation has 1 peer.
 		 */
 		
-		Peer p2 = new Peer(2, 0, 0, 0, 0, 0,0);
+		Peer p2 = new Peer(2, 0, 0, null, 0, 0,0);
 		Interaction interactionP1P2 = new Interaction(p2, 0, 1);
 		p1.getInteractions().add(interactionP1P2);
 		interactionP1P2.donate(50);
@@ -79,7 +79,7 @@ public class PeerTest {
 		 * Get peer with highest reputation, when the treeMap reputation has 2 peers.
 		 */
 		
-		Peer p3 = new Peer(3, 0, 0, 0, 0, 0,0);
+		Peer p3 = new Peer(3, 0, 0, null, 0, 0,0);
 		Interaction interactionP1P3 = new Interaction(p3, 0, 1);
 		interactionP1P3.consume(25);
 		
@@ -110,7 +110,7 @@ public class PeerTest {
 		 * Get peer with highest reputation, when the treeMap reputation has 5 peers.
 		 */
 		
-		Peer p4 = new Peer(4, 0, 0, 0, 0, 0,0);
+		Peer p4 = new Peer(4, 0, 0, null, 0, 0,0);
 		Interaction interactionP1P4 = new Interaction(p4, 0, 1);
 		interactionP1P4.consume(10);
 		
@@ -122,7 +122,7 @@ public class PeerTest {
 		peerInfo.setBalance(NetworkOfFavors.calculateBalance(interactionP1P4.getDonated(), interactionP1P4.getConsumed()));
 		p4.getBalances().add(peerInfo);
 		
-		Peer p5 = new Peer(5, 0, 0, 0, 0, 0,0);
+		Peer p5 = new Peer(5, 0, 0, null, 0, 0,0);
 		Interaction interactionP1P5 = new Interaction(p5, 0, 1);
 		interactionP1P5.consume(50);
 		
@@ -134,7 +134,7 @@ public class PeerTest {
 		peerInfo.setBalance(NetworkOfFavors.calculateBalance(interactionP1P5.getDonated(), interactionP1P5.getConsumed()));
 		p5.getBalances().add(peerInfo);
 		
-		Peer p6 = new Peer(6, 0, 0, 0, 0, 0,0);
+		Peer p6 = new Peer(6, 0, 0, null, 0, 0,0);
 		Interaction interactionP1P6 = new Interaction(p6, 0, 1);
 		interactionP1P6.donate(75);
 		

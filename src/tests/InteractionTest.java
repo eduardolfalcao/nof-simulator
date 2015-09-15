@@ -7,16 +7,17 @@ import org.junit.Test;
 
 import peer.Collaborator;
 import peer.Peer;
+import peer.State;
 
 public class InteractionTest {
 
 	
 	@Test
 	public void testEqualsObject() {
-		
-		Peer p1 = new Peer(1, 0, 0, 0, 0, 0,0);
-		Peer p2 = new Peer(2, 0, 0, 0, 0, 0,0);
-		Peer p3 = new Peer(1, 0, 0, 0, 0, 0,0);
+				
+		Peer p1 = new Peer(1, 0, 0, null, 0, 0, 0);
+		Peer p2 = new Peer(2, 0, 0, null, 0, 0, 0);
+		Peer p3 = new Peer(1, 0, 0, null, 0, 0, 0);
 		
 		Interaction interactionP1P2 = new Interaction(p2, 0, 1);
 		Interaction interactionP2P1 = new Interaction(p1, 0, 1);
@@ -32,8 +33,8 @@ public class InteractionTest {
 	@Test
 	public void testDonationAndConsumptionMethods() {
 		
-		Collaborator c1 = new Collaborator(1, 1, 1, 0, 0, 0, 1);
-		Collaborator c2 = new Collaborator(2, 1, 1, 0, 0, 0, 1);
+		Collaborator c1 = new Collaborator(1, 1, 1, null, 0, 0, 1);
+		Collaborator c2 = new Collaborator(2, 1, 1, null, 0, 0, 1);
 		
 		Interaction interactionc1c2 = new Interaction(c2, 0, 1);
 		Interaction interactionc2c1 = new Interaction(c1, 0, 1);
@@ -51,7 +52,7 @@ public class InteractionTest {
 	
 	@Test
 	public void testSaveLastValues(){
-		Collaborator c2 = new Collaborator(2, 1, 1, 0, 0, 0, 1);
+		Collaborator c2 = new Collaborator(2, 1, 1, null, 0, 0, 1);
 		Interaction interactionc1c2 = new Interaction(c2, 0, 1);
 		interactionc1c2.donate(25);
 		interactionc1c2.consume(15);

@@ -10,7 +10,7 @@ public class StateGeneratorTest {
 	
 	
 	@Test
-	public void testStateGenerator() {
+	public void testStateGenerator1() {
 		
 		StateGenerator sg = new StateGenerator(1);
 		State result = sg.generateState(State.CONSUMING, 33, State.IDLE, 33, State.PROVIDING, 34);
@@ -62,9 +62,107 @@ public class StateGeneratorTest {
 		
 		sg = new StateGenerator(10);
 		result = sg.generateState(State.CONSUMING, 33, State.IDLE, 33, State.PROVIDING, 34);
+		Assert.assertEquals(State.CONSUMING, result);		
+		
+	}
+	
+	@Test
+	public void testStateGenerator2() {
+		StateGenerator sg = new StateGenerator(1);
+		State result = sg.generateState(State.CONSUMING, 0);
+		Assert.assertEquals(State.CONSUMING, result);	
+		
+		result = sg.generateState(State.CONSUMING, 0);
+		Assert.assertEquals(State.CONSUMING, result);
+		
+		result = sg.generateState(State.CONSUMING, 0);
+		Assert.assertEquals(State.CONSUMING, result);
+		
+		result = sg.generateState(State.CONSUMING, 0);
+		Assert.assertEquals(State.CONSUMING, result);
+		
+		result = sg.generateState(State.CONSUMING, 0);
+		Assert.assertEquals(State.CONSUMING, result);
+		
+		result = sg.generateState(State.CONSUMING, 0);
+		Assert.assertEquals(State.CONSUMING, result);
+		
+		result = sg.generateState(State.CONSUMING, 0);
+		Assert.assertEquals(State.CONSUMING, result);
+		
+		result = sg.generateState(State.CONSUMING, 0);
+		Assert.assertEquals(State.CONSUMING, result);
+		
+		result = sg.generateState(State.CONSUMING, 30);
+		Assert.assertEquals(State.PROVIDING, result);
+		
+		result = sg.generateState(State.CONSUMING, 30);
+		Assert.assertEquals(State.CONSUMING, result);
+		
+		result = sg.generateState(State.CONSUMING, 30);
+		Assert.assertEquals(State.PROVIDING, result);
+		
+		result = sg.generateState(State.CONSUMING, 30);
+		Assert.assertEquals(State.PROVIDING, result);
+		
+		result = sg.generateState(State.CONSUMING, 30);
+		Assert.assertEquals(State.CONSUMING, result);
+		
+		result = sg.generateState(State.CONSUMING, 30);
+		Assert.assertEquals(State.CONSUMING, result);
+		
+		result = sg.generateState(State.CONSUMING, 30);
 		Assert.assertEquals(State.CONSUMING, result);
 		
 		
+		result = sg.generateState(State.PROVIDING, 0);
+		Assert.assertEquals(State.PROVIDING, result);
+		
+		result = sg.generateState(State.PROVIDING, 0);
+		Assert.assertEquals(State.PROVIDING, result);
+		
+		result = sg.generateState(State.PROVIDING, 0);
+		Assert.assertEquals(State.PROVIDING, result);
+		
+		result = sg.generateState(State.PROVIDING, 0);
+		Assert.assertEquals(State.PROVIDING, result);
+		
+		result = sg.generateState(State.PROVIDING, 0);
+		Assert.assertEquals(State.PROVIDING, result);
+		
+		result = sg.generateState(State.PROVIDING, 0);
+		Assert.assertEquals(State.PROVIDING, result);
+		
+		result = sg.generateState(State.PROVIDING, 0);
+		Assert.assertEquals(State.PROVIDING, result);
+				
+		result = sg.generateState(State.PROVIDING, 50);
+		Assert.assertEquals(State.PROVIDING, result);
+				
+		result = sg.generateState(State.PROVIDING, 50);
+		Assert.assertEquals(State.IDLE, result);
+				
+		result = sg.generateState(State.PROVIDING, 50);
+		Assert.assertEquals(State.IDLE, result);
+		
+		result = sg.generateState(State.PROVIDING, 50);
+		Assert.assertEquals(State.CONSUMING, result);
+				
+		result = sg.generateState(State.PROVIDING, 50);
+		Assert.assertEquals(State.IDLE, result);
+		
+		
+		
+		
+		
+		result = sg.generateState(State.IDLE, 100);
+		Assert.assertEquals(State.PROVIDING, result);
+		
+		result = sg.generateState(State.IDLE, 100);
+		Assert.assertEquals(State.CONSUMING, result);
+		
+		result = sg.generateState(State.IDLE, 0);
+		Assert.assertEquals(State.IDLE, result);
 	}
 	
 

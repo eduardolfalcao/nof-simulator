@@ -45,12 +45,10 @@ public class GenerateCsv{
 			 writer.append(',');
 			 writer.append("overallBalance");
 			 writer.append(',');			
-			 writer.append("consumingPI");
+			 writer.append("groupId");
 			 writer.append(',');
-			 writer.append("idlePI");
-			 writer.append(',');
-			 writer.append("providingPI");
-			 writer.append(',');			 
+			 writer.append("deviation");
+			 writer.append(',');		 
 			 writer.append("demand");
 			 writer.append(',');
 			 writer.append("capacity");
@@ -108,14 +106,13 @@ public class GenerateCsv{
 			for(Interaction i : p.getInteractions())
 				overallBalance += NetworkOfFavors.calculateBalance(i.getConsumed(), i.getDonated());
 			
-			double consumingPI = p.getConsumingStateProbability();
-			double idlePI = p.getIdleStateProbability();
-			double providingPI = p.getProvidingStateProbability();			
+			int groupId = p.getGroupId();
+			double deviation = p.getDeviation();			
 			double demand = p.getInitialDemand();
 			double capacity = p.getInitialCapacity();			
 			
 			try {
-				writer.append(fairness+","+satisfaction+","+overallBalance+","+consumingPI+","+idlePI+","+providingPI+","+demand+","+capacity+",");
+				writer.append(fairness+","+satisfaction+","+overallBalance+","+groupId+","+deviation+","+demand+","+capacity+",");
 				writer.append(kappa+","+numberOfCollaborators+","+numberOfFreeRiders+","+nof+","+tMin+","+tMax+","+delta+"\n");
 			} catch (IOException e) {
 				Simulator.logger.finest("Exception while writing to output (csv) the performance of peers.");

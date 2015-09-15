@@ -3,12 +3,14 @@ package simulator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import nof.Interaction;
 import peer.Collaborator;
+import peer.FreeRider;
 import peer.Peer;
 import peer.PeerGroup;
 import peer.State;
@@ -17,6 +19,7 @@ import utils.GenerateCsv;
 public class Simulator {	
 	
 	private PeerComunity peerComunity;
+	private Queue<PeerGroup> groupsOfPeers;
 	private MemberPicker memberPicker;
 	private Market market;
 	
@@ -37,10 +40,11 @@ public class Simulator {
 	private String outputFile;
 	private double kappa;
 	
-	public Simulator(ArrayList<PeerGroup> groupsOfPeers, int numSteps, boolean fdNoF, boolean transitivity, double tMin, double tMax, double deltaC, 
+	public Simulator(Queue<PeerGroup> groupsOfPeers, int numSteps, boolean fdNoF, boolean transitivity, double tMin, double tMax, double deltaC, 
 			int seed, Level level, String outputFile, double kappa) {
 		
-		peerComunity = new PeerComunity(groupsOfPeers, numSteps);	//the constructor also creates the peers		
+		peerComunity = new PeerComunity(groupsOfPeers, numSteps);	//the constructor also creates the peers	
+		this.groupsOfPeers = groupsOfPeers;
 		memberPicker = new MemberPicker(seed);
 		market = new Market(this);
 		
@@ -83,42 +87,64 @@ public class Simulator {
 	
 	private void setupPeersState(){
 		
-		//now we set the state of each peer
-		for(Peer p : PeerComunity.peers){			
-			State currentState = stateGenerator.generateState(State.CONSUMING, p.getConsumingStateProbability(), State.IDLE, p.getIdleStateProbability(), State.PROVIDING, p.getProvidingStateProbability());
-			p.setState(currentState);
+		int index = 0, numberOfGroups = groupsOfPeers.size();
+		
+		while(index < numberOfGroups){
+			
+			PeerGroup group = groupsOfPeers.poll();	//with the poll we remove it from the queue, so we can access the next element
+			groupsOfPeers.add(group);				//then, we add it back on the queue, now, on its tails
+			
+			State masterState = null;
+			if(index==0)							//the first will always be the  consumer
+				masterState = State.CONSUMING;
+			else if(index == numberOfGroups-1)		//the last will always be the  provider
+				masterState = State.PROVIDING;
+			else									//the others will always be idle
+				masterState = State.IDLE;
+			
+			for(Peer p : PeerComunity.peers){		
+				if(p.getGroupId() == group.getGroupId()){
+					State currentState = stateGenerator.generateState(masterState, group.getDeviation());
+					p.setState(currentState);
 					
-			if(p.getState()==State.CONSUMING){
-				consumersList.add(p.getId());
-				PeerComunity.peers[p.getId()].setDemand(PeerComunity.peers[p.getId()].getInitialDemand());
-				PeerComunity.peers[p.getId()].getRequestedHistory()[currentStep] = PeerComunity.peers[p.getId()].getInitialDemand();
-				PeerComunity.peers[p.getId()].setResourcesDonatedInCurrentStep(0);
-				PeerComunity.peers[p.getId()].getCapacitySuppliedHistory()[currentStep] = 0;			
-			}
-			else if(p.getState()==State.IDLE){
-				idlePeersList.add(p.getId());
-				PeerComunity.peers[p.getId()].setDemand(0);
-				PeerComunity.peers[p.getId()].getRequestedHistory()[this.currentStep] = 0;
-				PeerComunity.peers[p.getId()].setResourcesDonatedInCurrentStep(0);
-				PeerComunity.peers[p.getId()].getCapacitySuppliedHistory()[currentStep] = 0;
-			}
-			else{
-				providersList.add(p.getId());
-				PeerComunity.peers[p.getId()].setDemand(0);
-				PeerComunity.peers[p.getId()].getRequestedHistory()[this.currentStep] = 0;
-				PeerComunity.peers[p.getId()].setResourcesDonatedInCurrentStep(0);
-				if(PeerComunity.peers[p.getId()] instanceof Collaborator){
-					Collaborator c = (Collaborator)PeerComunity.peers[p.getId()];
-					c.getCapacitySuppliedHistory()[currentStep] = c.getMaxCapacityToSupply();									
+					if(p.getState()==State.CONSUMING){
+						consumersList.add(p.getId());
+						PeerComunity.peers[p.getId()].setDemand(PeerComunity.peers[p.getId()].getInitialDemand());
+						PeerComunity.peers[p.getId()].getRequestedHistory()[currentStep] = PeerComunity.peers[p.getId()].getInitialDemand();
+						PeerComunity.peers[p.getId()].setResourcesDonatedInCurrentStep(0);
+						PeerComunity.peers[p.getId()].getCapacitySuppliedHistory()[currentStep] = 0;			
+					}
+					else if(p.getState()==State.IDLE){
+						idlePeersList.add(p.getId());
+						PeerComunity.peers[p.getId()].setDemand(0);
+						PeerComunity.peers[p.getId()].getRequestedHistory()[this.currentStep] = 0;
+						PeerComunity.peers[p.getId()].setResourcesDonatedInCurrentStep(0);
+						PeerComunity.peers[p.getId()].getCapacitySuppliedHistory()[currentStep] = 0;
+					}
+					else{
+						providersList.add(p.getId());
+						PeerComunity.peers[p.getId()].setDemand(0);
+						PeerComunity.peers[p.getId()].getRequestedHistory()[this.currentStep] = 0;
+						PeerComunity.peers[p.getId()].setResourcesDonatedInCurrentStep(0);
+						if(PeerComunity.peers[p.getId()] instanceof Collaborator){
+							Collaborator c = (Collaborator)PeerComunity.peers[p.getId()];
+							c.getCapacitySuppliedHistory()[currentStep] = c.getMaxCapacityToSupply();									
+						}
+						else
+							PeerComunity.peers[p.getId()].getCapacitySuppliedHistory()[currentStep] = PeerComunity.peers[p.getId()].getInitialCapacity();
+					}
 				}
-				else
-					PeerComunity.peers[p.getId()].getCapacitySuppliedHistory()[currentStep] = PeerComunity.peers[p.getId()].getInitialCapacity();
 			}
+			index++;
 		}
 		
-		for(Peer p : PeerComunity.peers){
+		//after all elements have been accessed, the queue remains at the same configuration it was before
+		//then, we remove the head element and add on the tail of the queue
+		PeerGroup group = groupsOfPeers.poll();	
+		groupsOfPeers.add(group);		
+		
+		for(Peer p : PeerComunity.peers)
 			Simulator.logger.finest("Id: "+p.getId()+"; InitialDemand: "+p.getInitialDemand()+"; Demand: "+p.getDemand()+"InitialCapacity: "+p.getInitialCapacity());
-		}
 	}	
 	
 	//performs all donations of the current step.

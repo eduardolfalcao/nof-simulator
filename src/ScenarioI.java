@@ -1,6 +1,8 @@
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.logging.Level;
 
 import peer.PeerGroup;
@@ -25,7 +27,7 @@ public class ScenarioI {
 		formatter.setRoundingMode(RoundingMode.DOWN);
 		
 		
-		
+		Queue<PeerGroup> queue = new LinkedList<PeerGroup>();
 		
 		
 		

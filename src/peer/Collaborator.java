@@ -7,9 +7,8 @@ public class Collaborator extends Peer{
 	private double maxCapacityToSupply;
 	private boolean increasingCapacitySupplied;
 	
-	public Collaborator(int id, double capacity, double demand, double consumingStateProbability, double idleStateProbability, double providingStateProbability, int numSteps) {
-		
-		super(id, capacity, demand, consumingStateProbability, idleStateProbability, providingStateProbability, numSteps);		
+	public Collaborator(int id, double capacity, double demand, State state, int groupId, double deviation, int numSteps) {		
+		super(id, capacity, demand, state, groupId, deviation, numSteps);		
 		this.setIncreasingCapacitySupplied(false);					
 		this.setMaxCapacityToSupply(capacity);		
 	}	

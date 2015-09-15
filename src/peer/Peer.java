@@ -15,8 +15,9 @@ public class Peer{
 	protected double demand, resourcesDonatedInCurrentStep;
 	protected int id;
 	
-	protected State state;
-	private double consumingStateProbability, providingStateProbability, idleStateProbability;	
+	private State state;
+	private int groupId;
+	private double deviation;
 	
 	protected ArrayList<PeerInfo> balances;
 	protected ArrayList <Interaction> interactions;
@@ -24,7 +25,7 @@ public class Peer{
 	private double consumedHistory[], donatedHistory[], requestedHistory[], capacitySuppliedHistory[];
 	
 		
-	public Peer(int id, double initialCapacity, double initialDemand, double consumingStateProbability, double idleStateProbability, double providingStateProbability, int numSteps) {
+	public Peer(int id, double initialCapacity, double initialDemand, State state, int groupId, double deviation, int numSteps) {
 		super();
 		this.INITIAL_CAPACITY = initialCapacity;
 		this.INITIAL_DEMAND = initialDemand;
@@ -33,10 +34,9 @@ public class Peer{
 		this.demand = initialDemand;
 		this.resourcesDonatedInCurrentStep = 0;
 		
-		this.state = null;
-		this.consumingStateProbability = consumingStateProbability;
-		this.idleStateProbability = idleStateProbability;
-		this.providingStateProbability = providingStateProbability;
+		this.state = state;
+		this.groupId = groupId;
+		this.deviation = deviation;
 		
 		this.balances = new ArrayList<PeerInfo>();
 		this.interactions = new ArrayList<Interaction>();
@@ -99,24 +99,20 @@ public class Peer{
 	}
 	
 	public State getState(){
-		return this.state;
+		return state;
 	}
 	
 	public void setState(State state){
 		this.state = state;
 	}
 	
-	public double getConsumingStateProbability() {
-		return consumingStateProbability;
+	public int getGroupId(){
+		return groupId;
 	}
 	
-	public double getIdleStateProbability(){
-		return idleStateProbability;
+	public double getDeviation(){
+		return deviation;
 	}
-	
-	public double getProvidingStateProbability(){
-		return providingStateProbability;
-	}	
 	
 	public ArrayList<PeerInfo> getBalances() {
 		return balances;
