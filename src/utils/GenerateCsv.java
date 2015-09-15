@@ -85,11 +85,13 @@ public class GenerateCsv{
 		
 		String nof = "";
 		if(!simulator.isFdNof())
-			nof = "SD-NoF";
-		else if(simulator.isTransitivity())
-			nof = "FD-NoTF";
+			nof = "SD-No";
 		else
-			nof = "FD-NoF";
+			nof = "FD-No";
+		if(simulator.isTransitivity())
+			nof += "TF";
+		else
+			nof += "F";
 		
 		double tMin = simulator.getTMin();
 		double tMax = simulator.getTMax();

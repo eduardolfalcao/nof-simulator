@@ -22,4 +22,33 @@ public class StateGenerator {
 		else
 			return providingState;		
 	}
+	
+	public State generateState(int currentStep, int numerOfGroups){
+		if(currentStep){
+			
+		}
+		
+		
+		int numberDrawn = randomGenerator.nextInt(100)+1;
+		
+		if(numberDrawn<=consumingProbability)
+			return consumingState;
+		else if(numberDrawn<=(consumingProbability+idleProbability))
+			return idleState;
+		else
+			return providingState;		
+	}
+	
+	
+	
+//	public State generateState(State consumingState, double consumingProbability, State idleState, double idleProbability, State providingState, double providingProbability){
+//		int numberDrawn = randomGenerator.nextInt(100)+1;
+//		
+//		if(numberDrawn<=consumingProbability)
+//			return consumingState;
+//		else if(numberDrawn<=(consumingProbability+idleProbability))
+//			return idleState;
+//		else
+//			return providingState;		
+//	}
 }

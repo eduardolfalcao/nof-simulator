@@ -116,11 +116,9 @@ public class Simulator {
 			}
 		}
 		
-		System.out.println();
 		for(Peer p : PeerComunity.peers){
-			System.out.println("Id: "+p.getId()+"; InitialDemand: "+p.getInitialDemand()+"; Demand: "+p.getDemand()+"InitialCapacity: "+p.getInitialCapacity());
+			Simulator.logger.finest("Id: "+p.getId()+"; InitialDemand: "+p.getInitialDemand()+"; Demand: "+p.getDemand()+"InitialCapacity: "+p.getInitialCapacity());
 		}
-		System.out.println();
 	}	
 	
 	//performs all donations of the current step.
@@ -172,9 +170,9 @@ public class Simulator {
 			}		
 		}		
 		
-		System.out.println("\n\n\nPasso: "+currentStep);
+		Simulator.logger.finest("\n\n\nPasso: "+currentStep);
 		for(Peer p : PeerComunity.peers){
-			System.out.println("Id: "+p.getId()+"; Consumed: "+p.getConsumedHistory()[currentStep]+"; Donated: "+p.getDonatedHistory()[currentStep]);
+			Simulator.logger.finest("Id: "+p.getId()+"; Consumed: "+p.getConsumedHistory()[currentStep]+"; Donated: "+p.getDonatedHistory()[currentStep]);
 		}
 		
 		consumersList.clear();
@@ -228,7 +226,6 @@ public class Simulator {
 					
 					//global
 					double currentFairness = Simulator.getFairness(collab.getCurrentConsumed(currentStep), collab.getCurrentDonated(currentStep));
-//					collab.getFairnessHistory()[this.currentStep] = currentFairness;
 					double lastFairness = Simulator.getFairness(collab.getCurrentConsumed(currentStep-1), collab.getCurrentDonated(currentStep-1));
 					boolean change = false;
 					if(currentFairness>=0){
@@ -249,11 +246,7 @@ public class Simulator {
 							collab.setMaxCapacityToSupply(Math.min(totalAmountOfResources, collab.getMaxCapacityToSupply()+deltaC*totalAmountOfResources));	
 						else
 							collab.setMaxCapacityToSupply(Math.max(0, Math.min(totalAmountOfResources, collab.getMaxCapacityToSupply()-deltaC*totalAmountOfResources)));	
-					}
-											
-					//if providing, save the amount of resources supplied
-					if((currentStep+1)<numSteps && collab.getState() == State.PROVIDING)
-						collab.getCapacitySuppliedHistory()[currentStep+1] = collab.getMaxCapacityToSupply();					
+					}														
 				}				
 			}
 		}	
@@ -273,12 +266,7 @@ public class Simulator {
 		return 	getFairness(consumed, requested);
 	}
 
-	/**
-	 * Export the main data of simmulation to an excel (xlsx) file.
-	 */
 	private void exportData(){		
-		
-		//TODO adjust better the output name of file 
 		GenerateCsv csvGen = new GenerateCsv(this.outputFile, this);
 		csvGen.outputPeers();
 	}
