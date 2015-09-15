@@ -68,7 +68,7 @@ public class Market {
 	//the provider should donate the amount specified in resources, but only when resource >0	
 	public void performDonation(Collaborator provider, Peer consumer, double resources){	
 			
-		if(!provider.getInteractions().contains(new Interaction(consumer, 0, 0))){	//just to retrieve the real interaction by comparison			
+		if(!provider.getInteractions().contains(new Interaction(consumer, 0, 1))){	//just to retrieve the real interaction by comparison			
 			//creates an interaction for the provider and for the consumer
 			Interaction providersInteraction = new Interaction(consumer, provider.getInitialCapacity(), simulator.getNumSteps());
 			provider.getInteractions().add(providersInteraction);
@@ -85,9 +85,9 @@ public class Market {
 		
 			
 		//since the interactions already exist, simply update them
-		updateBalance(provider, consumer, provider.getInteractions().get(provider.getInteractions().indexOf(new Interaction(consumer, 0, 0))));
+		updateBalance(provider, consumer, provider.getInteractions().get(provider.getInteractions().indexOf(new Interaction(consumer, 0, 1))));
 		if(!(consumer instanceof FreeRider))											//free riders don't use balance for nothing
-			updateBalance(provider, consumer, consumer.getInteractions().get(consumer.getInteractions().indexOf(new Interaction(provider, 0, 0))));
+			updateBalance(provider, consumer, consumer.getInteractions().get(consumer.getInteractions().indexOf(new Interaction(provider, 0, 1))));
 		
 		sortBalances(provider, consumer);												//sort the balances in both provider and consumer
 		
@@ -97,7 +97,7 @@ public class Market {
 	
 	private double updateProvidersInteraction(Collaborator provider, Peer consumer, double resources){
 		
-		int index = provider.getInteractions().indexOf(new Interaction(consumer, 0, 0));
+		int index = provider.getInteractions().indexOf(new Interaction(consumer, 0, 1));
 		Interaction interaction = provider.getInteractions().get(index);	//retrieve the interaction object with its history
 		
 		double valueToBeDonated = 0;
@@ -143,7 +143,7 @@ public class Market {
 	
 	private void updateConsumersInteraction(Collaborator provider, Peer consumer, double consumed){
 		if(!(consumer instanceof FreeRider)){
-			int index = consumer.getInteractions().indexOf(new Interaction(provider, 0, 0));
+			int index = consumer.getInteractions().indexOf(new Interaction(provider, 0, 1));
 			Interaction interaction = consumer.getInteractions().get(index);		//retrieve the interaction object with its history		
 			interaction.consume(consumed);
 		}		

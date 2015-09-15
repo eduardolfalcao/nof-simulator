@@ -84,7 +84,7 @@ public class Simulator {
 	private void setupPeersState(){
 		
 		//now we set the state of each peer
-		for(Peer p : PeerComunity.peers){
+		for(Peer p : PeerComunity.peers){			
 			State currentState = stateGenerator.generateState(State.CONSUMING, p.getConsumingStateProbability(), State.IDLE, p.getIdleStateProbability(), State.PROVIDING, p.getProvidingStateProbability());
 			p.setState(currentState);
 					
@@ -114,7 +114,13 @@ public class Simulator {
 				else
 					PeerComunity.peers[p.getId()].getCapacitySuppliedHistory()[currentStep] = PeerComunity.peers[p.getId()].getInitialCapacity();
 			}
-		}		
+		}
+		
+		System.out.println();
+		for(Peer p : PeerComunity.peers){
+			System.out.println("Id: "+p.getId()+"; InitialDemand: "+p.getInitialDemand()+"; Demand: "+p.getDemand()+"InitialCapacity: "+p.getInitialCapacity());
+		}
+		System.out.println();
 	}	
 	
 	//performs all donations of the current step.
@@ -154,22 +160,22 @@ public class Simulator {
 	
 	private void setupNextStep(){	
 		
-		Simulator.logger.info("Step "+this.currentStep);
+		Simulator.logger.info("Step "+currentStep);
 
 		//here we update the consumed and donated values of each peer
-		for(Peer p : PeerComunity.peers){
-			p.getConsumedHistory()[this.currentStep] += p.getInitialDemand() - p.getDemand();
-			p.getDonatedHistory()[this.currentStep] += p.getResourcesDonatedInCurrentStep();
-			
+		for(Peer p : PeerComunity.peers){			
 			if(p instanceof Collaborator){
 				Collaborator collab = (Collaborator) p;
-				
-				
 				//save last values and update status for next step
 				for (Interaction interaction : collab.getInteractions())
 					interaction.saveLastValues();
 			}		
 		}		
+		
+		System.out.println("\n\n\nPasso: "+currentStep);
+		for(Peer p : PeerComunity.peers){
+			System.out.println("Id: "+p.getId()+"; Consumed: "+p.getConsumedHistory()[currentStep]+"; Donated: "+p.getDonatedHistory()[currentStep]);
+		}
 		
 		consumersList.clear();
 		idlePeersList.clear();
