@@ -19,6 +19,13 @@ public class Market {
 		this.simulator = simulator;
 	}
 	
+	public void performDonationToPeersWithTransitiveCredit(Collaborator provider, List<Peer> peersInvolvedInTheIndirectCredit) {	
+		
+//		double donated = performDonation(provider, peersInvolvedInTheIndirectCredit.get(0));
+		
+			
+	}
+	
 	//remember that free rider are always zero credit
 	public void performDonationToPeersWithNilBalance(Collaborator provider) {							
 			
@@ -52,21 +59,22 @@ public class Market {
 			List <Integer> peersWithNilBalanceAux = new ArrayList<Integer>();
 			peersWithNilBalanceAux.addAll(peersWithNilBalance);
 			for(int id : peersWithNilBalanceAux){
-				performDonation(provider, PeerComunity.peers[id], howMuchWillEachPeerReceiveInThisRound);
+				double donated = performDonation(provider, PeerComunity.peers[id], howMuchWillEachPeerReceiveInThisRound);
 				removePeerIfFullyConsumed(PeerComunity.peers[id]);
-				if(PeerComunity.peers[id].getDemand()<=0)
+				//if donated is 0 then the fdnof constrained the amount of resources this peer should receive and therefore he already consumed all there were to him
+				if(PeerComunity.peers[id].getDemand()<=0 || donated<0.0000000001)	
 					peersWithNilBalance.remove((Integer)id);
 			}
 		}		
 	}
 	
 	//-1 because the peer has balance, then provider should donate as much as possible
-	public void performDonation(Collaborator provider, Peer consumer){
-		performDonation(provider, consumer, -1);
+	public double performDonation(Collaborator provider, Peer consumer){
+		return performDonation(provider, consumer, -1);
 	}
 		
 	//the provider should donate the amount specified in resources, but only when resource >0	
-	public void performDonation(Collaborator provider, Peer consumer, double resources){	
+	public double performDonation(Collaborator provider, Peer consumer, double resources){	
 			
 		if(!provider.getInteractions().contains(new Interaction(consumer, 0, 1))){	//just to retrieve the real interaction by comparison			
 			//creates an interaction for the provider and for the consumer
@@ -93,6 +101,8 @@ public class Market {
 		
 		provider.getDonatedHistory()[simulator.getCurrentStep()] += donated;			//update the donated amount (from provider) in this step
 		consumer.getConsumedHistory()[simulator.getCurrentStep()] += donated;			//update the consumed amount (from consumer) in this step
+		
+		return donated;
 	}
 	
 	private double updateProvidersInteraction(Collaborator provider, Peer consumer, double resources){
@@ -100,41 +110,36 @@ public class Market {
 		int index = provider.getInteractions().indexOf(new Interaction(consumer, 0, 1));
 		Interaction interaction = provider.getInteractions().get(index);	//retrieve the interaction object with its history
 		
+		
 		double valueToBeDonated = 0;
 		if(resources==-1){													//if resources==-1 the provider should donate as much as possible			
-			double maxToBeDonated = 0;			
-			
-			boolean newComer = true;			
-			if(interaction.getDonated()>0 || interaction.getConsumed()>0)
-				newComer = false;
-			
-			if(simulator.isFdNof()){
-				double fairness = Simulator.getFairness(interaction.getConsumed(), interaction.getDonated());				
-				if(newComer || fairness<=0) 
-					maxToBeDonated = provider.getMaxCapacityToSupply();		//global
-				else
-					maxToBeDonated = interaction.getMaxCapacityToSupply();	//pairwise
-				
-				PeerInfo peerBalance = new PeerInfo(consumer.getId());
-				peerBalance = provider.getBalances().get(provider.getBalances().indexOf(peerBalance));
-				//if the peer has balance>maxToBeDonated, then the balance must be the maxToBeDonated
-				maxToBeDonated = Math.max(maxToBeDonated, peerBalance.getBalance());	 
-				maxToBeDonated = Math.min(provider.getInitialCapacity(), maxToBeDonated);
-			}
-			else
-				maxToBeDonated = provider.getInitialCapacity();				//sdnof
-			
-			double amountThatCouldBeDonated = Math.min(consumer.getDemand(), maxToBeDonated);
-			double freeResources = maxToBeDonated - provider.getResourcesDonatedInCurrentStep();
-			valueToBeDonated = Math.max(0,Math.min(freeResources, amountThatCouldBeDonated));	//TODO how do we deal with this bug	
+			double freeResources = Math.max(0,provider.getInitialCapacity() - provider.getResourcesDonatedInCurrentStep());	//TODO how do we deal with this bug
+			valueToBeDonated = Math.max(0,Math.min(freeResources, consumer.getDemand()));									//TODO how do we deal with this bug
 		}
 		//this is for NilBalance peers: donate the specified in the division among all NilBalance peers
 		else{						
 			if(!(consumer instanceof FreeRider))
-				valueToBeDonated = Math.min(consumer.getDemand(), resources);					//TODO isn't this specified before
+				valueToBeDonated = Math.min(consumer.getDemand(), resources);									//TODO isn't this specified before
 			else
 				valueToBeDonated = resources;
 		}	
+		
+		//here we limit the valueToBeDonated by the MaximumCapacity the controller sets		
+		if(simulator.isFdNof()){
+			double maxToBeDonated = 0;			
+			double fairness = Simulator.getFairness(interaction.getConsumed(), interaction.getDonated());				
+			if(fairness<0) 
+				maxToBeDonated = provider.getMaxCapacityToSupply();		//global
+			else
+				maxToBeDonated = interaction.getMaxCapacityToSupply();	//pairwise
+			
+//			PeerInfo peerBalance = new PeerInfo(consumer.getId());
+//			peerBalance = provider.getBalances().get(provider.getBalances().indexOf(peerBalance));
+//			//if the peer has balance>maxToBeDonated, then the balance must be the maxToBeDonated
+//			maxToBeDonated = Math.max(maxToBeDonated, peerBalance.getBalance());	 
+//			maxToBeDonated = Math.min(provider.getInitialCapacity(), maxToBeDonated);
+			valueToBeDonated = Math.min(valueToBeDonated, maxToBeDonated);
+		}
 		
 		interaction.donate(valueToBeDonated);
 		provider.setResourcesDonatedInCurrentStep(provider.getResourcesDonatedInCurrentStep()+valueToBeDonated);				

@@ -163,11 +163,21 @@ public class Simulator {
 				//first, we try to donate to peers with balance > 0, providing all that they ask, if the provider is able
 				Peer consumer = memberPicker.choosesConsumerWithPositiveBalance(provider, consumersList, alreadyConsumed);
 				
+				if(consumer == null && transitivity){
+					
+				}
+				
 				/**
 				 * If the provider already tried to donate to everyone with credit, but it still has some spare
 				 * resources, divide it evenly between the ZeroCreditPeers.
 				 */
 				if(consumer == null){
+					if(transitivity){
+						List<Peer> peersInvolvedInTheIndirectCredit = memberPicker.choosesConsumerWithTransitiveCredit(provider, consumersList, alreadyConsumed);
+						if(peersInvolvedInTheIndirectCredit!=null)
+							market.performDonationToPeersWithTransitiveCredit(provider, peersInvolvedInTheIndirectCredit);
+					}
+
 					market.performDonationToPeersWithNilBalance(provider);
 					break;	//breaks only the inner-loop
 				}
@@ -216,11 +226,11 @@ public class Simulator {
 	//the global and pairwise controllers
 	private void updateCapacitySupplied(){
 		
-		for(Peer p : PeerComunity.peers){		
-			if(p instanceof Collaborator){
-				Collaborator collab = (Collaborator) p;
-					
-				if(fdNof && currentStep>0){	
+		if(currentStep>0){
+		
+			for(Peer p : PeerComunity.peers){		
+				if(p instanceof Collaborator){
+					Collaborator collab = (Collaborator) p;
 					
 					//pairwise
 					for (Interaction interaction : collab.getInteractions()) {					

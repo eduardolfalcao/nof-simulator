@@ -19,9 +19,8 @@ public class PeerComunity {
 	
 	public PeerComunity(Queue<PeerGroup> groupsOfPeers, int numSteps){
 		
-		this.groupsOfPeers = groupsOfPeers;	
-		
-		numCollaborators = numFreeRiders = 0;
+		this.groupsOfPeers = groupsOfPeers;			
+		numCollaborators = numFreeRiders = 0;		
 		
 		int numPeers = 0;
 		for(PeerGroup pg : groupsOfPeers){

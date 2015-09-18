@@ -8,8 +8,6 @@ public class PeerGroup {
 	private double capacity, demand;
 	private boolean freeRider;
 	
-	
-	
 	public PeerGroup(int groupId, int numPeers, double deviation,
 			double capacity, double demand, boolean freeRider) {
 		super();
@@ -44,7 +42,5 @@ public class PeerGroup {
 	public boolean isFreeRider() {
 		return freeRider;
 	}
-
-	
 
 }

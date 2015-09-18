@@ -62,7 +62,80 @@ public class MemberPicker {
 		}
 		
 		//If we got here, there is no collaborator willing to consume with balance > 0, then return null
-			return null;		
+		return null;		
 	}
+	
+	//chooses a peer with indirect/transitive credit to consume
+	public List<Peer> choosesConsumerWithTransitiveCredit(Collaborator provider, List <Integer> consumersList, List <Integer> alreadyConsumed){		
+		
+		List <Integer> consumingPeers = new ArrayList<Integer>();			//consuming peers that didn't consume
+		consumingPeers.addAll(consumersList);							
+		
+		List <Integer> peersWithPositiveBalance = new ArrayList<Integer>();	//peers with balance>0 relative to the collaborator
+		Collections.sort(provider.getBalances());							//assure the balance order
+		for(int i = provider.getBalances().size()-1; i >= 0 ; i--){
+			PeerInfo balance = provider.getBalances().get(i);
+			if(balance.getBalance()>0)
+				peersWithPositiveBalance.add(provider.getBalances().get(i).getId());
+		}
+		
+		if(peersWithPositiveBalance.size()==0)
+			return null;
+		
+		for(int peerId : peersWithPositiveBalance){
+			Peer peerWithHighestPositiveCreditTowardsProvider = PeerComunity.peers[peerId];
+			Collections.sort(peerWithHighestPositiveCreditTowardsProvider.getBalances());
+			PeerInfo balance = peerWithHighestPositiveCreditTowardsProvider.getBalances().get(peerWithHighestPositiveCreditTowardsProvider.getBalances().size()-1);
+			if(balance.getBalance()>0 && consumersList.contains(balance.getId()) && !(alreadyConsumed.contains(balance.getId()))){
+				List<Peer> peersInvolvedInTheIndirectCredit = new ArrayList<Peer>();
+				peersInvolvedInTheIndirectCredit.add(PeerComunity.peers[peerId]);
+				peersInvolvedInTheIndirectCredit.add(PeerComunity.peers[balance.getId()]);
+				return peersInvolvedInTheIndirectCredit;
+			}
+			else
+				continue;
+		}
+			
+		//If we got here, there is no peer with indirect credit
+		return null;		
+	}
+	
+//	//chooses a peer with indirect/transitive credit to consume
+//	public List<Peer> choosesConsumerWithTransitiveCredit(Collaborator provider, List <Integer> consumersList, List <Integer> alreadyConsumed, List<Peer> peersInvolvedInTheIndirectCredit){		
+//		
+//		List <Integer> consumingPeers = new ArrayList<Integer>();			//consuming peers that didn't consume
+//		consumingPeers.addAll(consumersList);							
+//		
+//		List <Integer> peersWithPositiveBalance = new ArrayList<Integer>();	//peers with balance>0 relative to the collaborator
+//		Collections.sort(provider.getBalances());							//assure the balance order
+//		for(int i = provider.getBalances().size()-1; i >= 0 ; i--){
+//			PeerInfo balance = provider.getBalances().get(i);
+//			if(balance.getBalance()>0)
+//				peersWithPositiveBalance.add(provider.getBalances().get(i).getId());
+//		}
+//		
+//		if(peersWithPositiveBalance.size()==0)
+//			return null;
+//		
+//		if(peersInvolvedInTheIndirectCredit == null)
+//			peersInvolvedInTheIndirectCredit = new ArrayList<Peer>();
+//		
+//		for(int peerId : peersWithPositiveBalance){
+//			Peer peerWithHighestPositiveCreditTowardsProvider = PeerComunity.peers[peerId];
+//			Collections.sort(peerWithHighestPositiveCreditTowardsProvider.getBalances());
+//			PeerInfo balance = peerWithHighestPositiveCreditTowardsProvider.getBalances().get(peerWithHighestPositiveCreditTowardsProvider.getBalances().size()-1);
+//			if(balance.getBalance()>0 && consumersList.contains(balance.getId()) && !(alreadyConsumed.contains(balance.getId()))){
+//				peersInvolvedInTheIndirectCredit.add(PeerComunity.peers[balance.getId()]);
+//				return peersInvolvedInTheIndirectCredit;
+//			}
+//			else if(balance.getBalance()>0)
+//				return choosesConsumerWithTransitiveCredit((Collaborator)PeerComunity.peers[peerId], consumersList, alreadyConsumed, peersInvolvedInTheIndirectCredit);
+//			else
+//				continue;
+//		}
+//			
+//		//If we got here, there is no peer with indirect credit
+//		return null;		
+//	}
 
 }
