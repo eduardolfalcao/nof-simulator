@@ -86,14 +86,12 @@ public class MemberPicker {
 			Peer peerWithHighestPositiveCreditTowardsProvider = PeerComunity.peers[peerId];
 			Collections.sort(peerWithHighestPositiveCreditTowardsProvider.getBalances());
 			PeerInfo balance = peerWithHighestPositiveCreditTowardsProvider.getBalances().get(peerWithHighestPositiveCreditTowardsProvider.getBalances().size()-1);
-			if(balance.getBalance()>0 && consumersList.contains(balance.getId()) && !(alreadyConsumed.contains(balance.getId()))){
+			if(balance.getBalance()>0 && consumersList.contains(balance.getId()) && !(alreadyConsumed.contains(balance.getId()))){	//the first suffices
 				List<Peer> peersInvolvedInTheIndirectCredit = new ArrayList<Peer>();
-				peersInvolvedInTheIndirectCredit.add(PeerComunity.peers[peerId]);
-				peersInvolvedInTheIndirectCredit.add(PeerComunity.peers[balance.getId()]);
+				peersInvolvedInTheIndirectCredit.add(peerWithHighestPositiveCreditTowardsProvider);	//the first peer is the "transitive one"
+				peersInvolvedInTheIndirectCredit.add(PeerComunity.peers[balance.getId()]);			//the second peer is who will consume
 				return peersInvolvedInTheIndirectCredit;
 			}
-			else
-				continue;
 		}
 			
 		//If we got here, there is no peer with indirect credit
