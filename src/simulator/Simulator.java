@@ -163,21 +163,19 @@ public class Simulator {
 				//first, we try to donate to peers with balance > 0, providing all that they ask, if the provider is able
 				Peer consumer = memberPicker.choosesConsumerWithPositiveBalance(provider, consumersList, alreadyConsumed);
 				
-				if(consumer == null && transitivity){
-					
-				}
-				
-				/**
-				 * If the provider already tried to donate to everyone with credit, but it still has some spare
-				 * resources, divide it evenly between the ZeroCreditPeers.
-				 */
 				if(consumer == null){
 					if(transitivity){
 						List<Peer> peersInvolvedInTheIndirectCredit = memberPicker.choosesConsumerWithTransitiveCredit(provider, consumersList, alreadyConsumed);
-						if(peersInvolvedInTheIndirectCredit!=null)
-							market.performDonationToPeersWithTransitiveCredit(provider, peersInvolvedInTheIndirectCredit);
+						if(peersInvolvedInTheIndirectCredit!=null){
+							consumer = peersInvolvedInTheIndirectCredit.get(peersInvolvedInTheIndirectCredit.size()-1);
+							peersInvolvedInTheIndirectCredit.remove(consumer);
+							market.performDonationToPeersWithTransitiveCredit(provider, consumer, peersInvolvedInTheIndirectCredit);
+						}
 					}
-
+					/**
+					 * If the provider already tried to donate to everyone with credit, but it still has some spare
+					 * resources, divide it evenly between the ZeroCreditPeers.
+					 */
 					market.performDonationToPeersWithNilBalance(provider);
 					break;	//breaks only the inner-loop
 				}

@@ -15,12 +15,12 @@ public class ScenarioI {
 	
 		int numSteps = 1000;
 		boolean nof[] = {true};
-		boolean transitive[] = {false};
+		boolean transitive[] = {true};
 		double tMin = 0.75;
 		double tMax = 0.95;
 		double deltaC = 0.05;
 		int seed = 1;
-		Level level = Level.SEVERE;
+		Level level = Level.FINE;
 		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/";
 		
 		DecimalFormat formatter = new DecimalFormat("0.00");
