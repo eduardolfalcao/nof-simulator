@@ -1,6 +1,5 @@
 package simulator;
 
-import java.util.ArrayList;
 import java.util.Queue;
 
 import peer.Collaborator;
@@ -12,14 +11,18 @@ import peer.State;
 public class PeerComunity {
 	
 	public static Peer peers[];
-	private Queue<PeerGroup> groupsOfPeers;	
+	private Queue<PeerGroup> groupsOfPeers;
+	private PeerGroup groupOfFreeRiders;
 	private int numSteps;
 	
 	private int numCollaborators, numFreeRiders;
 	
-	public PeerComunity(Queue<PeerGroup> groupsOfPeers, int numSteps){
+	public PeerComunity(Queue<PeerGroup> groupsOfPeers, PeerGroup groupOfFreeRiders, int numSteps){
 		
-		this.groupsOfPeers = groupsOfPeers;			
+		this.groupsOfPeers = groupsOfPeers;
+		this.groupOfFreeRiders = groupOfFreeRiders;
+		if(groupOfFreeRiders != null)
+			this.groupsOfPeers.add(groupOfFreeRiders);
 		numCollaborators = numFreeRiders = 0;		
 		
 		int numPeers = 0;
@@ -37,12 +40,13 @@ public class PeerComunity {
 	}	
 	
 	private void createPeers(){		
-		int index = 0, numberOfGroups = groupsOfPeers.size();
-		int id=0;
-		
+		int index = 0, id = 0;
+		int numberOfGroups = groupsOfPeers.size();
+			
 		while(index < numberOfGroups){			
 			PeerGroup group = groupsOfPeers.poll();	//with the poll we remove it from the queue, so we can access the next element
-			groupsOfPeers.add(group);				//then, we add it back on the queue, now, on its tails			
+			if(!group.isFreeRider())
+				groupsOfPeers.add(group);				//then, we add it back on the queue, now, on its tails			
 			for(int i = 0; i < group.getNumPeers(); i++, id++){
 				State state = null;
 				Peer p = null;

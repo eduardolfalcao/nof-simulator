@@ -2,6 +2,7 @@ package simulator;
 
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.logging.ConsoleHandler;
@@ -20,6 +21,7 @@ public class Simulator {
 	
 	private PeerComunity peerComunity;
 	private Queue<PeerGroup> groupsOfPeers;
+	private PeerGroup groupOfFreeRiders;
 	private MemberPicker memberPicker;
 	private Market market;
 	
@@ -40,11 +42,13 @@ public class Simulator {
 	private String outputFile;
 	private double kappa;
 	
-	public Simulator(Queue<PeerGroup> groupsOfPeers, int numSteps, boolean fdNoF, boolean transitivity, double tMin, double tMax, double deltaC, 
+	public Simulator(Queue<PeerGroup> groupsOfCollaborativePeers, PeerGroup groupOfFreeRiders, int numSteps, boolean fdNoF, boolean transitivity, double tMin, double tMax, double deltaC, 
 			int seed, Level level, String outputFile, double kappa) {
 		
-		peerComunity = new PeerComunity(groupsOfPeers, numSteps);	//the constructor also creates the peers	
-		this.groupsOfPeers = groupsOfPeers;
+		groupsOfPeers = groupsOfCollaborativePeers;
+		this.groupOfFreeRiders = groupOfFreeRiders;
+		peerComunity = new PeerComunity(groupsOfPeers, groupOfFreeRiders, numSteps);	//the constructor also creates the peers	
+		
 		memberPicker = new MemberPicker(seed);
 		market = new Market(this);
 		
@@ -87,16 +91,24 @@ public class Simulator {
 	
 	private void setupPeersState(){
 		
-		int index = 0, numberOfGroups = groupsOfPeers.size();
+		int index = 0, consumerIndex = 0;
+		int numberOfGroups = groupsOfPeers.size()+(groupOfFreeRiders!=null?1:0);	//1 is from the group of free riders	
+		if(groupOfFreeRiders!=null){
+			Queue<PeerGroup> groupsOfCollaborativePeersAux = new LinkedList<PeerGroup>();
+			groupsOfCollaborativePeersAux.add(groupOfFreeRiders);
+			for(PeerGroup pg : groupsOfPeers)
+				groupsOfCollaborativePeersAux.add(pg);
+			this.groupsOfPeers = groupsOfCollaborativePeersAux;
+			consumerIndex = 1;
+		}
 		
-		while(index < numberOfGroups){
-			
+		while(index < numberOfGroups){			
 			PeerGroup group = groupsOfPeers.poll();	//with the poll we remove it from the queue, so we can access the next element
 			groupsOfPeers.add(group);				//then, we add it back on the queue, now, on its tails
 			
 			State masterState = null;
-			if(index==0)							//the first will always be the  consumer
-				masterState = State.CONSUMING;
+			if(index==consumerIndex || group.isFreeRider())		//the first might be the free riders (if there is free riders) and the second will always be the consumer (if there is free riders)
+				masterState = State.CONSUMING;					//when there aren't free riders, the first will always be the consumer
 			else if(index == numberOfGroups-1)		//the last will always be the  provider
 				masterState = State.PROVIDING;
 			else									//the others will always be idle
@@ -139,9 +151,10 @@ public class Simulator {
 		}
 		
 		//after all elements have been accessed, the queue remains at the same configuration it was before
-		//then, we remove the head element and add on the tail of the queue
-		PeerGroup group = groupsOfPeers.poll();	
-		groupsOfPeers.add(group);		
+		if(groupOfFreeRiders!=null)					//if there are free riders, remove them
+			groupsOfPeers.poll();					//remove free riders
+		PeerGroup group = groupsOfPeers.poll();		//remove consumers
+		groupsOfPeers.add(group);					//add consumers on the beginning of list, now they are providers
 		
 		for(Peer p : PeerComunity.peers)
 			Simulator.logger.finest("Id: "+p.getId()+"; InitialDemand: "+p.getInitialDemand()+"; Demand: "+p.getDemand()+"InitialCapacity: "+p.getInitialCapacity());

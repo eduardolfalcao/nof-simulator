@@ -8,10 +8,10 @@ import peer.PeerGroup;
 import simulator.Simulator;
 
 
-public class ScenarioI {
-	
+public class ScenarioI_WithFreeRiders {
+
 	public static void main(String[] args) {
-	
+		
 		int numSteps = 1000;
 		boolean nof[] = {true};
 		boolean transitive[] = {true};
@@ -25,13 +25,13 @@ public class ScenarioI {
 		DecimalFormat formatter = new DecimalFormat("0.00");
 		formatter.setRoundingMode(RoundingMode.DOWN);
 		
-		boolean isFreeRider = false;
 		double capacity = 1, demand = 0.5;
 		
 		Queue<PeerGroup> groupsOfPeers = new LinkedList<PeerGroup>();
-		PeerGroup consumersGroup = new PeerGroup(1, 20, 0, capacity, demand, isFreeRider);
-		PeerGroup idlePeersGroup = new PeerGroup(2, 20, 0, capacity, demand, isFreeRider);
-		PeerGroup providersGroup = new PeerGroup(3, 20, 0, capacity, demand, isFreeRider);
+		PeerGroup freeRidersGroup = new PeerGroup(1, 15, 0, capacity, Double.MAX_VALUE, true);
+		PeerGroup consumersGroup = new PeerGroup(2, 15, 0, capacity, demand, false);
+		PeerGroup idlePeersGroup = new PeerGroup(3, 15, 0, capacity, demand, false);
+		PeerGroup providersGroup = new PeerGroup(4, 15, 0, capacity, demand, false);
 		groupsOfPeers.add(consumersGroup);
 		groupsOfPeers.add(idlePeersGroup);
 		groupsOfPeers.add(providersGroup);
@@ -40,17 +40,18 @@ public class ScenarioI {
 		int n = 0;
 		for(PeerGroup gp : groupsOfPeers)
 			n += gp.getNumPeers();		
-		double fr = 0;
+		n += freeRidersGroup.getNumPeers();
+		double fr = (double) freeRidersGroup.getNumPeers()/n;
 		
 		String outputFile = outputDir + "n"+ n + "|" + "fr" + fr + "|" +"K" + kappa +"|" 
 				+ (nof[0] ? "fdnof": "sdnof") + "|" + (transitive[0] ? "transitive-": "") 
 				+ "|D" + demand + "|tMin" + tMin + "|tMax" + tMax + "|deltaC" + deltaC;
 		
-		Simulator sim = new Simulator(groupsOfPeers, null, numSteps, nof[0], transitive[0], tMin, tMax, deltaC, seed, level, outputFile, kappa);
+		Simulator sim = new Simulator(groupsOfPeers, freeRidersGroup, numSteps, nof[0], transitive[0], tMin, tMax, deltaC, seed, level, outputFile, kappa);
 		sim.startSimulation();
 		
 		
 	
 	}
-
+	
 }
