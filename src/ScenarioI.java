@@ -20,7 +20,7 @@ public class ScenarioI {
 		double deltaC = 0.05;
 		int seed = 1;
 		Level level = Level.SEVERE;
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/23-09/";
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/25-09/";
 		
 		DecimalFormat formatter = new DecimalFormat("0.00");
 		formatter.setRoundingMode(RoundingMode.DOWN);

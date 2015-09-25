@@ -103,18 +103,20 @@ public class Market {
 		if(peersInvolvedInTheIndirectCredit!=null){
 			//TODO change it to assign this values dynamically from the list
 			B = peersInvolvedInTheIndirectCredit.get(0);
-			transitiveCredit = provider.getBalances().get(provider.getBalances().indexOf(new PeerInfo(B.getId()))).getBalance();
+			double gammaProviderB = provider.getBalances().get(provider.getBalances().indexOf(new PeerInfo(B.getId()))).getBalance();
+			double gammaBConsumer = B.getBalances().get(B.getBalances().indexOf(new PeerInfo(consumer.getId()))).getBalance();
+			transitiveCredit = Math.min(gammaProviderB, gammaBConsumer);
 		}
 		
 		double valueToBeDonated = 0;
 		if(resources==-1){																	//if resources==-1 the provider should donate as much as possible			
-			double freeResources = Math.max(0,provider.getInitialCapacity() - provider.getResourcesDonatedInCurrentStep());	//TODO how do we deal with this bug			
-			valueToBeDonated = Math.max(0,Math.min(freeResources, consumer.getDemand()));									//TODO how do we deal with this bug
+			double freeResources = Math.max(0,provider.getInitialCapacity() - provider.getResourcesDonatedInCurrentStep());				
+			valueToBeDonated = Math.max(0,Math.min(freeResources, consumer.getDemand()));									
 		}
 		//this is for NilBalance peers: donate the specified in the division among all NilBalance peers
 		else{						
 			if(!(consumer instanceof FreeRider))
-				valueToBeDonated = Math.min(consumer.getDemand(), resources);				//TODO isn't this specified before
+				valueToBeDonated = Math.min(consumer.getDemand(), resources);				
 			else
 				valueToBeDonated = resources;
 		}	

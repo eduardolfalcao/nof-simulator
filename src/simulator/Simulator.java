@@ -2,6 +2,7 @@ package simulator;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -163,40 +164,44 @@ public class Simulator {
 	//performs all donations of the current step.
 	private void performCurrentStepDonations(){
 		
+		System.out.println("Step: "+currentStep);
+		if(currentStep==2)
+			System.out.println();
+		
 		Collaborator provider = null;
 				
 		//while there is any collaborator willing to donate, choose one
-		while(!providersList.isEmpty()){
+		while(!providersList.isEmpty() && !consumersList.isEmpty()){
 			provider = memberPicker.choosesRandomPeer(providersList);
 			
 			//keeps choosing consumer and donating until supply all peer's capacity 
-			ArrayList<Integer> alreadyConsumed = new ArrayList<Integer>();
-			while(provider.getResourcesDonatedInCurrentStep() < provider.getMaxCapacityToSupply()){
+			while(provider.getResourcesDonatedInCurrentStep() < provider.getMaxCapacityToSupply()-0.000000000000001  && !consumersList.isEmpty()){
 				
 				//first, we try to donate to peers with balance > 0, providing all that they ask, if the provider is able
-				Peer consumer = memberPicker.choosesConsumerWithPositiveBalance(provider, consumersList, alreadyConsumed);
-				
-				if(consumer == null){
-					if(transitivity){
-						List<Peer> peersInvolvedInTheIndirectCredit = memberPicker.choosesConsumerWithTransitiveCredit(provider, consumersList, alreadyConsumed);
-						if(peersInvolvedInTheIndirectCredit!=null){
-							consumer = peersInvolvedInTheIndirectCredit.get(peersInvolvedInTheIndirectCredit.size()-1);
-							peersInvolvedInTheIndirectCredit.remove(consumer);
-							market.performDonationToPeersWithTransitiveCredit(provider, consumer, peersInvolvedInTheIndirectCredit);
-						}
-					}
-					/**
-					 * If the provider already tried to donate to everyone with credit, but it still has some spare
-					 * resources, divide it evenly between the ZeroCreditPeers.
-					 */
-					market.performDonationToPeersWithNilBalance(provider);
-					break;	//breaks only the inner-loop
+				Peer consumer = memberPicker.choosesConsumerWithPositiveBalance(provider, consumersList);
+				if(consumer!=null){
+					market.performDonation(provider, consumer);
+					market.removePeerIfFullyConsumed(consumer);
+					continue;
 				}
 				
-				market.performDonation(provider, consumer);
-				market.removePeerIfFullyConsumed(consumer);
+				if(transitivity){					
+					List<Peer> peersInvolvedInTheIndirectCredit = memberPicker.choosesConsumerWithTransitiveCredit(provider, consumersList);
+					if(peersInvolvedInTheIndirectCredit!=null){
+						consumer = peersInvolvedInTheIndirectCredit.get(peersInvolvedInTheIndirectCredit.size()-1);
+						peersInvolvedInTheIndirectCredit.remove(consumer);
+						market.performDonationToPeersWithTransitiveCredit(provider, consumer, peersInvolvedInTheIndirectCredit);
+						market.removePeerIfFullyConsumed(consumer);
+						continue;
+					}
+				}
 				
-				alreadyConsumed.add(consumer.getId());
+				/**
+				 * If the provider already tried to donate to everyone with direct credit and transitive credit, but it still has some spare
+				 * resources, divide it evenly between the ZeroCreditPeers.
+				 */
+				market.performDonationToPeersWithNilBalance(provider);		//already removes peers that fully consumed
+				break;
 			}			
 			market.removePeerThatDonated(provider);	
 		}
@@ -237,8 +242,19 @@ public class Simulator {
 	//the global and pairwise controllers
 	private void updateCapacitySupplied(){
 		
-		if(currentStep>0){
+		System.out.println("CurrentStep: "+currentStep);
+		for(Peer p : PeerComunity.peers){		
+			if(p.getGroupId()==2){
+				System.out.println("Id: "+p.getId());
+				Collections.sort(p.getBalances());
+				System.out.println(p.getBalances());
+				
+			}
+		}
+		System.out.println("##################");
 		
+		if(currentStep>0){
+			
 			for(Peer p : PeerComunity.peers){		
 				if(p instanceof Collaborator){
 					Collaborator collab = (Collaborator) p;
@@ -273,7 +289,7 @@ public class Simulator {
 					
 					//global
 					double currentFairness = Simulator.getFairness(collab.getCurrentConsumed(currentStep), collab.getCurrentDonated(currentStep));
-					double lastFairness = Simulator.getFairness(collab.getCurrentConsumed(currentStep-1), collab.getCurrentDonated(currentStep-1));
+					double lastFairness = Simulator.getFairness(collab.getCurrentConsumed(currentStep-1), collab.getCurrentDonated(currentStep-1));					
 					boolean change = false;
 					if(currentFairness>=0){
 						if(currentFairness < tMin)
