@@ -13,14 +13,15 @@ public class ScenarioI {
 	public static void main(String[] args) {
 	
 		int numSteps = 1000;
-		boolean nof[] = {true};
-		boolean transitive[] = {true};
+		boolean nof[] = {false};
+		boolean transitive[] = {false};
 		double tMin = 0.75;
 		double tMax = 0.95;
 		double deltaC = 0.05;
 		int seed = 1;
 		Level level = Level.SEVERE;
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/25-09/";
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/28-09/";
+//		String outputDir = "/local/experimentos/28-09/";
 		
 		DecimalFormat formatter = new DecimalFormat("0.00");
 		formatter.setRoundingMode(RoundingMode.DOWN);

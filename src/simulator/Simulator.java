@@ -17,6 +17,7 @@ import peer.Peer;
 import peer.PeerGroup;
 import peer.State;
 import utils.GenerateCsv;
+import utils.WriteExcel;
 
 public class Simulator {	
 	
@@ -177,6 +178,9 @@ public class Simulator {
 			//keeps choosing consumer and donating until supply all peer's capacity 
 			while(provider.getResourcesDonatedInCurrentStep() < provider.getMaxCapacityToSupply()-0.000000000000001  && !consumersList.isEmpty()){
 				
+				if(currentStep==2 && provider.getId()==25)
+					System.out.println();
+				
 				//first, we try to donate to peers with balance > 0, providing all that they ask, if the provider is able
 				Peer consumer = memberPicker.choosesConsumerWithPositiveBalance(provider, consumersList);
 				if(consumer!=null){
@@ -236,22 +240,25 @@ public class Simulator {
 		if(this.fdNof)
 			this.updateCapacitySupplied();
 		
+		if(currentStep==2)
+			System.out.println();
+		
 		this.currentStep++;			
 	}
 	
 	//the global and pairwise controllers
 	private void updateCapacitySupplied(){
 		
-		System.out.println("CurrentStep: "+currentStep);
-		for(Peer p : PeerComunity.peers){		
-			if(p.getGroupId()==2){
-				System.out.println("Id: "+p.getId());
-				Collections.sort(p.getBalances());
-				System.out.println(p.getBalances());
-				
-			}
-		}
-		System.out.println("##################");
+//		System.out.println("CurrentStep: "+currentStep);
+//		for(Peer p : PeerComunity.peers){		
+//			if(p.getGroupId()==2){
+//				System.out.println("Id: "+p.getId());
+//				Collections.sort(p.getBalances());
+//				System.out.println(p.getBalances());
+//				
+//			}
+//		}
+//		System.out.println("##################");
 		
 		if(currentStep>0){
 			
@@ -330,8 +337,11 @@ public class Simulator {
 	}
 
 	private void exportData(){		
-		GenerateCsv csvGen = new GenerateCsv(this.outputFile, this);
+		GenerateCsv csvGen = new GenerateCsv(outputFile, this);
 		csvGen.outputPeers();
+		
+		WriteExcel writeExcel = new WriteExcel(outputFile, this);
+		writeExcel.outputPeers();
 	}
 	
     

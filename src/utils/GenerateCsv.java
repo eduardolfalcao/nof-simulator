@@ -19,7 +19,7 @@ public class GenerateCsv{
 	private Simulator simulator;	
 		
 	public GenerateCsv(String outputFile, Simulator simulator){
-		this.outputFile = outputFile;
+		this.outputFile = outputFile + ".csv";
 		this.simulator = simulator; 
 	}
 	
@@ -33,7 +33,7 @@ public class GenerateCsv{
 		
 		FileWriter writer = null;
 		try {
-			writer = new FileWriter(this.outputFile+".csv");
+			writer = new FileWriter(this.outputFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -56,7 +56,8 @@ public class Market {
 				double donated = performDonation(provider, PeerComunity.peers[id], null, howMuchWillEachPeerReceiveInThisRound);
 				removePeerIfFullyConsumed(PeerComunity.peers[id]);
 				//if donated is 0 then the fdnof constrained the amount of resources this peer should receive and therefore he already consumed all there were to him
-				if(PeerComunity.peers[id].getDemand()<=0 || donated<0.0000000001)	
+//				if(PeerComunity.peers[id].getDemand()<=0 || donated<0.0000000001)	
+				if(PeerComunity.peers[id].getDemand()<=0)	
 					peersWithNilBalance.remove((Integer)id);
 			}
 		}		
@@ -91,22 +92,15 @@ public class Market {
 		sortBalances(peersInvolvedInDonation);						//sort the balances of all peers
 		
 		//update the donated and consumed amount in this step
-		provider.getDonatedHistory()[simulator.getCurrentStep()] += resources;			
+		provider.getDonatedHistory()[simulator.getCurrentStep()] += resources;
+		if(consumer instanceof FreeRider)
+			provider.getDonatedToFreeRidersHistory()[simulator.getCurrentStep()] += resources;
 		consumer.getConsumedHistory()[simulator.getCurrentStep()] += resources;
 		
 		return resources;
 	}
 	
 	private double getAmountToDonate(Collaborator provider, Peer consumer, List<Peer> peersInvolvedInTheIndirectCredit, double resources) {
-		Peer B = null;					//peer A, the consumer, and peer B, the idle one
-		double transitiveCredit = 0;
-		if(peersInvolvedInTheIndirectCredit!=null){
-			//TODO change it to assign this values dynamically from the list
-			B = peersInvolvedInTheIndirectCredit.get(0);
-			double gammaProviderB = provider.getBalances().get(provider.getBalances().indexOf(new PeerInfo(B.getId()))).getBalance();
-			double gammaBConsumer = B.getBalances().get(B.getBalances().indexOf(new PeerInfo(consumer.getId()))).getBalance();
-			transitiveCredit = Math.min(gammaProviderB, gammaBConsumer);
-		}
 		
 		double valueToBeDonated = 0;
 		if(resources==-1){																	//if resources==-1 the provider should donate as much as possible			
@@ -121,27 +115,35 @@ public class Market {
 				valueToBeDonated = resources;
 		}	
 		
-		//here we limit the valueToBeDonated by the MaximumCapacity the controller sets or by the amount of transitive credit
+		Peer B = null;					//peer A, the consumer, and peer B, the idle one
+		double transitiveCredit = 0;
+		if(simulator.isTransitivity() && peersInvolvedInTheIndirectCredit!=null){
+			//TODO change it to assign this values dynamically from the list
+			B = peersInvolvedInTheIndirectCredit.get(0);
+			double gammaProviderB = provider.getBalances().get(provider.getBalances().indexOf(new PeerInfo(B.getId()))).getBalance();
+			double gammaBConsumer = B.getBalances().get(B.getBalances().indexOf(new PeerInfo(consumer.getId()))).getBalance();
+			transitiveCredit = Math.min(gammaProviderB, gammaBConsumer);
+			valueToBeDonated = Math.min(valueToBeDonated, transitiveCredit);	//limit the value to be donated to the amount of transitive credit
+			return valueToBeDonated;
+		}
+		
+		//here we limit the valueToBeDonated by the MaximumCapacity the controller sets		
 		if(simulator.isFdNof()){
 			double maxToBeDonated = 0;
-			if(simulator.isTransitivity() && peersInvolvedInTheIndirectCredit!=null){
-				maxToBeDonated = transitiveCredit;											//limit the free resources to the amount of transitive credit
-			}
+			int index = provider.getInteractions().indexOf(new Interaction(consumer, 0, 1));
+			if(index == -1)
+				maxToBeDonated = provider.getMaxCapacityToSupply();		//global
 			else{
-				int index = provider.getInteractions().indexOf(new Interaction(consumer, 0, 1));
-				if(index == -1)
+				Interaction interaction = provider.getInteractions().get(index);			//retrieve the interaction object with its history
+				double fairness = Simulator.getFairness(interaction.getConsumed(), interaction.getDonated());				
+				if(fairness<0) 
 					maxToBeDonated = provider.getMaxCapacityToSupply();		//global
-				else{
-					Interaction interaction = provider.getInteractions().get(index);			//retrieve the interaction object with its history
-					double fairness = Simulator.getFairness(interaction.getConsumed(), interaction.getDonated());				
-					if(fairness<0) 
-						maxToBeDonated = provider.getMaxCapacityToSupply();		//global
-					else
-						maxToBeDonated = interaction.getMaxCapacityToSupply();	//pairwise
-				}				
+				else
+					maxToBeDonated = interaction.getMaxCapacityToSupply();	//pairwise
 			}
 			valueToBeDonated = Math.min(valueToBeDonated, maxToBeDonated);
 		}
+		
 		return valueToBeDonated;
 	}
 	
@@ -151,7 +153,7 @@ public class Market {
 			//TODO change it to assign these values dynamically from the list
 			idleB = peersInvolvedInTheIndirectCredit.get(0);
 			
-			//make sure all interaction exists, ad if not, create them
+			//make sure all interaction exist, and if not, create them
 			createInteraction(provider, idleB);
 			createInteraction((Collaborator)idleB, provider);
 			createInteraction((Collaborator)idleB, consumer);
@@ -224,7 +226,7 @@ public class Market {
 	}
 	
 	public void removePeerIfFullyConsumed(Peer consumer){
-		if(consumer.getDemand()==0){
+		if(consumer.getDemand()<0.0000000001){
 			simulator.getConsumersList().remove((Integer)consumer.getId());			
 			simulator.getConsumedPeersList().add(consumer.getId());
 		}

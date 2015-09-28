@@ -22,7 +22,7 @@ public class Peer{
 	protected ArrayList<PeerInfo> balances;
 	protected ArrayList <Interaction> interactions;
 	
-	private double consumedHistory[], donatedHistory[], requestedHistory[], capacitySuppliedHistory[];
+	private double consumedHistory[], donatedHistory[], donatedToFreeRidersHistory[], requestedHistory[], capacitySuppliedHistory[];
 	
 		
 	public Peer(int id, double initialCapacity, double initialDemand, State state, int groupId, double deviation, int numSteps) {
@@ -43,6 +43,7 @@ public class Peer{
 		
 		this.consumedHistory = new double[numSteps];
 		this.donatedHistory = new double[numSteps];
+		this.donatedToFreeRidersHistory = new double[numSteps];
 		this.requestedHistory = new double[numSteps];
 		this.capacitySuppliedHistory = new double[numSteps];		
 	}
@@ -186,6 +187,17 @@ public class Peer{
 		double currrentDonated = 0;
 		for(int i = beginning; i <= end; i++)
 			currrentDonated += donatedHistory[i];
+		return currrentDonated;
+	}
+	
+	public double[] getDonatedToFreeRidersHistory() {
+		return donatedToFreeRidersHistory;
+	}
+	
+	public double getCurrentDonatedToFreeRiders(int step) {
+		double currrentDonated = 0;
+		for(int i = 0; i <= step; i++)
+			currrentDonated += donatedToFreeRidersHistory[i];
 		return currrentDonated;
 	}
 	

@@ -26,7 +26,7 @@ public class StateGenerator {
 	public State generateState(State masterState, double deviation){
 		int numberDrawn = randomGenerator.nextInt(100)+1;		
 		
-		if(numberDrawn<(100-deviation))
+		if(numberDrawn<=(100-deviation))
 			return masterState;
 		else{
 			if(masterState == State.CONSUMING){
