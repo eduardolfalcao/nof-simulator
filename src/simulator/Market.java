@@ -229,8 +229,8 @@ public class Market {
 	}
 	
 	public void removePeerIfFullyConsumed(Peer consumer){
-//		if(consumer.getDemand()<0.0000000000000000001){
-		if(consumer.getDemand()==0){
+		if(consumer.getDemand()<0.0000000000000000001){
+//		if(consumer.getDemand()==0){
 			simulator.getConsumersList().remove((Integer)consumer.getId());			
 			simulator.getConsumedPeersList().add(consumer.getId());
 		}

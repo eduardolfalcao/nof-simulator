@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import nof.Interaction;
 import peer.Collaborator;
 import peer.Peer;
 import peer.State;
@@ -57,7 +58,10 @@ public class MemberPicker {
 		Simulator.logger.finest(peersWithPositiveBalance.toString());
 				
 		for (Integer peerId : peersWithPositiveBalance) {
-			if(consumingPeers.contains(peerId) && PeerComunity.peers[peerId].getState() == State.CONSUMING && PeerComunity.peers[peerId].getDemand()>0)
+			Interaction consumerInteraction = provider.getInteractions().get(provider.getInteractions().indexOf(new Interaction(PeerComunity.peers[peerId], 0, 1)));
+			double pairwiseLimit = consumerInteraction.getMaxCapacityToSupply();
+			double currentConsumed = consumerInteraction.getConsumed() - consumerInteraction.getLastConsumed();
+			if(consumingPeers.contains(peerId) && PeerComunity.peers[peerId].getState() == State.CONSUMING && currentConsumed<pairwiseLimit  && PeerComunity.peers[peerId].getDemand()>0)				
 				return PeerComunity.peers[peerId];
 		}
 		
