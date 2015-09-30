@@ -231,8 +231,7 @@ public class Market {
 	public void removePeerIfFullyConsumed(Peer consumer){
 		if(consumer.getDemand()<0.0000000000000000001){
 //		if(consumer.getDemand()==0){
-			simulator.getConsumersList().remove((Integer)consumer.getId());			
-			simulator.getConsumedPeersList().add(consumer.getId());
+			simulator.getConsumersList().remove((Integer)consumer.getId());
 		}
 		else if(consumer.getDemand()<0){
 			Simulator.logger.finest("Consumer demand should never be smaller than consumer.getInitialCapacity(). Some sheet happened here."
@@ -244,7 +243,6 @@ public class Market {
 	
 	public void removePeerThatDonated(Collaborator provider){
 		simulator.getProvidersList().remove((Integer)provider.getId());
-		simulator.getDonatedPeersList().add(provider.getId());		
 	}
 	
 	private void sortBalances(Peer ... peers){

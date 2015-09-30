@@ -1,0 +1,58 @@
+package peer;
+
+
+public class Triplet  implements Comparable<Object>{
+
+	private Peer consumer, transitivePeer;
+	private double debt;
+	
+	public Triplet(Peer consumer, double debt, Peer transitivePeer){
+		this.consumer = consumer;
+		this.debt = debt;
+		this.transitivePeer = transitivePeer;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if(!(o instanceof Triplet))
+			return false;
+		else{
+			Triplet otherTriplet = (Triplet) o;
+			if(consumer == otherTriplet.getConsumer() && transitivePeer == otherTriplet.getTransitivePeer())
+				return true;
+			else return false;
+		}
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		final int BEFORE = -1;
+	    final int EQUAL = 0;
+	    final int AFTER = 1;
+		
+	    if(!(o instanceof Triplet))
+			return EQUAL;
+		
+	    Triplet otherTriplet = (Triplet) o;
+		
+		if (debt < otherTriplet.getDebt()) 
+	    	return BEFORE;
+		else if(debt == otherTriplet.getDebt())
+			return EQUAL;
+		else	
+	    	return AFTER;
+	}
+	
+	public Peer getConsumer() {
+		return consumer;
+	}
+	
+	public Peer getTransitivePeer() {
+		return transitivePeer;
+	}
+	
+	public double getDebt(){
+		return debt;
+	}
+	
+}
