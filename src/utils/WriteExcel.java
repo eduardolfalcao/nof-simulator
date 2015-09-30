@@ -19,8 +19,8 @@ public class WriteExcel {
 	private String outputFile;
 	private Simulator simulator;
 	
-	private Sheet fairnessSheet, satisfactionSheet, consumedSheet, providedSheet, providedToCollaboratorsSheet, providedToFreeRidersSheet,
-					currentProvidedSheet, currentProvidedToCollaboratorsSheet, currentProvidedToFreeRidersSheet;
+	private Sheet fairnessSheet, satisfactionSheet, consumedSheet, consumedByTransitivitySheet, providedSheet, providedToCollaboratorsSheet, providedByTransitivitySheet, providedToFreeRidersSheet,
+					currentConsumedSheet, currentConsumedByTransitivitySheet, currentProvidedSheet, currentProvidedToCollaboratorsSheet, currentProvidedByTransitivitySheet, currentProvidedToFreeRidersSheet;
 	
 	private XSSFWorkbook workbook;
 	private CellStyle timesBoldUnderline, timesBlue;
@@ -49,12 +49,17 @@ public class WriteExcel {
 		setupFile();
 		fulfillFairness();
 		fulfillSatisfaction();
-		fulfillConsumed();
-		fulfillProvided();
-		fulfillProvidedToCollaborators();
-		fulfillProvidedToFreeRiders();
+//		fulfillConsumed();
+//		fulfillConsumedByTransitivity();
+//		fulfillProvided();
+//		fulfillProvidedToCollaborators();
+//		fulfillProvidedByTransitivity();
+//		fulfillProvidedToFreeRiders();
+		fulfillCurrentConsumed();
+		fulfillCurrentConsumedByTransitivity();
 		fulfillCurrentProvided();
 		fulfillCurrentProvidedToCollaborators();
+		fulfillCurrentProvidedByTransitivity();
 		fulfillCurrentProvidedToFreeRiders();
 		writeFile();		
 	}
@@ -63,21 +68,31 @@ public class WriteExcel {
 	public void setupFile() {		
 		fairnessSheet = workbook.createSheet("fairness");
 		satisfactionSheet = workbook.createSheet("satisfaction");
-		consumedSheet = workbook.createSheet("consumed");
-		providedSheet = workbook.createSheet("provided");
-		providedToCollaboratorsSheet = workbook.createSheet("provided to collaborators");
-		providedToFreeRidersSheet = workbook.createSheet("provided to free riders");
+//		consumedSheet = workbook.createSheet("consumed");
+//		consumedByTransitivitySheet = workbook.createSheet("consumed by transitivity");
+//		providedSheet = workbook.createSheet("provided");
+//		providedToCollaboratorsSheet = workbook.createSheet("provided to collaborators");
+//		providedByTransitivitySheet = workbook.createSheet("provided by transitivity");
+//		providedToFreeRidersSheet = workbook.createSheet("provided to free riders");
+		currentConsumedSheet = workbook.createSheet("current consumed");
+		currentConsumedByTransitivitySheet = workbook.createSheet("current consumed by transitivity");
 		currentProvidedSheet = workbook.createSheet("current provided");
 		currentProvidedToCollaboratorsSheet = workbook.createSheet("current provided to collaborators");
+		currentProvidedByTransitivitySheet = workbook.createSheet("current provided by transitivity");
 		currentProvidedToFreeRidersSheet = workbook.createSheet("current provided to free riders");
 		createLabel(fairnessSheet);
 		createLabel(satisfactionSheet);
-		createLabel(consumedSheet);
-		createLabel(providedSheet);
-		createLabel(providedToCollaboratorsSheet);
-		createLabel(providedToFreeRidersSheet);		
+//		createLabel(consumedSheet);
+//		createLabel(consumedByTransitivitySheet);
+//		createLabel(providedSheet);
+//		createLabel(providedToCollaboratorsSheet);
+//		createLabel(providedByTransitivitySheet);
+//		createLabel(providedToFreeRidersSheet);
+		createLabel(currentConsumedSheet);
+		createLabel(currentConsumedByTransitivitySheet);
 		createLabel(currentProvidedSheet);
 		createLabel(currentProvidedToCollaboratorsSheet);
+		createLabel(currentProvidedByTransitivitySheet);
 		createLabel(currentProvidedToFreeRidersSheet);
 	}
 	
@@ -135,6 +150,18 @@ public class WriteExcel {
 		}
 	}
 	
+	public void fulfillConsumedByTransitivity(){		
+		for (int i = 0; i < PeerComunity.peers.length; i++) {
+			if(PeerComunity.peers[i] instanceof Collaborator){
+				this.addLabel(consumedByTransitivitySheet, 0, i+1, "collaborator");
+				this.addLabel(consumedByTransitivitySheet, 1, i+1, ""+PeerComunity.peers[i].getId());
+				
+				for(int j = 0; j < simulator.getNumSteps(); j++)			
+					addNumber(consumedByTransitivitySheet, j+2, i+1, PeerComunity.peers[i].getCurrentConsumedByTransitivity(j));
+			}
+		}
+	}
+	
 	public void fulfillProvided(){		
 		for (int i = 0; i < PeerComunity.peers.length; i++) {
 			if(PeerComunity.peers[i] instanceof Collaborator){
@@ -159,6 +186,18 @@ public class WriteExcel {
 		}
 	}
 	
+	public void fulfillProvidedByTransitivity(){		
+		for (int i = 0; i < PeerComunity.peers.length; i++) {
+			if(PeerComunity.peers[i] instanceof Collaborator){
+				this.addLabel(providedByTransitivitySheet, 0, i+1, "collaborator");
+				this.addLabel(providedByTransitivitySheet, 1, i+1, ""+PeerComunity.peers[i].getId());
+				
+				for(int j = 0; j < simulator.getNumSteps(); j++)			
+					addNumber(providedByTransitivitySheet, j+2, i+1, PeerComunity.peers[i].getCurrentDonatedByTransitivity(j));
+			}
+		}
+	}
+	
 	public void fulfillProvidedToFreeRiders(){		
 		for (int i = 0; i < PeerComunity.peers.length; i++) {
 			if(PeerComunity.peers[i] instanceof Collaborator){
@@ -167,6 +206,30 @@ public class WriteExcel {
 				
 				for(int j = 0; j < simulator.getNumSteps(); j++)			
 					addNumber(providedToFreeRidersSheet, j+2, i+1, PeerComunity.peers[i].getCurrentDonatedToFreeRiders(j));
+			}
+		}
+	}
+	
+	public void fulfillCurrentConsumed(){		
+		for (int i = 0; i < PeerComunity.peers.length; i++) {
+			if(PeerComunity.peers[i] instanceof Collaborator){
+				this.addLabel(currentConsumedSheet, 0, i+1, "collaborator");
+				this.addLabel(currentConsumedSheet, 1, i+1, ""+PeerComunity.peers[i].getId());
+				
+				for(int j = 0; j < simulator.getNumSteps(); j++)			
+					addNumber(currentConsumedSheet, j+2, i+1, PeerComunity.peers[i].getConsumedHistory()[j]);
+			}
+		}
+	}
+	
+	public void fulfillCurrentConsumedByTransitivity(){		
+		for (int i = 0; i < PeerComunity.peers.length; i++) {
+			if(PeerComunity.peers[i] instanceof Collaborator){
+				this.addLabel(currentConsumedByTransitivitySheet, 0, i+1, "collaborator");
+				this.addLabel(currentConsumedByTransitivitySheet, 1, i+1, ""+PeerComunity.peers[i].getId());
+				
+				for(int j = 0; j < simulator.getNumSteps(); j++)			
+					addNumber(currentConsumedByTransitivitySheet, j+2, i+1, PeerComunity.peers[i].getConsumedByTransitivityHistory()[j]);
 			}
 		}
 	}
@@ -191,6 +254,18 @@ public class WriteExcel {
 				
 				for(int j = 0; j < simulator.getNumSteps(); j++)			
 					addNumber(currentProvidedToCollaboratorsSheet, j+2, i+1, PeerComunity.peers[i].getDonatedHistory()[j] - PeerComunity.peers[i].getDonatedToFreeRidersHistory()[j]);
+			}
+		}
+	}
+	
+	public void fulfillCurrentProvidedByTransitivity(){		
+		for (int i = 0; i < PeerComunity.peers.length; i++) {
+			if(PeerComunity.peers[i] instanceof Collaborator){
+				this.addLabel(currentProvidedByTransitivitySheet, 0, i+1, "collaborator");
+				this.addLabel(currentProvidedByTransitivitySheet, 1, i+1, ""+PeerComunity.peers[i].getId());
+				
+				for(int j = 0; j < simulator.getNumSteps(); j++)			
+					addNumber(currentProvidedByTransitivitySheet, j+2, i+1, PeerComunity.peers[i].getDonatedByTransitivityHistory()[j]);
 			}
 		}
 	}

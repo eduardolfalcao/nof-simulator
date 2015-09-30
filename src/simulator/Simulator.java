@@ -166,8 +166,6 @@ public class Simulator {
 	private void performCurrentStepDonations(){
 		
 		System.out.println("Step: "+currentStep);
-		if(currentStep==2)
-			System.out.println();
 		
 		Collaborator provider = null;
 				
@@ -177,10 +175,7 @@ public class Simulator {
 			
 			//keeps choosing consumer and donating until supply all peer's capacity 
 			while(provider.getResourcesDonatedInCurrentStep() < provider.getMaxCapacityToSupply()-0.000000000000001  && !consumersList.isEmpty()){
-				
-				if(currentStep==2 && provider.getId()==25)
-					System.out.println();
-				
+								
 				//first, we try to donate to peers with balance > 0, providing all that they ask, if the provider is able
 				Peer consumer = memberPicker.choosesConsumerWithPositiveBalance(provider, consumersList);
 				if(consumer!=null){

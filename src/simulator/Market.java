@@ -47,6 +47,7 @@ public class Market {
 				smallestDemand = smallestDemand < PeerComunity.peers[idConsumer].getDemand()? smallestDemand : PeerComunity.peers[idConsumer].getDemand();
 			
 			double resourcesForPeersWithZeroCredit = provider.getMaxCapacityToSupply() - provider.getResourcesDonatedInCurrentStep();
+//			double resourcesForPeersWithZeroCredit = provider.getInitialCapacity() - provider.getResourcesDonatedInCurrentStep();
 			double howMuchShouldEachPeerReceive = resourcesForPeersWithZeroCredit/peersWithNilBalance.size();			
 			double howMuchWillEachPeerReceiveInThisRound = Math.min(smallestDemand, howMuchShouldEachPeerReceive);
 			
@@ -64,7 +65,9 @@ public class Market {
 	}
 	
 	public void performDonationToPeersWithTransitiveCredit(Collaborator provider, Peer consumer, List<Peer> peersInvolvedInTheIndirectCredit) {
-		performDonation(provider, consumer, peersInvolvedInTheIndirectCredit, -1);
+		double donated = performDonation(provider, consumer, peersInvolvedInTheIndirectCredit, -1);
+		provider.getDonatedByTransitivityHistory()[simulator.getCurrentStep()] += donated;
+		consumer.getConsumedByTransitivityHistory()[simulator.getCurrentStep()] += donated;
 	}
 	
 	//-1 because the peer has balance, then provider should donate as much as possible
@@ -110,9 +113,9 @@ public class Market {
 		//this is for NilBalance peers: donate the specified in the division among all NilBalance peers
 		else{						
 			if(!(consumer instanceof FreeRider))
-				valueToBeDonated = Math.min(consumer.getDemand(), resources);				
+				return Math.min(consumer.getDemand(), resources);				
 			else
-				valueToBeDonated = resources;
+				return resources;
 		}	
 		
 		Peer B = null;					//peer A, the consumer, and peer B, the idle one
@@ -214,19 +217,20 @@ public class Market {
 	}	
 	
 	private void updateBalance(Collaborator provider, Peer consumer, Interaction interaction){	//we have to call it twice: each for the interaction of each peer	
-		double reputation = NetworkOfFavors.calculateBalance(interaction.getConsumed(), interaction.getDonated());
+		double balance = NetworkOfFavors.calculateBalance(interaction.getConsumed(), interaction.getDonated());
 		if(interaction.getPeerB() == consumer){
 			int consumerIndex = provider.getBalances().indexOf(new PeerInfo(consumer.getId()));
-			provider.getBalances().get(consumerIndex).setBalance(reputation);
+			provider.getBalances().get(consumerIndex).setBalance(balance);
 		}
 		else{
 			int providerIndex = consumer.getBalances().indexOf(new PeerInfo(provider.getId()));
-			consumer.getBalances().get(providerIndex).setBalance(reputation);
+			consumer.getBalances().get(providerIndex).setBalance(balance);
 		}
 	}
 	
 	public void removePeerIfFullyConsumed(Peer consumer){
-		if(consumer.getDemand()<0.0000000001){
+//		if(consumer.getDemand()<0.0000000000000000001){
+		if(consumer.getDemand()==0){
 			simulator.getConsumersList().remove((Integer)consumer.getId());			
 			simulator.getConsumedPeersList().add(consumer.getId());
 		}

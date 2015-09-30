@@ -14,13 +14,13 @@ public class ScenarioI {
 	
 		int numSteps = 1000;
 		boolean nof[] = {false};
-		boolean transitive[] = {false};
+		boolean transitive[] = {true};
 		double tMin = 0.75;
 		double tMax = 0.95;
 		double deltaC = 0.05;
 		int seed = 1;
 		Level level = Level.SEVERE;
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/28-09/";
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/29-09/-fr/";
 //		String outputDir = "/local/experimentos/28-09/";
 		
 		DecimalFormat formatter = new DecimalFormat("0.00");
@@ -44,7 +44,7 @@ public class ScenarioI {
 		double fr = 0;
 		
 		String outputFile = outputDir + "n"+ n + "|" + "fr" + fr + "|" +"K" + kappa +"|" 
-				+ (nof[0] ? "fdnof": "sdnof") + "|" + (transitive[0] ? "transitive-": "") 
+				+ (nof[0] ? "fdnof": "sdnof") + "|" + (transitive[0] ? "transitive": "") 
 				+ "|D" + demand + "|tMin" + tMin + "|tMax" + tMax + "|deltaC" + deltaC;
 		
 		Simulator sim = new Simulator(groupsOfPeers, null, numSteps, nof[0], transitive[0], tMin, tMax, deltaC, seed, level, outputFile, kappa);
