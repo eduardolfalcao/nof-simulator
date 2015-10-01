@@ -13,6 +13,12 @@ public class Collaborator extends Peer{
 		this.setMaxCapacityToSupply(capacity);		
 	}	
 	
+	@Override
+	public String toString(){
+		return "Collaborator: id = "+id+"; demand = "+demand+"; currentDonated = "+resourcesDonatedInCurrentStep+"; State = "+state;
+	}
+	
+	
 	public double getMaxCapacityToSupply() {
 		return maxCapacityToSupply;
 	}

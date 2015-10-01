@@ -8,5 +8,10 @@ public class FreeRider extends Peer{
 		this.getConsumedHistory()[0] = 0;
 		this.setDemand(demand);
 	}
+	
+	@Override
+	public String toString(){
+		return "FreeRider: id = "+id+"; demand = "+demand;
+	}
 
 }

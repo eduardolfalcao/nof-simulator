@@ -1,5 +1,3 @@
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.logging.Level;
@@ -13,18 +11,14 @@ public class ScenarioI {
 	public static void main(String[] args) {
 	
 		int numSteps = 1000;
-		boolean nof[] = {false};
+		boolean nof[] = {true};
 		boolean transitive[] = {true};
 		double tMin = 0.75;
 		double tMax = 0.95;
 		double deltaC = 0.05;
 		int seed = 1;
 		Level level = Level.SEVERE;
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/29-09/-fr/";
-//		String outputDir = "/local/experimentos/28-09/";
-		
-		DecimalFormat formatter = new DecimalFormat("0.00");
-		formatter.setRoundingMode(RoundingMode.DOWN);
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/1-10/-fr/";
 		
 		boolean isFreeRider = false;
 		double capacity = 1, demand = 0.5;

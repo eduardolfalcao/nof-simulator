@@ -15,7 +15,7 @@ public class Peer{
 	protected double demand, resourcesDonatedInCurrentStep;
 	protected int id;
 	
-	private State state;
+	protected State state;
 	private int groupId;
 	private double deviation;
 	

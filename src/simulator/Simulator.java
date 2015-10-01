@@ -164,6 +164,8 @@ public class Simulator {
 	private void performCurrentStepDonations(){
 		
 		System.out.println("Step: "+currentStep);
+		if(currentStep==15)
+			System.out.println();
 		
 		Collaborator provider = null;
 				
@@ -177,49 +179,15 @@ public class Simulator {
 				consumingPeers.addAll(memberPicker.getConsumersWithTransitiveBalance(provider));
 			consumingPeers.addAll(memberPicker.getConsumersWithZeroBalance(provider));
 			
-			while(consumingPeers.size()>0 && provider.getResourcesDonatedInCurrentStep()<provider.getInitialCapacity()){
+			while(consumingPeers.size()>0 && provider.getResourcesDonatedInCurrentStep()<(provider.getInitialCapacity()-0.000000000000001)){
 				List<Triplet> peersToDonate = new ArrayList<Triplet>();
 				peersToDonate.addAll(memberPicker.getNextConsumersWithSameBalance(consumingPeers));
-				if(peersToDonate.size()==0)
-					break;
-				else{
-					market.performDonation(provider, peersToDonate);
-					for(Triplet peer : peersToDonate)
-						consumingPeers.remove(peer);
-				}
+				market.performDonation(provider, peersToDonate);
+				for(Triplet peer : peersToDonate)
+					consumingPeers.remove(peer);
 			}
-			market.removePeerThatDonated(provider);	
-			
-//			//keeps choosing consumer and donating until supply all peer's capacity 
-//			while(provider.getResourcesDonatedInCurrentStep() < provider.getMaxCapacityToSupply()-0.000000000000001  && !consumersList.isEmpty()){
-//								
-//				//first, we try to donate to peers with balance > 0, providing all that they ask, if the provider is able
-//				Peer consumer = memberPicker.choosesConsumerWithPositiveBalance(provider, consumersList);
-//				if(consumer!=null){
-//					market.performDonation(provider, consumer);
-//					market.removePeerIfFullyConsumed(consumer);
-//					continue;
-//				}
-//				
-//				if(transitivity){					
-//					List<Peer> peersInvolvedInTheIndirectCredit = memberPicker.choosesConsumerWithTransitiveCredit(provider, consumersList);
-//					if(peersInvolvedInTheIndirectCredit!=null){
-//						consumer = peersInvolvedInTheIndirectCredit.get(peersInvolvedInTheIndirectCredit.size()-1);
-//						peersInvolvedInTheIndirectCredit.remove(consumer);
-//						market.performDonationToPeersWithTransitiveCredit(provider, consumer, peersInvolvedInTheIndirectCredit);
-//						market.removePeerIfFullyConsumed(consumer);
-//						continue;
-//					}
-//				}
-//				
-//				/**
-//				 * If the provider already tried to donate to everyone with direct credit and transitive credit, but it still has some spare
-//				 * resources, divide it evenly between the ZeroCreditPeers.
-//				 */
-//				market.performDonationToPeersWithNilBalance(provider);		//already removes peers that fully consumed
-//				break;
-//			}			
-//			market.removePeerThatDonated(provider);	
+			market.removePeerThatDonated(provider);
+
 		}
 		setupNextStep();
 	}

@@ -1,7 +1,6 @@
 package simulator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -10,6 +9,7 @@ import nof.NetworkOfFavors;
 import peer.Collaborator;
 import peer.FreeRider;
 import peer.Peer;
+import peer.Triplet;
 import peer.balance.PeerInfo;
 
 public class Market {
@@ -20,174 +20,153 @@ public class Market {
 		this.simulator = simulator;
 	}
 	
-	//remember that free rider are always zero credit
-	public void performDonationToPeersWithNilBalance(Collaborator provider) {							
-			
-		List <Integer> consumingPeers = new ArrayList<Integer>();	//consuming peers that didn't consume
-		consumingPeers.addAll(simulator.getConsumersList());					
-		
-		List <Integer> peersWithNilBalance = new ArrayList<Integer>();	//peers with balance==0 relative to the collaborator
-		Collections.sort(provider.getBalances());						//assure the balance order
-		for(int i = provider.getBalances().size()-1; i >= 0 ; i--){
-			PeerInfo peerInfo = provider.getBalances().get(i);			
-			if(peerInfo.getBalance()<=0 && consumingPeers.contains(PeerComunity.peers[peerInfo.getId()]))	//note that we also add free riders here
-					peersWithNilBalance.add(provider.getBalances().get(i).getId());
+	public void performDonation(Collaborator provider, List<Triplet> consumingPeers){
+		if(consumingPeers.size()==1){
+			Triplet peer = consumingPeers.get(0);
+			performDonation(provider, peer, -1);		//involves donation to peer with balance>0 or transitiveBalance>0			
 		}
-		
-		//add the peers who want to consume but which the provider didnt interact before
-		for(int idConsumer : consumingPeers){
-			if(!peersWithNilBalance.contains(idConsumer))
-				peersWithNilBalance.add(idConsumer);
-		}
-		
-		//here we know who is zero credit and wants to consume		
-		while(peersWithNilBalance.size()>0 && provider.getResourcesDonatedInCurrentStep()<(provider.getMaxCapacityToSupply()-0.0000000001)){	//TODO what should we do with this bug
-			double smallestDemand = Double.MAX_VALUE;
-			for(int idConsumer : peersWithNilBalance)
-				smallestDemand = smallestDemand < PeerComunity.peers[idConsumer].getDemand()? smallestDemand : PeerComunity.peers[idConsumer].getDemand();
-			
-			double resourcesForPeersWithZeroCredit = provider.getMaxCapacityToSupply() - provider.getResourcesDonatedInCurrentStep();
-//			double resourcesForPeersWithZeroCredit = provider.getInitialCapacity() - provider.getResourcesDonatedInCurrentStep();
-			double howMuchShouldEachPeerReceive = resourcesForPeersWithZeroCredit/peersWithNilBalance.size();			
-			double howMuchWillEachPeerReceiveInThisRound = Math.min(smallestDemand, howMuchShouldEachPeerReceive);
-			
-			List <Integer> peersWithNilBalanceAux = new ArrayList<Integer>();
-			peersWithNilBalanceAux.addAll(peersWithNilBalance);
-			for(int id : peersWithNilBalanceAux){
-				double donated = performDonation(provider, PeerComunity.peers[id], null, howMuchWillEachPeerReceiveInThisRound);
-				removePeerIfFullyConsumed(PeerComunity.peers[id]);
-				//if donated is 0 then the fdnof constrained the amount of resources this peer should receive and therefore he already consumed all there were to him
-//				if(PeerComunity.peers[id].getDemand()<=0 || donated<0.0000000001)	
-				if(PeerComunity.peers[id].getDemand()<=0)	
-					peersWithNilBalance.remove((Integer)id);
-			}
-		}		
-	}
-	
-	public void performDonationToPeersWithTransitiveCredit(Collaborator provider, Peer consumer, List<Peer> peersInvolvedInTheIndirectCredit) {
-		double donated = performDonation(provider, consumer, peersInvolvedInTheIndirectCredit, -1);
-		provider.getDonatedByTransitivityHistory()[simulator.getCurrentStep()] += donated;
-		consumer.getConsumedByTransitivityHistory()[simulator.getCurrentStep()] += donated;
-	}
-	
-	//-1 because the peer has balance, then provider should donate as much as possible
-	public double performDonation(Collaborator provider, Peer consumer){
-		return performDonation(provider, consumer, null, -1);
+		else
+			performDonationToPeersWithSameBalance(provider, consumingPeers); //donate to more than one peer	
 	}
 	
 	//the provider should donate the amount specified in resources, but only when resource >0	
-	public double performDonation(Collaborator provider, Peer consumer, List<Peer> peersInvolvedInTheIndirectCredit, double resources){	
-		resources = getAmountToDonate(provider, consumer, peersInvolvedInTheIndirectCredit, resources);
+	public double performDonation(Collaborator provider, Triplet consumerTriplet, double resources){
+				
+		resources = getAmountToDonate(provider, consumerTriplet, resources);
 		
 		//update the values of interactions and the balances of each peer
-		updatePeersInteraction(provider, consumer, peersInvolvedInTheIndirectCredit, resources);
+		updatePeersInteraction(provider, consumerTriplet, resources);
 		
 		Peer[] peersInvolvedInDonation = null;
-		if(peersInvolvedInTheIndirectCredit==null)
-			peersInvolvedInDonation = new Peer[]{provider, consumer}; 
-		else{
-			peersInvolvedInDonation = new Peer[peersInvolvedInTheIndirectCredit.size()+2];	
-			peersInvolvedInDonation[0] = provider;
-			peersInvolvedInDonation[1] = consumer;
-			for(int i = 0; i < peersInvolvedInTheIndirectCredit.size(); i++)
-				peersInvolvedInDonation[i+2] = peersInvolvedInTheIndirectCredit.get(i);
-		}
+		if(consumerTriplet.getTransitivePeer()==null)
+			peersInvolvedInDonation = new Peer[]{provider, consumerTriplet.getConsumer()}; 
+		else
+			peersInvolvedInDonation = new Peer[]{provider, consumerTriplet.getTransitivePeer(), consumerTriplet.getConsumer()};
 		sortBalances(peersInvolvedInDonation);						//sort the balances of all peers
 		
 		//update the donated and consumed amount in this step
 		provider.getDonatedHistory()[simulator.getCurrentStep()] += resources;
-		if(consumer instanceof FreeRider)
+		if(consumerTriplet.getTransitivePeer() != null)
+			provider.getDonatedByTransitivityHistory()[simulator.getCurrentStep()] += resources;
+		if(consumerTriplet.getConsumer() instanceof FreeRider)
 			provider.getDonatedToFreeRidersHistory()[simulator.getCurrentStep()] += resources;
-		consumer.getConsumedHistory()[simulator.getCurrentStep()] += resources;
+		consumerTriplet.getConsumer().getConsumedHistory()[simulator.getCurrentStep()] += resources;
 		
 		return resources;
 	}
 	
-	private double getAmountToDonate(Collaborator provider, Peer consumer, List<Peer> peersInvolvedInTheIndirectCredit, double resources) {
-		
-		double valueToBeDonated = 0;
-		if(resources==-1){																	//if resources==-1 the provider should donate as much as possible			
-			double freeResources = Math.max(0,provider.getInitialCapacity() - provider.getResourcesDonatedInCurrentStep());				
-			valueToBeDonated = Math.max(0,Math.min(freeResources, consumer.getDemand()));									
+	//remember that free rider are always zero credit
+	public void performDonationToPeersWithSameBalance(Collaborator provider, List<Triplet> consumingPeers) {							
+		List<Triplet> consumingPeersLocal = new ArrayList<Triplet>();
+		consumingPeersLocal.addAll(consumingPeers);	
+		for(Triplet triplet : consumingPeers){
+			if(triplet.getConsumer().getDemand()==0)
+				consumingPeersLocal.remove(triplet);
 		}
-		//this is for NilBalance peers: donate the specified in the division among all NilBalance peers
-		else{						
-			if(!(consumer instanceof FreeRider))
-				return Math.min(consumer.getDemand(), resources);				
-			else
-				return resources;
-		}	
-		
-		Peer B = null;					//peer A, the consumer, and peer B, the idle one
-		double transitiveCredit = 0;
-		if(simulator.isTransitivity() && peersInvolvedInTheIndirectCredit!=null){
-			//TODO change it to assign this values dynamically from the list
-			B = peersInvolvedInTheIndirectCredit.get(0);
-			double gammaProviderB = provider.getBalances().get(provider.getBalances().indexOf(new PeerInfo(B.getId()))).getBalance();
-			double gammaBConsumer = B.getBalances().get(B.getBalances().indexOf(new PeerInfo(consumer.getId()))).getBalance();
-			transitiveCredit = Math.min(gammaProviderB, gammaBConsumer);
-			valueToBeDonated = Math.min(valueToBeDonated, transitiveCredit);	//limit the value to be donated to the amount of transitive credit
-			return valueToBeDonated;
-		}
-		
-		//here we limit the valueToBeDonated by the MaximumCapacity the controller sets		
-		if(simulator.isFdNof()){
-			double maxToBeDonated = 0;
-			int index = provider.getInteractions().indexOf(new Interaction(consumer, 0, 1));
-			if(index == -1)
-				maxToBeDonated = provider.getMaxCapacityToSupply();		//global
-			else{
-				Interaction interaction = provider.getInteractions().get(index);			//retrieve the interaction object with its history
-				double fairness = Simulator.getFairness(interaction.getConsumed(), interaction.getDonated());				
-				if(fairness<0) 
-					maxToBeDonated = provider.getMaxCapacityToSupply();		//global
-				else
-					maxToBeDonated = interaction.getMaxCapacityToSupply();	//pairwise
+			
+		//-0.0000000001
+		while(consumingPeersLocal.size()>0 && provider.getResourcesDonatedInCurrentStep()<provider.getInitialCapacity()){	//TODO what should we do with this bug
+			double smallestDemand = Double.MAX_VALUE;
+			for(Triplet consumerTriplet : consumingPeersLocal)
+				smallestDemand = smallestDemand < consumerTriplet.getConsumer().getDemand()? smallestDemand : consumerTriplet.getConsumer().getDemand();
+			
+			double resourcesForPeersWithSameBalance = provider.getInitialCapacity() - provider.getResourcesDonatedInCurrentStep();
+			double howMuchShouldEachPeerReceive = resourcesForPeersWithSameBalance/consumingPeersLocal.size();			
+			double howMuchWillEachPeerReceiveInThisRound = Math.min(smallestDemand, howMuchShouldEachPeerReceive);
+			
+			//The provider still has spare resources but the consumers already consumed what they needed
+			if(howMuchWillEachPeerReceiveInThisRound==0)
+				break;
+			
+			List<Triplet> consumingPeersAux = new ArrayList<Triplet>();
+			consumingPeersAux.addAll(consumingPeersLocal);			
+			for(Triplet consumerTriplet : consumingPeersAux){
+				double donated = performDonation(provider, consumerTriplet, howMuchWillEachPeerReceiveInThisRound);
+				removePeerIfFullyConsumed(consumerTriplet.getConsumer());
+				if(consumerTriplet.getConsumer().getDemand()<=0 || donated<0.0000000000000001)	//if donated==0 then that debt might have already been paid
+					consumingPeersLocal.remove(consumerTriplet);
 			}
-			valueToBeDonated = Math.min(valueToBeDonated, maxToBeDonated);
-		}
-		
-		return valueToBeDonated;
+		}		
 	}
 	
-	private void updatePeersInteraction(Collaborator provider, Peer consumer, List<Peer> peersInvolvedInTheIndirectCredit, double resources){		
-		Peer idleB = null;					//peer A, the consumer, and peer B, the idle one
-		if(peersInvolvedInTheIndirectCredit!=null){			
-			//TODO change it to assign these values dynamically from the list
-			idleB = peersInvolvedInTheIndirectCredit.get(0);
+	private double getAmountToDonate(Collaborator provider, Triplet consumerTriplet, double resources) {
+		
+		Peer consumer = consumerTriplet.getConsumer();
+		
+		double consumerDemand = consumer.getDemand();
+		double freeResources = Math.max(0,provider.getInitialCapacity() - provider.getResourcesDonatedInCurrentStep());
+		double maxToBeDonated = Math.max(0,Math.min(freeResources, consumerDemand));		
+		
+		//maxToBeDonated is constrained by the resources specified, if it is not -1
+		if(resources!=-1)
+				maxToBeDonated = Math.min(maxToBeDonated, resources);		
+		
+		if(simulator.isTransitivity() && consumerTriplet.getTransitivePeer()!=null){
+			Peer idlePeer = consumerTriplet.getTransitivePeer();
+			double gammaProviderIdle = provider.getBalances().get(provider.getBalances().indexOf(new PeerInfo(idlePeer.getId()))).getBalance();
+			double gammaIdleConsumer = idlePeer.getBalances().get(idlePeer.getBalances().indexOf(new PeerInfo(consumer.getId()))).getBalance();
+			double transitiveCredit = Math.min(gammaProviderIdle, gammaIdleConsumer);
+			maxToBeDonated = Math.min(maxToBeDonated, transitiveCredit);	//limit the maxToBeDonated by the transitiveCredit
+			return maxToBeDonated;
+		}			
+		
+		//here we limit the maxToBeDonated by the alfa the controller sets		
+		if(simulator.isFdNof()){
+			double fairnessPairwise = -1;			
+			int index = provider.getInteractions().indexOf(new Interaction(consumer, 0, 1));
+			Interaction interaction = null;
+			if(index != -1){
+				interaction = provider.getInteractions().get(index);				//retrieve the interaction object with its history
+				fairnessPairwise = Simulator.getFairness(interaction.getConsumed(), interaction.getDonated());		
+			}
 			
+			if(interaction == null || fairnessPairwise<0) 
+				maxToBeDonated = Math.min(maxToBeDonated, provider.getMaxCapacityToSupply());	//global
+			else
+				maxToBeDonated = Math.min(maxToBeDonated,interaction.getMaxCapacityToSupply());	//pairwise			
+			
+		}
+		
+		return maxToBeDonated;
+	}
+	
+	private void updatePeersInteraction(Collaborator provider, Triplet consumerTriplet, double resources){	
+		Peer consumer = consumerTriplet.getConsumer();
+		Peer idlePeer = consumerTriplet.getTransitivePeer();
+		
+		if(idlePeer!=null){						
 			//make sure all interaction exist, and if not, create them
-			createInteraction(provider, idleB);
-			createInteraction((Collaborator)idleB, provider);
-			createInteraction((Collaborator)idleB, consumer);
-			createInteraction((Collaborator)consumer, idleB);
+			createInteraction(provider, idlePeer);
+			createInteraction((Collaborator)idlePeer, provider);
+			createInteraction((Collaborator)idlePeer, consumer);
+			createInteraction((Collaborator)consumer, idlePeer);
 			
-			int index = provider.getInteractions().indexOf(new Interaction(idleB, 0, 1));
+			int index = provider.getInteractions().indexOf(new Interaction(idlePeer, 0, 1));
 			Interaction interactionProviderIdle = provider.getInteractions().get(index);	//retrieve the interaction object with its history
 			interactionProviderIdle.donate(resources);
-			updateBalance(provider, idleB, interactionProviderIdle);
+			updateBalance(provider, idlePeer, interactionProviderIdle);
 			
-			index = idleB.getInteractions().indexOf(new Interaction(provider, 0, 1));
-			Interaction interactionIdleProvider = idleB.getInteractions().get(index);	//retrieve the interaction object with its history
+			index = idlePeer.getInteractions().indexOf(new Interaction(provider, 0, 1));
+			Interaction interactionIdleProvider = idlePeer.getInteractions().get(index);	
 			interactionIdleProvider.consume(resources);
-			updateBalance((Collaborator)idleB, provider, interactionIdleProvider);
+			updateBalance((Collaborator)idlePeer, provider, interactionIdleProvider);
 			
-			index = idleB.getInteractions().indexOf(new Interaction(consumer, 0, 1));
-			Interaction interactionIdleConsumer = idleB.getInteractions().get(index);	//retrieve the interaction object with its history
+			index = idlePeer.getInteractions().indexOf(new Interaction(consumer, 0, 1));
+			Interaction interactionIdleConsumer = idlePeer.getInteractions().get(index);
 			interactionIdleConsumer.donate(resources);
-			updateBalance((Collaborator)idleB, consumer, interactionIdleConsumer);
+			updateBalance((Collaborator)idlePeer, consumer, interactionIdleConsumer);
 			
-			index = consumer.getInteractions().indexOf(new Interaction(idleB, 0, 1));
-			Interaction interactionConsumerIdle = consumer.getInteractions().get(index);	//retrieve the interaction object with its history
+			index = consumer.getInteractions().indexOf(new Interaction(idlePeer, 0, 1));
+			Interaction interactionConsumerIdle = consumer.getInteractions().get(index);	
 			interactionConsumerIdle.consume(resources);
-			updateBalance((Collaborator)consumer, idleB, interactionConsumerIdle);			//TODO when fixing to dynamically code, note that update Balance is not necessary for free riders
+			updateBalance((Collaborator)consumer, idlePeer, interactionConsumerIdle);	
 		}
 		else{
 			//make sure all interaction exists
 			createInteraction(provider, consumer);
 			
 			int index = provider.getInteractions().indexOf(new Interaction(consumer, 0, 1));
-			Interaction interactionProviderConsumer = provider.getInteractions().get(index);	//retrieve the interaction object with its history
+			Interaction interactionProviderConsumer = provider.getInteractions().get(index);	
 			interactionProviderConsumer.donate(resources);
 			updateBalance(provider, consumer, interactionProviderConsumer);
 			
@@ -200,7 +179,7 @@ public class Market {
 		}
 		provider.setResourcesDonatedInCurrentStep(provider.getResourcesDonatedInCurrentStep()+resources);
 		consumer.setDemand(Math.max(0,consumer.getDemand()-resources));
-	}
+	}	
 	
 	private void createInteraction(Collaborator provider, Peer consumer){
 		if(!provider.getInteractions().contains(new Interaction(consumer, 0, 1))){	//just to retrieve the real interaction by comparison			

@@ -88,8 +88,9 @@ public class MemberPicker {
 			if(peer.getId()==provider.getId())
 				continue;
 			int balanceIndex = provider.getBalances().indexOf(new PeerInfo(peer.getId()));
-			if(balanceIndex==-1 || provider.getBalances().get(balanceIndex).getBalance()==0 && peer.getDemand()>0)
-				peersWithZeroBalance.add(new Triplet(peer, 0, null));				
+			if((balanceIndex==-1 || (balanceIndex!=-1 && provider.getBalances().get(balanceIndex).getBalance()==0 && peer.getState()==State.CONSUMING && peer.getDemand()>0)) &&
+					(peer.getState()==State.CONSUMING && peer.getDemand()>0))
+				peersWithZeroBalance.add(new Triplet(peer, 0, null));			
 		}
 		
 		return peersWithZeroBalance;	

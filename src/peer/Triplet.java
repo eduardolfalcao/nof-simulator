@@ -18,8 +18,12 @@ public class Triplet  implements Comparable<Object>{
 			return false;
 		else{
 			Triplet otherTriplet = (Triplet) o;
-			if(consumer == otherTriplet.getConsumer() && transitivePeer == otherTriplet.getTransitivePeer())
-				return true;
+			if(consumer != null && transitivePeer != null)
+				return consumer.equals(otherTriplet.getConsumer()) && transitivePeer.equals(otherTriplet.getTransitivePeer());
+			else if(consumer != null)
+				return consumer.equals(otherTriplet.getConsumer()) && otherTriplet.getTransitivePeer()==null;
+			else if(transitivePeer != null)
+				return transitivePeer.equals(otherTriplet.getTransitivePeer()) && otherTriplet.getConsumer()==null;
 			else return false;
 		}
 	}
@@ -41,6 +45,19 @@ public class Triplet  implements Comparable<Object>{
 			return EQUAL;
 		else	
 	    	return AFTER;
+	}
+	
+	@Override
+	public String toString(){
+		String output = "";
+		if(consumer!=null)
+			output = "ConsumerId: "+consumer.getId();
+		if(transitivePeer!=null)
+			output += "; TransitiveId: "+transitivePeer.getId();
+		
+		output += "; debt: "+debt;
+		
+		return output;
 	}
 	
 	public Peer getConsumer() {
