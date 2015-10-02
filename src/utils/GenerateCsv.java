@@ -96,10 +96,10 @@ public class GenerateCsv{
 		double delta = simulator.getDeltaC();
 		
 		for(Peer p : PeerComunity.peers){
-			double fairness = Simulator.getFairness(p.getCurrentConsumed(simulator.getNumSteps()-1), 
+			double fairness = NetworkOfFavors.getFairness(p.getCurrentConsumed(simulator.getNumSteps()-1), 
 					p.getCurrentDonated(simulator.getNumSteps()-1));
 			
-			double satisfaction = Simulator.getSatisfaction(p.getCurrentConsumed(simulator.getNumSteps()-1), 
+			double satisfaction = NetworkOfFavors.getSatisfaction(p.getCurrentConsumed(simulator.getNumSteps()-1), 
 					p.getCurrentRequested(simulator.getNumSteps()-1));
 			
 			double overallBalance = 0;

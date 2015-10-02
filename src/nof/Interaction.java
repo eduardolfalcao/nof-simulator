@@ -107,4 +107,8 @@ public class Interaction {
 	public double getInitialCapacity() {
 		return initialCapacity;
 	}	
+	
+	public void makeDonationEqualToZero(){
+		lastDonated = donated = 0;
+	}
 }

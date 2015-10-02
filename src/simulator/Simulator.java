@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import nof.Interaction;
+import nof.NetworkOfFavors;
 import peer.Collaborator;
 import peer.FreeRider;
 import peer.Peer;
@@ -42,14 +43,16 @@ public class Simulator {
 	private StateGenerator stateGenerator;
 	public final static Logger logger = Logger.getLogger(Simulator.class.getName());
 	private String outputFile;
-	private double kappa;
+	private double kappa;	
+	private boolean whiteWasher;
 	
-	public Simulator(Queue<PeerGroup> groupsOfCollaborativePeers, PeerGroup groupOfFreeRiders, int numSteps, boolean fdNoF, boolean transitivity, double tMin, double tMax, double deltaC, 
+	public Simulator(Queue<PeerGroup> groupsOfCollaborativePeers, PeerGroup groupOfFreeRiders, boolean whiteWasher, int numSteps, boolean fdNoF, boolean transitivity, double tMin, double tMax, double deltaC, 
 			int seed, Level level, String outputFile, double kappa) {
 		
 		groupsOfPeers = groupsOfCollaborativePeers;
 		this.groupOfFreeRiders = groupOfFreeRiders;
-		peerComunity = new PeerComunity(groupsOfPeers, groupOfFreeRiders, numSteps);	//the constructor also creates the peers	
+		peerComunity = new PeerComunity(groupsOfPeers, groupOfFreeRiders, numSteps);	//the constructor also creates the peers
+		this.whiteWasher = whiteWasher;
 		
 		memberPicker = new MemberPicker(seed);
 		market = new Market(this);
@@ -100,6 +103,17 @@ public class Simulator {
 				groupsOfCollaborativePeersAux.add(pg);
 			this.groupsOfPeers = groupsOfCollaborativePeersAux;
 			consumerIndex = 1;
+			
+			if(whiteWasher){	//change ids ==> its easier to make donated to free riders
+				for(Peer p : PeerComunity.peers){
+					if(p instanceof Collaborator){
+						for(Interaction interaction : p.getInteractions()){
+							if(interaction.getPeerB() instanceof FreeRider)
+								interaction.makeDonationEqualToZero();
+						}
+					}
+				}
+			}
 		}
 		
 		while(index < numberOfGroups){			
@@ -163,10 +177,6 @@ public class Simulator {
 	//performs all donations of the current step.
 	private void performCurrentStepDonations(){
 		
-		System.out.println("Step: "+currentStep);
-		if(currentStep==15)
-			System.out.println();
-		
 		Collaborator provider = null;
 				
 		//while there is any collaborator willing to donate, choose one
@@ -227,17 +237,6 @@ public class Simulator {
 	//the global and pairwise controllers
 	private void updateCapacitySupplied(){
 		
-//		System.out.println("CurrentStep: "+currentStep);
-//		for(Peer p : PeerComunity.peers){		
-//			if(p.getGroupId()==2){
-//				System.out.println("Id: "+p.getId());
-//				Collections.sort(p.getBalances());
-//				System.out.println(p.getBalances());
-//				
-//			}
-//		}
-//		System.out.println("##################");
-		
 		if(currentStep>0){
 			
 			for(Peer p : PeerComunity.peers){		
@@ -246,8 +245,8 @@ public class Simulator {
 					
 					//pairwise
 					for (Interaction interaction : collab.getInteractions()) {					
-						double lastFairness = getFairness(interaction.getLastConsumed(), interaction.getLastDonated());	
-						double currentFairness = getFairness(interaction.getConsumed(), interaction.getDonated());						
+						double lastFairness = NetworkOfFavors.getFairness(interaction.getLastConsumed(), interaction.getLastDonated());	
+						double currentFairness = NetworkOfFavors.getFairness(interaction.getConsumed(), interaction.getDonated());						
 						boolean change = false;
 						if(currentFairness>=0){
 							if(currentFairness < tMin)
@@ -273,8 +272,8 @@ public class Simulator {
 					
 					
 					//global
-					double currentFairness = Simulator.getFairness(collab.getCurrentConsumed(currentStep), collab.getCurrentDonated(currentStep));
-					double lastFairness = Simulator.getFairness(collab.getCurrentConsumed(currentStep-1), collab.getCurrentDonated(currentStep-1));					
+					double currentFairness = NetworkOfFavors.getFairness(collab.getCurrentConsumed(currentStep), collab.getCurrentDonated(currentStep));
+					double lastFairness = NetworkOfFavors.getFairness(collab.getCurrentConsumed(currentStep-1), collab.getCurrentDonated(currentStep-1));					
 					boolean change = false;
 					if(currentFairness>=0){
 						if(currentFairness < tMin)
@@ -300,26 +299,14 @@ public class Simulator {
 		}	
 	
 		Simulator.logger.fine("FIM Update capacity supplied");
-	}
-	
-	
-	public static double getFairness(double consumed, double donated){
-		if(donated == 0)
-			return -1;
-		else
-			return consumed/donated;
-	}
-	
-	public static double getSatisfaction(double consumed, double requested){
-		return 	getFairness(consumed, requested);
-	}
+	}	
 
 	private void exportData(){		
 		GenerateCsv csvGen = new GenerateCsv(outputFile, this);
 		csvGen.outputPeers();
 		
-		WriteExcel writeExcel = new WriteExcel(outputFile, this);
-		writeExcel.outputPeers();
+//		WriteExcel writeExcel = new WriteExcel(outputFile, this);
+//		writeExcel.outputPeers();
 	}
 	
     

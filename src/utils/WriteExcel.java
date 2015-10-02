@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import nof.NetworkOfFavors;
+
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -114,7 +116,7 @@ public class WriteExcel {
 				for(int j = 0; j < simulator.getNumSteps(); j++){				
 					currentConsumed = PeerComunity.peers[i].getCurrentConsumed(j);			
 					currentDonated = PeerComunity.peers[i].getCurrentDonated(j);
-					fairness = Simulator.getFairness(currentConsumed, currentDonated);
+					fairness = NetworkOfFavors.getFairness(currentConsumed, currentDonated);
 					addNumber(fairnessSheet, j+2, i+1, fairness);
 				}
 			}
@@ -131,7 +133,7 @@ public class WriteExcel {
 				for(int j = 0; j < simulator.getNumSteps(); j++){				
 					currentConsumed = PeerComunity.peers[i].getCurrentConsumed(j);			
 					currentRequested = PeerComunity.peers[i].getCurrentRequested(j);
-					satisfaction = Simulator.getSatisfaction(currentConsumed, currentRequested);
+					satisfaction = NetworkOfFavors.getSatisfaction(currentConsumed, currentRequested);
 					addNumber(satisfactionSheet, j+2, i+1, satisfaction);
 				}
 			}

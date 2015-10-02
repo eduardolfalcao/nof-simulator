@@ -117,7 +117,7 @@ public class Market {
 			Interaction interaction = null;
 			if(index != -1){
 				interaction = provider.getInteractions().get(index);				//retrieve the interaction object with its history
-				fairnessPairwise = Simulator.getFairness(interaction.getConsumed(), interaction.getDonated());		
+				fairnessPairwise = NetworkOfFavors.getFairness(interaction.getConsumed(), interaction.getDonated());		
 			}
 			
 			if(interaction == null || fairnessPairwise<0) 

@@ -85,6 +85,10 @@ public class Peer{
 		return this.id;
 	}
 	
+	public void setId(int id){
+		this.id = id;
+	}
+	
 	public double getDemand() {
 		return demand;
 	}
