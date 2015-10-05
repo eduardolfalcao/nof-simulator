@@ -6,28 +6,32 @@ import peer.PeerGroup;
 import simulator.Simulator;
 
 
-public class ScenarioI_WithFreeRiders {
+public class ScenarioI_WithFreeRidersWhitewashersDifferentTs {
 
 	public static void main(String[] args) {
 		
 		int numSteps = 5000;
 		boolean fdNof[] = {false, true};
 		boolean transitive[] = {false, true};
-		double tMin = 0.75;
+		double tMin = 0.85;
 		double tMax = 0.95;
 		double deltaC = 0.05;
 		int seed = 1;
 		Level level = Level.SEVERE;
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/+fr/";
+//		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/+fr+whitewashers+tmin085/";
+//		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/+fr+whitewashers+tmin09tmax1/";
+//		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/+fr+whitewashers+tmin085tmax095+deviation01/";
+//		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/+fr+whitewashers+tmin085tmax095+deviation025/";
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/+fr+whitewashers+tmin085tmax095+deviation1/";
 		
 		double capacity = 1, demand = 0.5;
 		
 		Queue<PeerGroup> groupsOfPeers = new LinkedList<PeerGroup>();
 		PeerGroup freeRidersGroup = new PeerGroup(1, 15, 0, capacity, Double.MAX_VALUE, true);
-		boolean whiteWasher = false;
-		PeerGroup consumersGroup = new PeerGroup(2, 15, 0, capacity, demand, false);
-		PeerGroup idlePeersGroup = new PeerGroup(3, 15, 0, capacity, demand, false);
-		PeerGroup providersGroup = new PeerGroup(4, 15, 0, capacity, demand, false);
+		boolean whiteWasher = true;
+		PeerGroup consumersGroup = new PeerGroup(2, 15, 100, capacity, demand, false);
+		PeerGroup idlePeersGroup = new PeerGroup(3, 15, 100, capacity, demand, false);
+		PeerGroup providersGroup = new PeerGroup(4, 15, 100, capacity, demand, false);
 		groupsOfPeers.add(consumersGroup);
 		groupsOfPeers.add(idlePeersGroup);
 		groupsOfPeers.add(providersGroup);

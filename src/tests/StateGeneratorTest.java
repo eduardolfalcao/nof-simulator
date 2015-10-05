@@ -100,7 +100,7 @@ public class StateGeneratorTest {
 		Assert.assertEquals(State.CONSUMING, result);
 		
 		result = sg.generateState(State.CONSUMING, 30);
-		Assert.assertEquals(State.PROVIDING, result);
+		Assert.assertEquals(State.CONSUMING, result);
 		
 		result = sg.generateState(State.CONSUMING, 30);
 		Assert.assertEquals(State.PROVIDING, result);

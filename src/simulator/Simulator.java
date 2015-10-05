@@ -97,6 +97,7 @@ public class Simulator {
 		int index = 0, consumerIndex = 0;
 		int numberOfGroups = groupsOfPeers.size()+(groupOfFreeRiders!=null?1:0);	//1 is from the group of free riders	
 		if(groupOfFreeRiders!=null){
+			//first, get the collaborative peers and then make the interactions with free riders have donated = 0
 			Queue<PeerGroup> groupsOfCollaborativePeersAux = new LinkedList<PeerGroup>();
 			groupsOfCollaborativePeersAux.add(groupOfFreeRiders);
 			for(PeerGroup pg : groupsOfPeers)

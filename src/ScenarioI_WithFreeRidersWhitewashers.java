@@ -6,10 +6,10 @@ import peer.PeerGroup;
 import simulator.Simulator;
 
 
-public class ScenarioI {
-	
+public class ScenarioI_WithFreeRidersWhitewashers {
+
 	public static void main(String[] args) {
-	
+		
 		int numSteps = 5000;
 		boolean fdNof[] = {false, true};
 		boolean transitive[] = {false, true};
@@ -18,15 +18,16 @@ public class ScenarioI {
 		double deltaC = 0.05;
 		int seed = 1;
 		Level level = Level.SEVERE;
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/-fr/";
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/+fr+whitewashers/";
 		
-		boolean isFreeRider = false, whiteWasher = false;
 		double capacity = 1, demand = 0.5;
 		
 		Queue<PeerGroup> groupsOfPeers = new LinkedList<PeerGroup>();
-		PeerGroup consumersGroup = new PeerGroup(1, 20, 0, capacity, demand, isFreeRider);
-		PeerGroup idlePeersGroup = new PeerGroup(2, 20, 0, capacity, demand, isFreeRider);
-		PeerGroup providersGroup = new PeerGroup(3, 20, 0, capacity, demand, isFreeRider);
+		PeerGroup freeRidersGroup = new PeerGroup(1, 15, 0, capacity, Double.MAX_VALUE, true);
+		boolean whiteWasher = true;
+		PeerGroup consumersGroup = new PeerGroup(2, 15, 0, capacity, demand, false);
+		PeerGroup idlePeersGroup = new PeerGroup(3, 15, 0, capacity, demand, false);
+		PeerGroup providersGroup = new PeerGroup(4, 15, 0, capacity, demand, false);
 		groupsOfPeers.add(consumersGroup);
 		groupsOfPeers.add(idlePeersGroup);
 		groupsOfPeers.add(providersGroup);
@@ -35,7 +36,8 @@ public class ScenarioI {
 		int n = 0;
 		for(PeerGroup gp : groupsOfPeers)
 			n += gp.getNumPeers();		
-		double fr = 0;
+		n += freeRidersGroup.getNumPeers();
+		double fr = (double) freeRidersGroup.getNumPeers()/n;
 		
 		for(boolean nof: fdNof){
 			for(boolean transitivity : transitive){
@@ -45,11 +47,11 @@ public class ScenarioI {
 				
 				System.out.println(outputFile);
 				
-				Simulator sim = new Simulator(groupsOfPeers, null, whiteWasher, numSteps, nof, transitivity, tMin, tMax, deltaC, seed, level, outputFile, kappa);
+				Simulator sim = new Simulator(groupsOfPeers, freeRidersGroup, whiteWasher, numSteps, nof, transitivity, tMin, tMax, deltaC, seed, level, outputFile, kappa);
 				sim.startSimulation();
 			}
 		}
 	
 	}
-
+	
 }

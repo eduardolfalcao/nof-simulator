@@ -107,27 +107,36 @@ public class Market {
 			double gammaIdleConsumer = idlePeer.getBalances().get(idlePeer.getBalances().indexOf(new PeerInfo(consumer.getId()))).getBalance();
 			double transitiveCredit = Math.min(gammaProviderIdle, gammaIdleConsumer);
 			maxToBeDonated = Math.min(maxToBeDonated, transitiveCredit);	//limit the maxToBeDonated by the transitiveCredit
-			return maxToBeDonated;
-		}			
-		
-		//here we limit the maxToBeDonated by the alfa the controller sets		
-		if(simulator.isFdNof()){
-			double fairnessPairwise = -1;			
-			int index = provider.getInteractions().indexOf(new Interaction(consumer, 0, 1));
-			Interaction interaction = null;
-			if(index != -1){
-				interaction = provider.getInteractions().get(index);				//retrieve the interaction object with its history
-				fairnessPairwise = NetworkOfFavors.getFairness(interaction.getConsumed(), interaction.getDonated());		
-			}
 			
-			if(interaction == null || fairnessPairwise<0) 
-				maxToBeDonated = Math.min(maxToBeDonated, provider.getMaxCapacityToSupply());	//global
-			else
-				maxToBeDonated = Math.min(maxToBeDonated,interaction.getMaxCapacityToSupply());	//pairwise			
-			
+			//here we limit the maxToBeDonated by the alfa the provider has towards the idle peer, and also by the alfa the idle peer has towards the consumer
+			if(simulator.isFdNof()){
+				maxToBeDonated = Math.min(maxToBeDonated, getAlfa(provider, idlePeer));
+				maxToBeDonated = Math.min(maxToBeDonated, getAlfa((Collaborator)idlePeer, consumer));
+			}	
 		}
+		//here we limit the maxToBeDonated by the alfa the provider has towards the consumer set by controller		
+		else if(simulator.isFdNof())
+			maxToBeDonated = Math.min(maxToBeDonated, getAlfa(provider, consumer));	
 		
 		return maxToBeDonated;
+	}
+	
+	private double getAlfa(Collaborator provider, Peer consumer){
+		double fairnessPairwise = -1, maxToBeDonated = Double.MAX_VALUE;			
+		int index = provider.getInteractions().indexOf(new Interaction(consumer, 0, 1));
+		Interaction interaction = null;
+		if(index != -1){
+			interaction = provider.getInteractions().get(index);				//retrieve the interaction object with its history
+			fairnessPairwise = NetworkOfFavors.getFairness(interaction.getConsumed(), interaction.getDonated());		
+		}
+		
+		if(interaction == null || fairnessPairwise<0) 
+			maxToBeDonated = Math.min(maxToBeDonated, provider.getMaxCapacityToSupply());	//global
+		else
+			maxToBeDonated = Math.min(maxToBeDonated,interaction.getMaxCapacityToSupply());	//pairwise
+		
+		return maxToBeDonated;
+		
 	}
 	
 	private void updatePeersInteraction(Collaborator provider, Triplet consumerTriplet, double resources){	
