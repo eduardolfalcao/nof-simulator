@@ -11,22 +11,23 @@ public class ScenarioI {
 	public static void main(String[] args) {
 	
 		int numSteps = 5000;
-		boolean fdNof[] = {false, true};
+		boolean fdNof[] = {true};
 		boolean transitive[] = {false, true};
 		double tMin = 0.75;
-		double tMax = 0.95;
-		double deltaC = 0.05;
-		int seed = 1;
-		Level level = Level.SEVERE;
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/-fr/";
+		double tMax = 1;
+		double deltaC[] = {0.05};
+//		double deltaC[] = {0.01, 0.05, 0.1, 0.2};
+		int replication = 1;
+		Level level = Level.INFO;
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/7-10/-fr/";
 		
 		boolean isFreeRider = false, whiteWasher = false;
 		double capacity = 1, demand = 0.5;
 		
 		Queue<PeerGroup> groupsOfPeers = new LinkedList<PeerGroup>();
-		PeerGroup consumersGroup = new PeerGroup(1, 20, 0, capacity, demand, isFreeRider);
-		PeerGroup idlePeersGroup = new PeerGroup(2, 20, 0, capacity, demand, isFreeRider);
-		PeerGroup providersGroup = new PeerGroup(3, 20, 0, capacity, demand, isFreeRider);
+		PeerGroup consumersGroup = new PeerGroup(1, 100, 0, capacity, demand, isFreeRider);
+		PeerGroup idlePeersGroup = new PeerGroup(2, 100, 0, capacity, demand, isFreeRider);
+		PeerGroup providersGroup = new PeerGroup(3, 100, 0, capacity, demand, isFreeRider);
 		groupsOfPeers.add(consumersGroup);
 		groupsOfPeers.add(idlePeersGroup);
 		groupsOfPeers.add(providersGroup);
@@ -37,18 +38,25 @@ public class ScenarioI {
 			n += gp.getNumPeers();		
 		double fr = 0;
 		
-		for(boolean nof: fdNof){
-			for(boolean transitivity : transitive){
-				String outputFile = outputDir + "n"+ n + "|" + "fr" + fr + "|" +"K" + kappa +"|" 
-						+ (nof ? "fdnof": "sdnof") + "|" + (transitivity ? "transitive": "") 
-						+ "|D" + demand + "|tMin" + tMin + "|tMax" + tMax + "|deltaC" + deltaC;
-				
-				System.out.println(outputFile);
-				
-				Simulator sim = new Simulator(groupsOfPeers, null, whiteWasher, numSteps, nof, transitivity, tMin, tMax, deltaC, seed, level, outputFile, kappa);
-				sim.startSimulation();
-			}
+		for(int seed = 1; seed<=replication; seed++){
+			System.out.println("Seed: "+seed);			
+			for(boolean nof: fdNof){
+				System.out.println("NoF: "+(nof ? "fdnof": "sdnof"));
+				for(boolean transitivity : transitive){
+					System.out.println("Transitive: "+transitivity);
+					for(double delta : deltaC){
+						System.out.println("DeltaC: "+delta);
+						String outputFile = outputDir + "n"+ n + "|" + "fr" + fr + "|" +"K" + kappa +"|" 
+								+ (nof ? "fdnof": "sdnof") + "|" + (transitivity ? "transitive": "") 
+								+ "|D" + demand + "|tMin" + tMin + "|tMax" + tMax + "|deltaC" + delta 
+								+ "|rep"+seed;						
+						Simulator sim = new Simulator(groupsOfPeers, null, whiteWasher, numSteps, nof, transitivity, tMin, tMax, delta, seed, level, outputFile, kappa);
+						sim.startSimulation();
+					}
+				}
+			}	
 		}
+		
 	
 	}
 

@@ -133,32 +133,31 @@ public class Simulator {
 				if(p.getGroupId() == group.getGroupId()){
 					State currentState = stateGenerator.generateState(masterState, group.getDeviation());
 					p.setState(currentState);
+					p.getStateHistory()[currentStep] = p.getState();
 					
 					if(p.getState()==State.CONSUMING){
 						consumersList.add(p.getId());
-						PeerComunity.peers[p.getId()].setDemand(PeerComunity.peers[p.getId()].getInitialDemand());
-						PeerComunity.peers[p.getId()].getRequestedHistory()[currentStep] = PeerComunity.peers[p.getId()].getInitialDemand();
-						PeerComunity.peers[p.getId()].setResourcesDonatedInCurrentStep(0);
-						PeerComunity.peers[p.getId()].getCapacitySuppliedHistory()[currentStep] = 0;			
+						p.setDemand(PeerComunity.peers[p.getId()].getInitialDemand());
+						p.getRequestedHistory()[currentStep] = PeerComunity.peers[p.getId()].getInitialDemand();
+						p.setResourcesDonatedInCurrentStep(0);
+						p.getCapacitySuppliedHistory()[currentStep] = 0;
 					}
 					else if(p.getState()==State.IDLE){
 						idlePeersList.add(p.getId());
-						PeerComunity.peers[p.getId()].setDemand(0);
-						PeerComunity.peers[p.getId()].getRequestedHistory()[this.currentStep] = 0;
-						PeerComunity.peers[p.getId()].setResourcesDonatedInCurrentStep(0);
-						PeerComunity.peers[p.getId()].getCapacitySuppliedHistory()[currentStep] = 0;
+						p.setDemand(0);
+						p.getRequestedHistory()[this.currentStep] = 0;
+						p.setResourcesDonatedInCurrentStep(0);
+						p.getCapacitySuppliedHistory()[currentStep] = 0;
 					}
 					else{
 						providersList.add(p.getId());
-						PeerComunity.peers[p.getId()].setDemand(0);
-						PeerComunity.peers[p.getId()].getRequestedHistory()[this.currentStep] = 0;
-						PeerComunity.peers[p.getId()].setResourcesDonatedInCurrentStep(0);
-						if(PeerComunity.peers[p.getId()] instanceof Collaborator){
-							Collaborator c = (Collaborator)PeerComunity.peers[p.getId()];
-							c.getCapacitySuppliedHistory()[currentStep] = c.getMaxCapacityToSupply();									
-						}
+						p.setDemand(0);
+						p.getRequestedHistory()[this.currentStep] = 0;
+						p.setResourcesDonatedInCurrentStep(0);
+						if(p instanceof Collaborator)
+							((Collaborator)p).getCapacitySuppliedHistory()[currentStep] = ((Collaborator)p).getMaxCapacityToSupply();
 						else
-							PeerComunity.peers[p.getId()].getCapacitySuppliedHistory()[currentStep] = PeerComunity.peers[p.getId()].getInitialCapacity();
+							p.getCapacitySuppliedHistory()[currentStep] = p.getInitialCapacity();
 					}
 				}
 			}
@@ -305,6 +304,9 @@ public class Simulator {
 	private void exportData(){		
 		GenerateCsv csvGen = new GenerateCsv(outputFile, this);
 		csvGen.outputPeers();
+		
+		csvGen = new GenerateCsv(outputFile+"sharingLevel", this);
+		csvGen.outputSharingLevel();
 		
 //		WriteExcel writeExcel = new WriteExcel(outputFile, this);
 //		writeExcel.outputPeers();

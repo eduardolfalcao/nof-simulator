@@ -46,8 +46,8 @@ public class Market {
 		
 		//update the donated and consumed amount in this step
 		provider.getDonatedHistory()[simulator.getCurrentStep()] += resources;
-		if(consumerTriplet.getTransitivePeer() != null)
-			provider.getDonatedByTransitivityHistory()[simulator.getCurrentStep()] += resources;
+//		if(consumerTriplet.getTransitivePeer() != null)
+//			provider.getDonatedByTransitivityHistory()[simulator.getCurrentStep()] += resources;
 		if(consumerTriplet.getConsumer() instanceof FreeRider)
 			provider.getDonatedToFreeRidersHistory()[simulator.getCurrentStep()] += resources;
 		consumerTriplet.getConsumer().getConsumedHistory()[simulator.getCurrentStep()] += resources;
@@ -83,7 +83,7 @@ public class Market {
 			for(Triplet consumerTriplet : consumingPeersAux){
 				double donated = performDonation(provider, consumerTriplet, howMuchWillEachPeerReceiveInThisRound);
 				removePeerIfFullyConsumed(consumerTriplet.getConsumer());
-				if(consumerTriplet.getConsumer().getDemand()<=0 || donated<0.0000000000000001)	//if donated==0 then that debt might have already been paid
+				if(consumerTriplet.getConsumer().getDemand()<=0 || donated<0.00000000000001)	//if donated==0 then that debt might have already been paid
 					consumingPeersLocal.remove(consumerTriplet);
 			}
 		}		

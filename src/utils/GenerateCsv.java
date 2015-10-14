@@ -10,6 +10,7 @@ import nof.NetworkOfFavors;
 import peer.Collaborator;
 import peer.FreeRider;
 import peer.Peer;
+import peer.State;
 import simulator.PeerComunity;
 import simulator.Simulator;
  
@@ -26,6 +27,12 @@ public class GenerateCsv{
 	public void outputPeers(){
 		FileWriter writer = this.createHeaderForPeer();
 		writer = writePeers(writer);
+		flushFile(writer);
+	}
+	
+	public void outputSharingLevel(){
+		FileWriter writer = this.createHeaderForSharingLevel();
+		writer = writeSharingLevel(writer);
 		flushFile(writer);
 	}
 	
@@ -74,6 +81,40 @@ public class GenerateCsv{
 		return writer;	    
 	}
 	
+	private FileWriter createHeaderForSharingLevel() {
+		FileWriter writer = null;
+		try {
+			writer = new FileWriter(this.outputFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			 writer.append("step");
+			 writer.append(',');
+			 writer.append("sharingLevelColab");
+			 writer.append(',');
+			 writer.append("sharingLevelFR");
+			 writer.append(',');
+			 writer.append("sharingLevelTotal");
+			 writer.append(',');
+			 writer.append("NoF");
+			 writer.append(',');
+			 writer.append("tMin");
+			 writer.append(',');
+			 writer.append("tMax");
+			 writer.append(',');
+			 writer.append("delta");
+			 writer.append(',');
+			 writer.append("deviation");
+			 writer.append('\n');
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return writer;
+	}
+	
 	private FileWriter writePeers(FileWriter writer){
 		
 		double kappa = simulator.getKappa();
@@ -111,6 +152,7 @@ public class GenerateCsv{
 			double demand = p.getInitialDemand();
 			double capacity = p.getInitialCapacity();			
 			
+			
 			try {
 				writer.append(fairness+","+satisfaction+","+overallBalance+","+groupId+","+deviation+","+demand+","+capacity+",");
 				writer.append(kappa+","+numberOfCollaborators+","+numberOfFreeRiders+","+nof+","+tMin+","+tMax+","+delta+"\n");
@@ -119,6 +161,44 @@ public class GenerateCsv{
 				e.printStackTrace();
 			}			
 		}	
+		
+		return writer;
+	}
+	
+	private FileWriter writeSharingLevel(FileWriter writer){
+		
+		String nof = "";
+		if(simulator.isTransitivity())
+			nof += "Transitive ";
+		if(!simulator.isFdNof())
+			nof = "SD-NoF";
+		else
+			nof = "FD-NoF";
+		
+		double tMin = simulator.getTMin();
+		double tMax = simulator.getTMax();
+		double delta = simulator.getDeltaC();
+		double deviation = 0;
+				
+		for(int step = 0; step < simulator.getNumSteps(); step++){
+			double totalCapacity = 0, providedToCollab = 0, providedToFR = 0;
+			for(Peer p : PeerComunity.peers){
+				if(p instanceof Collaborator && p.getStateHistory()[step]==State.PROVIDING){
+					totalCapacity += p.getInitialCapacity();
+					providedToFR += p.getDonatedToFreeRidersHistory()[step];
+					providedToCollab += p.getDonatedHistory()[step] - p.getDonatedToFreeRidersHistory()[step];
+					
+					deviation = p.getDeviation();
+				}
+			}
+			try {
+				writer.append((step+1)+","+(providedToCollab/totalCapacity)+","+(providedToFR/totalCapacity)+","+((providedToCollab+providedToFR)/totalCapacity)+","+
+								nof+","+tMin+","+tMax+","+delta+","+deviation+"\n");
+			} catch (IOException e) {
+				Simulator.logger.finest("Exception while writing to output (csv) the sharing level of the federation.");
+				e.printStackTrace();
+			}
+		}
 		
 		return writer;
 	}

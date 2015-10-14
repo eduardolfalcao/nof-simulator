@@ -8,30 +8,26 @@ import simulator.Simulator;
 
 public class ScenarioI_WithFreeRidersWhitewashersDifferentTs {
 
-	public static void main(String[] args) {
+public static void main(String[] args) {
 		
 		int numSteps = 5000;
-		boolean fdNof[] = {false, true};
+		boolean fdNof[] = {true};
 		boolean transitive[] = {false, true};
-		double tMin = 0.85;
-		double tMax = 0.95;
-		double deltaC = 0.05;
-		int seed = 1;
+		double tMin[] = {0.85, 0.95};
+		double tMax = 1;
+		double deltaC[] = {0.05};	
+		int replication = 1;
 		Level level = Level.SEVERE;
-//		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/+fr+whitewashers+tmin085/";
-//		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/+fr+whitewashers+tmin09tmax1/";
-//		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/+fr+whitewashers+tmin085tmax095+deviation01/";
-//		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/+fr+whitewashers+tmin085tmax095+deviation025/";
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/5-10/+fr+whitewashers+tmin085tmax095+deviation1/";
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/7-10/+frWhitewashers/";
 		
 		double capacity = 1, demand = 0.5;
 		
 		Queue<PeerGroup> groupsOfPeers = new LinkedList<PeerGroup>();
-		PeerGroup freeRidersGroup = new PeerGroup(1, 15, 0, capacity, Double.MAX_VALUE, true);
+		PeerGroup freeRidersGroup = new PeerGroup(1, 75, 0, capacity, Double.MAX_VALUE, true);
 		boolean whiteWasher = true;
-		PeerGroup consumersGroup = new PeerGroup(2, 15, 100, capacity, demand, false);
-		PeerGroup idlePeersGroup = new PeerGroup(3, 15, 100, capacity, demand, false);
-		PeerGroup providersGroup = new PeerGroup(4, 15, 100, capacity, demand, false);
+		PeerGroup consumersGroup = new PeerGroup(2, 75, 0, capacity, demand, false);
+		PeerGroup idlePeersGroup = new PeerGroup(3, 75, 0, capacity, demand, false);
+		PeerGroup providersGroup = new PeerGroup(4, 75, 0, capacity, demand, false);
 		groupsOfPeers.add(consumersGroup);
 		groupsOfPeers.add(idlePeersGroup);
 		groupsOfPeers.add(providersGroup);
@@ -43,16 +39,25 @@ public class ScenarioI_WithFreeRidersWhitewashersDifferentTs {
 		n += freeRidersGroup.getNumPeers();
 		double fr = (double) freeRidersGroup.getNumPeers()/n;
 		
-		for(boolean nof: fdNof){
-			for(boolean transitivity : transitive){
-				String outputFile = outputDir + "n"+ n + "|" + "fr" + fr + "|" +"K" + kappa +"|" 
-						+ (nof ? "fdnof": "sdnof") + "|" + (transitivity ? "transitive": "") 
-						+ "|D" + demand + "|tMin" + tMin + "|tMax" + tMax + "|deltaC" + deltaC;
-				
-				System.out.println(outputFile);
-				
-				Simulator sim = new Simulator(groupsOfPeers, freeRidersGroup, whiteWasher, numSteps, nof, transitivity, tMin, tMax, deltaC, seed, level, outputFile, kappa);
-				sim.startSimulation();
+		
+		for(int seed = 1; seed<=replication; seed++){
+			System.out.println("Seed: "+seed);			
+			for(boolean nof: fdNof){
+				System.out.println("NoF: "+(nof ? "fdnof": "sdnof"));
+				for(double tauMin : tMin){
+					for(boolean transitivity : transitive){
+						System.out.println("Transitive: "+transitivity);
+						for(double delta : deltaC){
+							System.out.println("DeltaC: "+delta);
+							String outputFile = outputDir + "n"+ n + "|" + "fr" + fr + "|" +"K" + kappa +"|" 
+									+ (nof ? "fdnof": "sdnof") + "|" + (transitivity ? "transitive": "") 
+									+ "|D" + demand + "|tMin" + tauMin + "|tMax" + tMax + "|deltaC" + delta 
+									+ "|rep"+seed;						
+							Simulator sim = new Simulator(groupsOfPeers, freeRidersGroup, whiteWasher, numSteps, nof, transitivity, tauMin, tMax, delta, seed, level, outputFile, kappa);
+							sim.startSimulation();
+						}
+					}
+				}	
 			}
 		}
 	

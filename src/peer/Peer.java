@@ -22,7 +22,9 @@ public class Peer{
 	protected ArrayList<PeerInfo> balances;
 	protected ArrayList <Interaction> interactions;
 	
-	private double consumedHistory[], consumedByTransitivityHistory[], donatedHistory[], donatedByTransitivityHistory[], donatedToFreeRidersHistory[], requestedHistory[], capacitySuppliedHistory[];
+	private double consumedHistory[], donatedHistory[], donatedToFreeRidersHistory[], requestedHistory[], capacitySuppliedHistory[];
+	private State stateHistory[];
+//	private double consumedByTransitivityHistory[], donatedByTransitivityHistory[], requestedHistory[], capacitySuppliedHistory[];
 	
 		
 	public Peer(int id, double initialCapacity, double initialDemand, State state, int groupId, double deviation, int numSteps) {
@@ -42,12 +44,14 @@ public class Peer{
 		interactions = new ArrayList<Interaction>();
 		
 		consumedHistory = new double[numSteps];
-		consumedByTransitivityHistory = new double[numSteps];
+//		consumedByTransitivityHistory = new double[numSteps];
 		donatedHistory = new double[numSteps];
-		donatedByTransitivityHistory = new double[numSteps];
+//		donatedByTransitivityHistory = new double[numSteps];
 		donatedToFreeRidersHistory = new double[numSteps];
 		requestedHistory = new double[numSteps];
 		capacitySuppliedHistory = new double[numSteps];		
+		
+		stateHistory = new State[numSteps];
 	}
 	
 	/**
@@ -178,23 +182,23 @@ public class Peer{
 		return currrentConsumed;
 	}
 	
-	public double[] getConsumedByTransitivityHistory() {
-		return consumedByTransitivityHistory;
-	}
-	
-	public double getCurrentConsumedByTransitivity(int step) {
-		double currrentConsumed = 0;
-		for(int i = 0; i <= step; i++)
-			currrentConsumed += consumedByTransitivityHistory[i];
-		return currrentConsumed;
-	}
-	
-	public double getCurrentConsumedByTransitivity(int beginning, int end) {
-		double currrentConsumed = 0;
-		for(int i = beginning; i <= end; i++)
-			currrentConsumed += consumedByTransitivityHistory[i];
-		return currrentConsumed;
-	}
+//	public double[] getConsumedByTransitivityHistory() {
+//		return consumedByTransitivityHistory;
+//	}
+//	
+//	public double getCurrentConsumedByTransitivity(int step) {
+//		double currrentConsumed = 0;
+//		for(int i = 0; i <= step; i++)
+//			currrentConsumed += consumedByTransitivityHistory[i];
+//		return currrentConsumed;
+//	}
+//	
+//	public double getCurrentConsumedByTransitivity(int beginning, int end) {
+//		double currrentConsumed = 0;
+//		for(int i = beginning; i <= end; i++)
+//			currrentConsumed += consumedByTransitivityHistory[i];
+//		return currrentConsumed;
+//	}
 	
 	public double[] getDonatedHistory() {
 		return donatedHistory;
@@ -214,23 +218,23 @@ public class Peer{
 		return currrentDonated;
 	}
 	
-	public double[] getDonatedByTransitivityHistory() {
-		return donatedByTransitivityHistory;
-	}
-	
-	public double getCurrentDonatedByTransitivity(int step) {
-		double currrentDonated = 0;
-		for(int i = 0; i <= step; i++)
-			currrentDonated += donatedByTransitivityHistory[i];
-		return currrentDonated;
-	}
-	
-	public double getCurrentDonatedByTransitivity(int beginning, int end) {
-		double currrentDonated = 0;
-		for(int i = beginning; i <= end; i++)
-			currrentDonated += donatedByTransitivityHistory[i];
-		return currrentDonated;
-	}
+//	public double[] getDonatedByTransitivityHistory() {
+//		return donatedByTransitivityHistory;
+//	}
+//	
+//	public double getCurrentDonatedByTransitivity(int step) {
+//		double currrentDonated = 0;
+//		for(int i = 0; i <= step; i++)
+//			currrentDonated += donatedByTransitivityHistory[i];
+//		return currrentDonated;
+//	}
+//	
+//	public double getCurrentDonatedByTransitivity(int beginning, int end) {
+//		double currrentDonated = 0;
+//		for(int i = beginning; i <= end; i++)
+//			currrentDonated += donatedByTransitivityHistory[i];
+//		return currrentDonated;
+//	}
 	
 	public double[] getDonatedToFreeRidersHistory() {
 		return donatedToFreeRidersHistory;
@@ -256,6 +260,14 @@ public class Peer{
 	
 	public double[] getCapacitySuppliedHistory() {
 		return capacitySuppliedHistory;
+	}
+
+	public State[] getStateHistory() {
+		return stateHistory;
+	}
+
+	public void setStateHistory(State stateHistory[]) {
+		this.stateHistory = stateHistory;
 	}
 		
 }
