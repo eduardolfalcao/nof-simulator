@@ -16,10 +16,9 @@ public class ScenarioI {
 		double tMin = 0.75;
 		double tMax = 1;
 		double deltaC[] = {0.05};
-//		double deltaC[] = {0.01, 0.05, 0.1, 0.2};
-		int replication = 1;
-		Level level = Level.INFO;
-		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/7-10/-fr/";
+		int replication = 30;
+		Level level = Level.SEVERE;
+		String outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/14-10/-fr/";
 		
 		boolean isFreeRider = false, whiteWasher = false;
 		double capacity = 1, demand = 0.5;
@@ -38,7 +37,7 @@ public class ScenarioI {
 			n += gp.getNumPeers();		
 		double fr = 0;
 		
-		for(int seed = 1; seed<=replication; seed++){
+		for(int seed = 11; seed<=replication; seed++){
 			System.out.println("Seed: "+seed);			
 			for(boolean nof: fdNof){
 				System.out.println("NoF: "+(nof ? "fdnof": "sdnof"));

@@ -73,6 +73,8 @@ public class GenerateCsv{
 			 writer.append("tMax");
 			 writer.append(',');
 			 writer.append("delta");
+			 writer.append(',');
+			 writer.append("seed");
 			 writer.append('\n');
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -107,6 +109,8 @@ public class GenerateCsv{
 			 writer.append("delta");
 			 writer.append(',');
 			 writer.append("deviation");
+			 writer.append(',');
+			 writer.append("seed");
 			 writer.append('\n');
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -123,14 +127,12 @@ public class GenerateCsv{
 		int numberOfFreeRiders = simulator.getPeerComunity().getNumFreeRiders();
 		
 		String nof = "";
-		if(!simulator.isFdNof())
-			nof = "SD-No";
-		else
-			nof = "FD-No";
 		if(simulator.isTransitivity())
-			nof += "TF";
+			nof += "Transitive ";
+		if(!simulator.isFdNof())
+			nof += "SD-NoF";
 		else
-			nof += "F";
+			nof += "FD-NoF";
 		
 		double tMin = simulator.getTMin();
 		double tMax = simulator.getTMax();
@@ -152,10 +154,11 @@ public class GenerateCsv{
 			double demand = p.getInitialDemand();
 			double capacity = p.getInitialCapacity();			
 			
+			int seed = simulator.getSeed();
 			
 			try {
 				writer.append(fairness+","+satisfaction+","+overallBalance+","+groupId+","+deviation+","+demand+","+capacity+",");
-				writer.append(kappa+","+numberOfCollaborators+","+numberOfFreeRiders+","+nof+","+tMin+","+tMax+","+delta+"\n");
+				writer.append(kappa+","+numberOfCollaborators+","+numberOfFreeRiders+","+nof+","+tMin+","+tMax+","+delta+","+seed+"\n");
 			} catch (IOException e) {
 				Simulator.logger.finest("Exception while writing to output (csv) the performance of peers.");
 				e.printStackTrace();
@@ -171,14 +174,15 @@ public class GenerateCsv{
 		if(simulator.isTransitivity())
 			nof += "Transitive ";
 		if(!simulator.isFdNof())
-			nof = "SD-NoF";
+			nof += "SD-NoF";
 		else
-			nof = "FD-NoF";
+			nof += "FD-NoF";
 		
 		double tMin = simulator.getTMin();
 		double tMax = simulator.getTMax();
 		double delta = simulator.getDeltaC();
 		double deviation = 0;
+		int seed = simulator.getSeed();
 				
 		for(int step = 0; step < simulator.getNumSteps(); step++){
 			double totalCapacity = 0, providedToCollab = 0, providedToFR = 0;
@@ -193,7 +197,7 @@ public class GenerateCsv{
 			}
 			try {
 				writer.append((step+1)+","+(providedToCollab/totalCapacity)+","+(providedToFR/totalCapacity)+","+((providedToCollab+providedToFR)/totalCapacity)+","+
-								nof+","+tMin+","+tMax+","+delta+","+deviation+"\n");
+								nof+","+tMin+","+tMax+","+delta+","+deviation+","+seed+"\n");
 			} catch (IOException e) {
 				Simulator.logger.finest("Exception while writing to output (csv) the sharing level of the federation.");
 				e.printStackTrace();

@@ -12,10 +12,10 @@ public class ScenarioI_WithFreeRidersWhitewashers {
 		
 		int numSteps = 5000;
 		boolean fdNof[] = {true};
-		boolean transitive[] = {false, true};
-		double tMin = 0.75;
+		boolean transitive[] = {true};
+		double tMin = 0.85;
 		double tMax = 1;
-		double deltaC[] = {0.01, 0.05, 0.1};
+		double deltaC[] = {0.05};
 		int replication = 30;
 		Level level = Level.INFO;
 		double capacity = 1, demand = 0.5;
@@ -42,24 +42,24 @@ public class ScenarioI_WithFreeRidersWhitewashers {
 		double fr = (double) freeRidersGroup.getNumPeers()/n;
 		
 		
-		for(int seed = 1; seed<=replication; seed++){
-			System.out.println("Seed: "+seed);			
-			for(boolean nof: fdNof){
-				System.out.println("NoF: "+(nof ? "fdnof": "sdnof"));
-				for(boolean transitivity : transitive){
-					System.out.println("Transitive: "+transitivity);
-					for(double delta : deltaC){
-						System.out.println("DeltaC: "+delta);
-						String outputFile = outputDir + "n"+ n + "|" + "fr" + fr + "|" +"K" + kappa +"|" 
-								+ (nof ? "fdnof": "sdnof") + "|" + (transitivity ? "transitive": "") 
-								+ "|D" + demand + "|tMin" + tMin + "|tMax" + tMax + "|deltaC" + delta 
-								+ "|rep"+seed;						
-						Simulator sim = new Simulator(groupsOfPeers, freeRidersGroup, whiteWasher, numSteps, nof, transitivity, tMin, tMax, delta, seed, level, outputFile, kappa);
-						sim.startSimulation();
-					}
-				}
-			}	
-		}
+//		for(int seed = 1; seed<=replication; seed++){
+//			System.out.println("Seed: "+seed);			
+//			for(boolean nof: fdNof){
+//				System.out.println("NoF: "+(nof ? "fdnof": "sdnof"));
+//				for(boolean transitivity : transitive){
+//					System.out.println("Transitive: "+transitivity);
+//					for(double delta : deltaC){
+//						System.out.println("DeltaC: "+delta);
+//						String outputFile = outputDir + "n"+ n + "|" + "fr" + fr + "|" +"K" + kappa +"|" 
+//								+ (nof ? "fdnof": "sdnof") + "|" + (transitivity ? "transitive": "") 
+//								+ "|D" + demand + "|tMin" + tMin + "|tMax" + tMax + "|deltaC" + delta 
+//								+ "|rep"+seed;						
+//						Simulator sim = new Simulator(groupsOfPeers, freeRidersGroup, whiteWasher, numSteps, nof, transitivity, tMin, tMax, delta, seed, level, outputFile, kappa);
+//						sim.startSimulation();
+//					}
+//				}
+//			}	
+//		}
 		
 		
 		
@@ -87,40 +87,39 @@ public class ScenarioI_WithFreeRidersWhitewashers {
 		fr = (double) freeRidersGroup.getNumPeers()/n;
 		
 		
-		for(int seed = 1; seed<=replication; seed++){
-			System.out.println("Seed: "+seed);			
-			for(boolean nof: fdNof){
-				System.out.println("NoF: "+(nof ? "fdnof": "sdnof"));
-				for(double tauMin : tMinArray){
-					for(boolean transitivity : transitive){
-						System.out.println("Transitive: "+transitivity);
-						for(double delta : deltaC){
-							System.out.println("DeltaC: "+delta);
-							String outputFile = outputDir + "n"+ n + "|" + "fr" + fr + "|" +"K" + kappa +"|" 
-									+ (nof ? "fdnof": "sdnof") + "|" + (transitivity ? "transitive": "") 
-									+ "|D" + demand + "|tMin" + tauMin + "|tMax" + tMax + "|deltaC" + delta 
-									+ "|rep"+seed;						
-							Simulator sim = new Simulator(groupsOfPeers, freeRidersGroup, whiteWasher, numSteps, nof, transitivity, tauMin, tMax, delta, seed, level, outputFile, kappa);
-							sim.startSimulation();
-						}
-					}
-				}	
-			}
-		}
+//		for(int seed = 1; seed<=replication; seed++){
+//			System.out.println("Seed: "+seed);			
+//			for(boolean nof: fdNof){
+//				System.out.println("NoF: "+(nof ? "fdnof": "sdnof"));
+//				for(double tauMin : tMinArray){
+//					for(boolean transitivity : transitive){
+//						System.out.println("Transitive: "+transitivity);
+//						for(double delta : deltaC){
+//							System.out.println("DeltaC: "+delta);
+//							String outputFile = outputDir + "n"+ n + "|" + "fr" + fr + "|" +"K" + kappa +"|" 
+//									+ (nof ? "fdnof": "sdnof") + "|" + (transitivity ? "transitive": "") 
+//									+ "|D" + demand + "|tMin" + tauMin + "|tMax" + tMax + "|deltaC" + delta 
+//									+ "|rep"+seed;						
+//							Simulator sim = new Simulator(groupsOfPeers, freeRidersGroup, whiteWasher, numSteps, nof, transitivity, tauMin, tMax, delta, seed, level, outputFile, kappa);
+//							sim.startSimulation();
+//						}
+//					}
+//				}	
+//			}
+//		}
 		
 		
 		//##### different deviations		
 		tMinArray = new double[]{0.85};
 		deltaC = new double[]{0.05};	
-		outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/14-10/+frWhitewashers+differentDeviations/";
+//		outputDir = "/home/eduardolfalcao/Área de Trabalho/Dropbox/Doutorado/Disciplinas/Projeto de Tese 4/exp/different-deviations/";
+		outputDir = "/home/eduardolfalcao/Área de Trabalho/experimentos/03-11/+frWhitewashers-Historic/";
+		double [] deviation = new double[]{0};
 		
-		replication = 30;
-		double [] deviation = new double[]{0.1, 0.25, 0.5, 1};
-		
-		
+		replication = 1;
 		
 		for(int seed = 1; seed<=replication; seed++){
-			
+			System.out.println("Seed: "+seed);			
 			for(double dev : deviation){			
 				groupsOfPeers = new LinkedList<PeerGroup>();
 				freeRidersGroup = new PeerGroup(1, 75, 0, capacity, Double.MAX_VALUE, true);
@@ -146,10 +145,10 @@ public class ScenarioI_WithFreeRidersWhitewashers {
 							System.out.println("Transitive: "+transitivity);
 							for(double delta : deltaC){
 								System.out.println("DeltaC: "+delta);
-								String outputFile = outputDir + "n"+ n + "|" + "fr" + fr + "|" +"K" + kappa +"|" 
-										+ (nof ? "fdnof": "sdnof") + "|" + (transitivity ? "transitive": "") 
-										+ "|D" + demand + "|tMin" + tauMin + "|tMax" + tMax + "|deltaC" + delta 
-										+ "|dev" +dev+ "|rep"+seed;						
+								String outputFile = outputDir + "n"+ n + "-" + "fr" + fr + "-" +"K" + kappa +"-" 
+										+ (nof ? "fdnof": "sdnof") + "-" + (transitivity ? "transitive": "") 
+										+ "-D" + demand + "-tMin" + tauMin + "-tMax" + tMax + "-deltaC" + delta 
+										+ "-dev" +dev+ "-rep"+seed;						
 								Simulator sim = new Simulator(groupsOfPeers, freeRidersGroup, whiteWasher, numSteps, nof, transitivity, tauMin, tMax, delta, seed, level, outputFile, kappa);
 								sim.startSimulation();
 							}

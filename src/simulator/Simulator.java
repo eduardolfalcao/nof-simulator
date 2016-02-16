@@ -45,6 +45,7 @@ public class Simulator {
 	private String outputFile;
 	private double kappa;	
 	private boolean whiteWasher;
+	private int seed;
 	
 	public Simulator(Queue<PeerGroup> groupsOfCollaborativePeers, PeerGroup groupOfFreeRiders, boolean whiteWasher, int numSteps, boolean fdNoF, boolean transitivity, double tMin, double tMax, double deltaC, 
 			int seed, Level level, String outputFile, double kappa) {
@@ -81,6 +82,7 @@ public class Simulator {
 			
 		this.outputFile = outputFile;
 		this.kappa = kappa;
+		this.seed = seed;
 	}
 	
 	public void startSimulation(){	
@@ -228,9 +230,6 @@ public class Simulator {
 		if(this.fdNof)
 			this.updateCapacitySupplied();
 		
-		if(currentStep==2)
-			System.out.println();
-		
 		this.currentStep++;			
 	}
 	
@@ -292,7 +291,10 @@ public class Simulator {
 						if(collab.isIncreasingCapacitySupplied())				
 							collab.setMaxCapacityToSupply(Math.min(totalAmountOfResources, collab.getMaxCapacityToSupply()+deltaC*totalAmountOfResources));	
 						else
-							collab.setMaxCapacityToSupply(Math.max(0, Math.min(totalAmountOfResources, collab.getMaxCapacityToSupply()-deltaC*totalAmountOfResources)));	
+							collab.setMaxCapacityToSupply(Math.max(0, Math.min(totalAmountOfResources, collab.getMaxCapacityToSupply()-deltaC*totalAmountOfResources)));
+						
+						if(collab.getId()==50)
+							System.out.println("Id: "+collab.getId()+"; Fairness global: "+currentFairness+"; Alfa-Global: "+collab.getMaxCapacityToSupply());
 					}														
 				}				
 			}
@@ -352,6 +354,10 @@ public class Simulator {
 
 	public double getKappa() {
 		return kappa;
+	}
+	
+	public int getSeed(){
+		return seed;
 	}
 
 	public PeerComunity getPeerComunity() {

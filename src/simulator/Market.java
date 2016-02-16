@@ -106,10 +106,10 @@ public class Market {
 			double gammaProviderIdle = provider.getBalances().get(provider.getBalances().indexOf(new PeerInfo(idlePeer.getId()))).getBalance();
 			double gammaIdleConsumer = idlePeer.getBalances().get(idlePeer.getBalances().indexOf(new PeerInfo(consumer.getId()))).getBalance();
 			double transitiveCredit = Math.min(gammaProviderIdle, gammaIdleConsumer);
-			maxToBeDonated = Math.min(maxToBeDonated, transitiveCredit);	//limit the maxToBeDonated by the transitiveCredit
-			
+			if(!simulator.isFdNof())	//TODO adicionei depois de rodas as simulações
+				maxToBeDonated = Math.min(maxToBeDonated, transitiveCredit);	//limit the maxToBeDonated by the transitiveCredit			
 			//here we limit the maxToBeDonated by the alfa the provider has towards the idle peer, and also by the alfa the idle peer has towards the consumer
-			if(simulator.isFdNof()){
+			else{
 				maxToBeDonated = Math.min(maxToBeDonated, getAlfa(provider, idlePeer));
 				maxToBeDonated = Math.min(maxToBeDonated, getAlfa((Collaborator)idlePeer, consumer));
 			}	
