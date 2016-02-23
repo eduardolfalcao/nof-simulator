@@ -1,12 +1,12 @@
-package peer.balance;
+package model.peer.history;
 
 
 public class PeerInfo implements Comparable<Object>{
 
-	private int id;
+	private String id;
 	private double balance;	
 	
-	public PeerInfo(int id) {
+	public PeerInfo(String id) {
 		super();
 		this.id = id;
 		this.balance = 0;
@@ -20,7 +20,7 @@ public class PeerInfo implements Comparable<Object>{
 	            return false;
 	       else{
 	    	   PeerInfo peerInfo = (PeerInfo) obj;
-	    	   if(this.id == peerInfo.getId())
+	    	   if(this.id.equals(peerInfo.getId()))
 	    		   return true;
 	    	   else
 	    		   return false;
@@ -54,12 +54,8 @@ public class PeerInfo implements Comparable<Object>{
 		return "Id: "+id+"; balance: "+balance;
 	}
 
-	public int getId() {
+	public String getId() {
 		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
 	}
 
 	public double getBalance() {

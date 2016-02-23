@@ -3,10 +3,10 @@ package tests;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import model.peer.history.PeerInfo;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import peer.balance.PeerInfo;
 
 public class PeerInfoTest {
 

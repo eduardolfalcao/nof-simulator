@@ -1,13 +1,12 @@
 package tests;
 
 import static org.junit.Assert.*;
-import nof.Interaction;
+import model.peer.Collaborator;
+import model.peer.Peer;
+import model.peer.State;
+import model.peer.history.Interaction;
 
 import org.junit.Test;
-
-import peer.Collaborator;
-import peer.Peer;
-import peer.State;
 
 public class InteractionTest {
 

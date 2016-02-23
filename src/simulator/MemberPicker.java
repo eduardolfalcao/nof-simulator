@@ -5,11 +5,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import peer.Collaborator;
-import peer.Peer;
-import peer.State;
-import peer.Triplet;
-import peer.balance.PeerInfo;
+import model.peer.Collaborator;
+import model.peer.Peer;
+import model.peer.State;
+import model.peer.Triplet;
+import model.peer.history.PeerInfo;
 
 public class MemberPicker {
 	

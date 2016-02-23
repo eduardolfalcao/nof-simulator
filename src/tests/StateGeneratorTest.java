@@ -1,9 +1,10 @@
 package tests;
 
+import model.peer.State;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import peer.State;
 import simulator.StateGenerator;
 
 public class StateGeneratorTest {

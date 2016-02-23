@@ -1,6 +1,6 @@
-package nof;
+package model.peer.history;
 
-import peer.Peer;
+import model.peer.Peer;
 
 /**
  * Represents the INTERACTION of two peers (A and B).

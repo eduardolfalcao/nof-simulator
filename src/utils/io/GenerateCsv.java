@@ -1,16 +1,16 @@
-package utils;
+package utils.io;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import nof.Interaction;
+import model.peer.Collaborator;
+import model.peer.FreeRider;
+import model.peer.Peer;
+import model.peer.State;
+import model.peer.history.Interaction;
 import nof.NetworkOfFavors;
-import peer.Collaborator;
-import peer.FreeRider;
-import peer.Peer;
-import peer.State;
 import simulator.PeerComunity;
 import simulator.Simulator;
  

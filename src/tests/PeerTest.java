@@ -4,7 +4,9 @@
 package tests;
 
 import static org.junit.Assert.*;
-import nof.Interaction;
+import model.peer.Peer;
+import model.peer.history.Interaction;
+import model.peer.history.PeerInfo;
 import nof.NetworkOfFavors;
 
 import org.junit.After;
@@ -12,9 +14,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import peer.Peer;
-import peer.balance.PeerInfo;
 
 /**
  * @author eduardolfalcao

@@ -2,7 +2,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.logging.Level;
 
-import peer.PeerGroup;
+import model.peer.PeerGroup;
 import simulator.Simulator;
 
 

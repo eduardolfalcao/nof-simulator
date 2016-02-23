@@ -5,11 +5,12 @@ import static org.junit.Assert.*;
 import java.util.List;
 import java.util.logging.Level;
 
+import model.peer.Collaborator;
+import model.peer.FreeRider;
+import model.peer.Peer;
+
 import org.junit.Test;
 
-import peer.Collaborator;
-import peer.FreeRider;
-import peer.Peer;
 import simulator.Simulator;
 
 public class SimulatorTest {

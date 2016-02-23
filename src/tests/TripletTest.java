@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import model.peer.Peer;
+import model.peer.Triplet;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import peer.Peer;
-import peer.Triplet;
 
 public class TripletTest {
 	

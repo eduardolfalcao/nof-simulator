@@ -3,17 +3,16 @@ package tests;
 import java.util.ArrayList;
 import java.util.List;
 
-import nof.Interaction;
+import model.peer.Collaborator;
+import model.peer.Peer;
+import model.peer.State;
+import model.peer.history.Interaction;
+import model.peer.history.PeerInfo;
 import nof.NetworkOfFavors;
-
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import peer.Collaborator;
-import peer.Peer;
-import peer.State;
-import peer.balance.PeerInfo;
 import simulator.MemberPicker;
 
 public class MemberPickerTest {

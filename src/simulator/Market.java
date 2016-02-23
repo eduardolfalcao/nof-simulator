@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import nof.Interaction;
+import model.peer.Collaborator;
+import model.peer.FreeRider;
+import model.peer.Peer;
+import model.peer.Triplet;
+import model.peer.history.Interaction;
+import model.peer.history.PeerInfo;
 import nof.NetworkOfFavors;
-import peer.Collaborator;
-import peer.FreeRider;
-import peer.Peer;
-import peer.Triplet;
-import peer.balance.PeerInfo;
 
 public class Market {
 	
