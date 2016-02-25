@@ -13,16 +13,13 @@ public class BarterEvent extends Event{
 	private String peerId;	
 	private String jobId;
 	private int runtime;
-	
-	private List<Peer> peers;
 
-	public BarterEvent(String peerId, String jobId, int submitTime, int runtime, boolean starting, List<Peer> peers) {
+	public BarterEvent(String peerId, String jobId, int submitTime, int runtime, boolean starting) {
 		super(submitTime);
 		this.peerId = peerId;
 		this.jobId = jobId;
 		this.runtime = runtime;
 		TYPE = starting ? CONSUMING : ENDING_CONSUMING;
-		this.peers = peers;
 	}
 	
 	@Override
@@ -87,12 +84,6 @@ public class BarterEvent extends Event{
 
 	public String getJobId() {
 		return jobId;
-	}
-
-	public List<Peer> getPeers() {
-		return peers;
-	}
-
-	
+	}	
 
 }

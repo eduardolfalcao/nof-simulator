@@ -13,7 +13,11 @@ public class NetworkOfFavors {
 	}
 
 	public static double calculateBalance(double consumedValue, double donatedValue){
-		return Math.max(0, consumedValue - donatedValue);
+		return Math.max(0, consumedValue - donatedValue); //TODO add sqrt
+	}
+	
+	public static void preempt(Peer provider, Peer peerToBePreempted){
+		//
 	}
 	
 	public static double getFairness(double consumed, double donated){
@@ -21,7 +25,7 @@ public class NetworkOfFavors {
 			return -1;
 		else
 			return consumed/donated;
-	}
+	}	
 	
 	public static double getSatisfaction(double consumed, double requested){
 		return 	getFairness(consumed, requested);

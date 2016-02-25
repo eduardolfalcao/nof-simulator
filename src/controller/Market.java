@@ -1,16 +1,20 @@
 package controller;
 
+import java.util.List;
 import java.util.Map.Entry;
 
 import model.event.BarterEvent;
 import model.peer.Peer;
+import model.peer.PeerCommunity;
 
 public class Market {
 	
 	public static void consume(BarterEvent event){
 		
-		int index = event.getPeers().lastIndexOf(new Peer(event.getPeerId(),0, null, null));
-		Peer consumer = event.getPeers().get(index);
+		List<Peer> peers = PeerCommunity.getInstance().getPeers();
+		
+		int index = peers.lastIndexOf(new Peer(event.getPeerId(),0));
+		Peer consumer = peers.get(index);
 		
 		//first, check if the peer can consume locally without preemption
 		if(areThereFreeLocalResources(consumer)){
@@ -18,14 +22,16 @@ public class Market {
 			return;
 		}
 		//later, check if the peer can consume locally by preempting a peer/user from federation
-		else if(consumeByPreemption(consumer)){
+		else if(areThereLocalResourcesBeingDonatedToTheFederation(consumer)){
 			//TODO //execute preemption
 			consume(consumer,consumer,event);
 			return;
 		}
 		//if the peer can't consume locally, it tries to consume from federation
 		else{
-			
+			Peer provider = MemberPicker.findProvider(consumer);
+			if(provider != null)
+				consume(consumer, provider, event);
 		}
 		
 	}
@@ -37,22 +43,22 @@ public class Market {
 		provider.getDonationEvents().add(event);
 	}
 	
-	private static boolean areThereFreeLocalResources(Peer consumer){
+	public static boolean areThereFreeLocalResources(Peer provider){
 		int donating = 0;
-		for(Entry<Peer, Integer> entry : consumer.getDonating().entrySet())
+		for(Entry<Peer, Integer> entry : provider.getDonating().entrySet())
 			donating += entry.getValue();
 		
-		if(donating<consumer.getTotalCapacity())		
+		if(donating<provider.getTotalCapacity())		
 			return true;
 		else
 			return false;
 		
 	}
 	
-	private static boolean consumeByPreemption(Peer consumer){
+	private static boolean areThereLocalResourcesBeingDonatedToTheFederation(Peer provider){
 		int donatingToFederation = 0;
-		for(Entry<Peer, Integer> entry : consumer.getDonating().entrySet()){
-			if(!(entry.getKey().equals(consumer)))
+		for(Entry<Peer, Integer> entry : provider.getDonating().entrySet()){
+			if(!(entry.getKey().equals(provider)))
 				donatingToFederation += entry.getValue();
 		}
 		

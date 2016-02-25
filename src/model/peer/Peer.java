@@ -24,8 +24,7 @@ public class Peer{
 	private PeerRelations relations;
 	private History history;
 	
-	public Peer(String id, int totalCapacity, 
-			NetworkOfFavors nof, History history) {
+	public Peer(String id, int totalCapacity) {
 		super();
 		this.id = id;
 		TOTAL_CAPACITY = totalCapacity;

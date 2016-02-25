@@ -22,6 +22,13 @@ public class PeerRelations {
 	public List<Interaction> getInteractions() {
 		return interactions;
 	}
+	
+	public PeerInfo getBalance(String peerId) {
+		for(PeerInfo pi : balances)
+			if(pi.getId().equals(peerId))
+				return pi;
+		return null;
+	}
 
 	/**
 	 * The peer with highest balance might already been used. Therefore, we will
@@ -33,19 +40,13 @@ public class PeerRelations {
 	 * @return the peer id with the nth highest balance, or null in case it
 	 *         doesnt exist
 	 */
-	public String getThePeerIdWithNthBestReputation(int nth) {
+	public String getThePeerIdWithNthBestBalance(int nth) {
 		if (nth <= 0 || balances.size() == 0)
 			return null;
 
 		// sort the balance
 		Collections.sort(balances);
-		for (int i = this.balances.size() - 1; i >= 0; i--) {
-			if (nth == 1)
-				return this.balances.get(i).getId();
-			nth--;
-		}
-
-		return null;
+		return this.balances.get(this.balances.size()-nth).getId();
 	}
 
 }

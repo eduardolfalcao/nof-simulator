@@ -43,9 +43,9 @@ public class PeerTest {
 		 */
 		
 		Peer p1 = new Peer(1, 0, 0, null, 0, 0,0);
-		assertTrue(p1.getThePeerIdWithNthBestReputation(1)==-1?true:false);
-		assertTrue(p1.getThePeerIdWithNthBestReputation(2)==-1?true:false);
-		assertTrue(p1.getThePeerIdWithNthBestReputation(10)==-1?true:false);
+		assertTrue(p1.getThePeerIdWithNthBestBalance(1)==-1?true:false);
+		assertTrue(p1.getThePeerIdWithNthBestBalance(2)==-1?true:false);
+		assertTrue(p1.getThePeerIdWithNthBestBalance(10)==-1?true:false);
 		
 		
 		/**
@@ -65,13 +65,13 @@ public class PeerTest {
 		peerInfo.setBalance(NetworkOfFavors.calculateBalance(interactionP1P2.getDonated(), interactionP1P2.getConsumed()));
 		p2.getBalances().add(peerInfo);
 		
-		assertTrue(p1.getThePeerIdWithNthBestReputation(1)==2);	
-		assertTrue(p2.getThePeerIdWithNthBestReputation(1)==1);
+		assertTrue(p1.getThePeerIdWithNthBestBalance(1)==2);	
+		assertTrue(p2.getThePeerIdWithNthBestBalance(1)==1);
 		
-		assertTrue(p1.getThePeerIdWithNthBestReputation(2)==-1);
-		assertTrue(p2.getThePeerIdWithNthBestReputation(2)==-1);
-		assertTrue(p1.getThePeerIdWithNthBestReputation(10)==-1);
-		assertTrue(p2.getThePeerIdWithNthBestReputation(10)==-1);		
+		assertTrue(p1.getThePeerIdWithNthBestBalance(2)==-1);
+		assertTrue(p2.getThePeerIdWithNthBestBalance(2)==-1);
+		assertTrue(p1.getThePeerIdWithNthBestBalance(10)==-1);
+		assertTrue(p2.getThePeerIdWithNthBestBalance(10)==-1);		
 		
 		
 		/**
@@ -90,19 +90,19 @@ public class PeerTest {
 		peerInfo.setBalance(NetworkOfFavors.calculateBalance(interactionP1P3.getDonated(), interactionP1P3.getConsumed()));
 		p3.getBalances().add(peerInfo);
 		
-		assertTrue(p1.getThePeerIdWithNthBestReputation(1)==3);
-		assertTrue(p1.getThePeerIdWithNthBestReputation(2)==2);
-		assertTrue(p2.getThePeerIdWithNthBestReputation(1)==1);
-		assertTrue(p3.getThePeerIdWithNthBestReputation(1)==1);
+		assertTrue(p1.getThePeerIdWithNthBestBalance(1)==3);
+		assertTrue(p1.getThePeerIdWithNthBestBalance(2)==2);
+		assertTrue(p2.getThePeerIdWithNthBestBalance(1)==1);
+		assertTrue(p3.getThePeerIdWithNthBestBalance(1)==1);
 		
-		assertTrue(p1.getThePeerIdWithNthBestReputation(3)==-1);
-		assertTrue(p1.getThePeerIdWithNthBestReputation(10)==-1);
+		assertTrue(p1.getThePeerIdWithNthBestBalance(3)==-1);
+		assertTrue(p1.getThePeerIdWithNthBestBalance(10)==-1);
 		
-		assertTrue(p2.getThePeerIdWithNthBestReputation(2)==-1);
-		assertTrue(p2.getThePeerIdWithNthBestReputation(10)==-1);
+		assertTrue(p2.getThePeerIdWithNthBestBalance(2)==-1);
+		assertTrue(p2.getThePeerIdWithNthBestBalance(10)==-1);
 		
-		assertTrue(p3.getThePeerIdWithNthBestReputation(2)==-1);
-		assertTrue(p3.getThePeerIdWithNthBestReputation(10)==-1);
+		assertTrue(p3.getThePeerIdWithNthBestBalance(2)==-1);
+		assertTrue(p3.getThePeerIdWithNthBestBalance(10)==-1);
 				
 		
 		/**
@@ -156,50 +156,50 @@ public class PeerTest {
 		 */
 		
 		
-		assertTrue(p1.getThePeerIdWithNthBestReputation(1)==5);
-		assertTrue(p1.getThePeerIdWithNthBestReputation(2)==3);
-		assertTrue(p1.getThePeerIdWithNthBestReputation(3)==4);
-		int idRep4 = p1.getThePeerIdWithNthBestReputation(4);		//when we have many id with same reputation the call method might return them randomly
+		assertTrue(p1.getThePeerIdWithNthBestBalance(1)==5);
+		assertTrue(p1.getThePeerIdWithNthBestBalance(2)==3);
+		assertTrue(p1.getThePeerIdWithNthBestBalance(3)==4);
+		int idRep4 = p1.getThePeerIdWithNthBestBalance(4);		//when we have many id with same reputation the call method might return them randomly
 		assertTrue(idRep4==6 || idRep4==2);
-		int idRep5 = p1.getThePeerIdWithNthBestReputation(5);		//when we have many id with same reputation the call method might return them randomly
+		int idRep5 = p1.getThePeerIdWithNthBestBalance(5);		//when we have many id with same reputation the call method might return them randomly
 		assertTrue(idRep5==2 || idRep5==6);
-		assertTrue(p1.getThePeerIdWithNthBestReputation(6)==-1);	//only 5 peers
-		assertTrue(p1.getThePeerIdWithNthBestReputation(10)==-1);		
+		assertTrue(p1.getThePeerIdWithNthBestBalance(6)==-1);	//only 5 peers
+		assertTrue(p1.getThePeerIdWithNthBestBalance(10)==-1);		
 		
 		/**
 		 * Peer2 reputation (descending order): P1(+50)
 		 */
-		assertTrue(p2.getThePeerIdWithNthBestReputation(1)==1);
-		assertTrue(p2.getThePeerIdWithNthBestReputation(2)==-1);
-		assertTrue(p2.getThePeerIdWithNthBestReputation(10)==-1);
+		assertTrue(p2.getThePeerIdWithNthBestBalance(1)==1);
+		assertTrue(p2.getThePeerIdWithNthBestBalance(2)==-1);
+		assertTrue(p2.getThePeerIdWithNthBestBalance(10)==-1);
 		
 		/**
 		 * Peer3 reputation (descending order): P1(0)
 		 */
-		assertTrue(p3.getThePeerIdWithNthBestReputation(1)==1);
-		assertTrue(p3.getThePeerIdWithNthBestReputation(2)==-1);
-		assertTrue(p3.getThePeerIdWithNthBestReputation(10)==-1);
+		assertTrue(p3.getThePeerIdWithNthBestBalance(1)==1);
+		assertTrue(p3.getThePeerIdWithNthBestBalance(2)==-1);
+		assertTrue(p3.getThePeerIdWithNthBestBalance(10)==-1);
 		
 		/**
 		 * Peer4 reputation (descending order): P1(0)
 		 */
-		assertTrue(p4.getThePeerIdWithNthBestReputation(1)==1);
-		assertTrue(p4.getThePeerIdWithNthBestReputation(2)==-1);
-		assertTrue(p4.getThePeerIdWithNthBestReputation(10)==-1);
+		assertTrue(p4.getThePeerIdWithNthBestBalance(1)==1);
+		assertTrue(p4.getThePeerIdWithNthBestBalance(2)==-1);
+		assertTrue(p4.getThePeerIdWithNthBestBalance(10)==-1);
 		
 		/**
 		 * Peer5 reputation (descending order): P1(0)
 		 */
-		assertTrue(p5.getThePeerIdWithNthBestReputation(1)==1);
-		assertTrue(p5.getThePeerIdWithNthBestReputation(2)==-1);
-		assertTrue(p5.getThePeerIdWithNthBestReputation(10)==-1);
+		assertTrue(p5.getThePeerIdWithNthBestBalance(1)==1);
+		assertTrue(p5.getThePeerIdWithNthBestBalance(2)==-1);
+		assertTrue(p5.getThePeerIdWithNthBestBalance(10)==-1);
 
 		/**
 		 * Peer6 reputation (descending order): P1(+75)
 		 */
-		assertTrue(p5.getThePeerIdWithNthBestReputation(1)==1);
-		assertTrue(p5.getThePeerIdWithNthBestReputation(2)==-1);
-		assertTrue(p5.getThePeerIdWithNthBestReputation(10)==-1);
+		assertTrue(p5.getThePeerIdWithNthBestBalance(1)==1);
+		assertTrue(p5.getThePeerIdWithNthBestBalance(2)==-1);
+		assertTrue(p5.getThePeerIdWithNthBestBalance(10)==-1);
 		
 		
 		/****************** END OF THIS CASE ******************/
