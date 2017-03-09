@@ -18,8 +18,8 @@ public class Peer{
 	protected int peerId;
 	
 	
-	protected double consumedHistory[];
-	protected double requestedHistory[];
+	private State stateHistory[];
+	protected double consumedHistory[], requestedHistory[], donatedToFreeRidersHistory[];
 	
 	
 
@@ -43,6 +43,8 @@ public class Peer{
 		this.setInteractions(new ArrayList<Interaction>());
 		this.setConsumedHistory(new double[numSteps]);
 		this.setRequestedHistory(new double[numSteps]);
+		this.donatedToFreeRidersHistory = new double [numSteps];
+		this.stateHistory = new State[numSteps];
 	}
 
 	/**
@@ -63,6 +65,8 @@ public class Peer{
 		this.setConsuming(consuming);		
 		this.setConsumedHistory(new double[numSteps]);
 		this.setRequestedHistory(new double[numSteps]);
+		this.donatedToFreeRidersHistory = new double [numSteps];
+		this.stateHistory = new State[numSteps];
 	}
 	
 	
@@ -253,5 +257,13 @@ public class Peer{
 	public double getInitialCapacity() {
 		return INITIAL_CAPACITY;
 	}
+
+	public State[] getStateHistory() {
+		return stateHistory;
+	}
 	
+	public double[] getDonatedToFreeRidersHistory() {
+		return donatedToFreeRidersHistory;
+	}
+		
 }

@@ -41,10 +41,10 @@ public class MainDebugg {
 		String kappa05 = "kappa05";
 		
 		
-		Simulator sim = new Simulator(numPeers, numSteps, currentPI, numberOfCollaborators, numberOfFreeRiders,
-				dynamic, nofWithLog, fairnessLowerThreshold, d, capacitySupplied, changingValue, seed, level, 
-				outputDir+"D"+(formatter.format(d[0])).replace(",", ".")+kappa05, pairwise);
-		sim.startSimulation();
+//		Simulator sim = new Simulator(numPeers, numSteps, currentPI, numberOfCollaborators, numberOfFreeRiders,
+//				dynamic, nofWithLog, fairnessLowerThreshold, d, capacitySupplied, changingValue, seed, level, 
+//				outputDir+"D"+(formatter.format(d[0])).replace(",", ".")+kappa05, pairwise);
+//		sim.startSimulation();
 	}
 
 }
