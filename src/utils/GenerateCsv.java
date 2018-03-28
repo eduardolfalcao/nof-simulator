@@ -321,45 +321,58 @@ public class GenerateCsv {
 		}
 
 		// //collaborators
-		// for(FreeRider fr : frs){
-		// try {
-		// writer.append("free rider");
-		// writer.append(',');
-		//
-		// //fairness
-		// writer.append(-1+"");
-		// writer.append(',');
-		//
-		// //satisfaction
-		// double currentConsumed = fr.getCurrentConsumed(numSteps-1);
-		// double currentRequested = fr.getCurrentRequested(numSteps-1);
-		// double satisfaction = Simulator.getFairness(currentConsumed,
-		// currentRequested);
-		// writer.append(satisfaction+"");
-		// writer.append(',');
-		//
-		// //kappa
-		// writer.append(this.sim.getKappa()+"");
-		// writer.append(',');
-		//
-		// //f
-		// writer.append(this.sim.getF());
-		// writer.append(',');
-		//
-		// //nof
-		// writer.append((this.sim.isPairwise()?"FD-NoF":"SD-NoF")+"");
-		// writer.append(',');
-		//
-		// //tau
-		// writer.append(this.sim.getFairnessLowerThreshold()+"");
-		// writer.append('\n');
-		//
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// System.out.println("Exception while writing free riders...");
-		// }
-		// }
+		 for(FreeRider fr : frs){
+			 try {
+				 
+				 //p
+				 writer.append(1 + "");
+				 writer.append(',');
+	
+				 //d
+				 writer.append(fr.getInitialDemand() + "");
+				 writer.append(',');
+			
+				 //fairness
+				 writer.append(-1+"");
+				 writer.append(',');
+			
+				 //satisfaction
+				 double currentConsumed = fr.getCurrentConsumed(numSteps-1);
+				 double currentRequested = fr.getCurrentRequested(numSteps-1);
+				 double satisfaction = Simulator.getFairness(currentConsumed,currentRequested);
+				 writer.append(satisfaction+"");
+				 writer.append(',');
+			
+				 //kappa
+				 writer.append(this.sim.getKappa()+"");
+				 writer.append(',');
+				
+				 //f
+				 writer.append(this.sim.getF());
+				 writer.append(',');
+				
+				 //nof
+				 writer.append((this.sim.isPairwise()?"FD-NoF":"SD-NoF")+"");
+				 writer.append(',');
+			
+				// tauMin
+				writer.append(this.sim.getFairnessLowerThreshold() + "");
+				writer.append(',');
+	
+				// tauMax
+				writer.append(this.sim.getFairnessUpperThreshold() + "");
+				writer.append(',');
+	
+				// delta
+				writer.append(this.sim.getChangingValue() + "");
+				writer.append('\n');
+			
+			 } catch (IOException e) {
+				 // TODO Auto-generated catch block
+				 e.printStackTrace();
+				 System.out.println("Exception while writing free riders...");
+			 }
+		}
 
 		return writer;
 	}

@@ -171,7 +171,7 @@ public class Simulator {
 		for(int group = 0; group < numberOfFreeRiders.length; group++){
 			for(int j = 0; j < numberOfFreeRiders[group]; j++){
 				//freeRiders never donates, they are always in consuming state. At least, they are always trying to consume.
-				Peer p = new FreeRider(this.peersCapacity[group], Double.MAX_VALUE, id, this.numSteps);	//demanda infinita pra consumir os recursos excedentes
+				Peer p = new FreeRider(0, 40, id, this.numSteps);	//demanda infinita pra consumir os recursos excedentes
 				freeRidersList.add(id);
 				this.peers[id] = p;
 				id++;
@@ -326,10 +326,10 @@ public class Simulator {
 		for(Integer fId : freeRidersList){
 			if((this.currentStep+1)<this.numSteps){
 				//peers[fId].setDemand(peers[fId].getInitialDemand());			
-				peers[fId].getRequestedHistory()[this.currentStep+1] = Double.MAX_VALUE;
+				peers[fId].getRequestedHistory()[this.currentStep+1] = 40;
 				peers[fId].getConsumedHistory()[this.currentStep+1] = 0;
 				//peers[fId].setDemand(peers[fId].getInitialDemand());
-				peers[fId].setDemand(Double.MAX_VALUE);
+				peers[fId].setDemand(40);
 			}
 		}
 			
@@ -674,8 +674,8 @@ public class Simulator {
 		GenerateCsv csvGen = new GenerateCsv(this.outputFile, this.numSteps, this);
 		csvGen.outputPeers();
 //		csvGen.outputWelfareCollaborators();
-		csvGen.outputFreeRiders();
-		csvGen.outputSharingLevel();
+//		csvGen.outputFreeRiders();
+//		csvGen.outputSharingLevel();
 		
 //		WriteExcel2010 we = new WriteExcel2010(this.outputFile, this.numSteps);
 //		we.setupFile();		
